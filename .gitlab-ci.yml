@@ -1,0 +1,14 @@
+stages:
+  - deploy
+
+deploy-mainnet-railway:
+  stage: deploy
+  image: ubuntu
+  only:
+    - pushes
+    - main
+  script:
+    - apt-get update && apt-get install -y curl
+    - curl -fsSL https://railway.app/install.sh | sh
+    - RAILWAY_TOKEN=$RAILWAY_TOKEN railway link $RAILWAY_MAINNET_PROJECT_ID
+    - RAILWAY_TOKEN=$RAILWAY_TOKEN railway up --service=$RAILWAY_MAINNET_SERVICE_NAME -d
