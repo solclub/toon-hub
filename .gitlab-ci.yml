@@ -3,7 +3,6 @@ stages:
 
 deploy-mainnet-railway:
   stage: deploy
-  tag: mainnet
   image: ubuntu
   only:
     - pushes
@@ -16,7 +15,6 @@ deploy-mainnet-railway:
 
   deploy-devnet-railway:
   stage: deploy
-  tag: devnet
   image: ubuntu
   only:
     - pushes
