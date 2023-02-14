@@ -7,6 +7,17 @@
 
 /** @type {import("next").NextConfig} */
 const config = {
+  images: {
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "arweave.net",
+        port: "",
+        pathname: "",
+      },
+    ],
+    domains: ["arweave.net"],
+  },
   reactStrictMode: true,
   swcMinify: true,
   i18n: {

@@ -11,6 +11,8 @@ import "../styles/globals.scss";
 import ClientWalletProvider from "../contexts/ClientWalletProvider";
 import { useMemo } from "react";
 import "react-toastify/dist/ReactToastify.css";
+import Layout from "../components/layout";
+import "../styles/styles.scss";
 
 const MyApp: AppType<{ session: Session | null }> = ({
   Component,
@@ -22,7 +24,9 @@ const MyApp: AppType<{ session: Session | null }> = ({
     <ConnectionProvider endpoint={endpoint}>
       <ClientWalletProvider>
         <SessionProvider session={session}>
-          <Component {...pageProps} />
+          <Layout>
+            <Component {...pageProps} />
+          </Layout>
         </SessionProvider>
       </ClientWalletProvider>
     </ConnectionProvider>
