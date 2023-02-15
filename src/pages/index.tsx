@@ -1,3 +1,4 @@
+import { useState, useEffect } from "react";
 import { type NextPage } from "next";
 import Image from "next/image";
 import Link from "next/link";
@@ -6,9 +7,28 @@ import gem from "../assets/images/sample_gem.png";
 import warimage from "../assets/images/war_banner.png";
 import rankImage from "../assets/images/rarity_banner.png";
 import rewardsImage from "../assets/images/rewards_banner.png";
-import Equipment, { EquipmentRarity } from "../components/common/Equipment";
+import type { EquipmentRarity } from "../components/common/Equipment";
+import Equipment from "../components/common/Equipment";
+import classNames from "classnames";
+import sampleData from "./sample-data/rankItems.json";
+
+type RankItem = {
+  id: string;
+  name: string;
+  mint: string;
+  image: string;
+  owner: string;
+  twitter: string;
+  points: number;
+};
 
 const Home: NextPage = () => {
+  const [rankingData, setRankingData] = useState<RankItem[]>([]);
+
+  useEffect(() => {
+    setRankingData(sampleData);
+  }, []);
+
   const twitPhrase = "”I am my golem and my golem is me, we are Grrrr”";
   const featuredNFT = {
     url: "https://arweave.net/0dVi8eroB4qtkWQ6_QiXHBw7lBUk1U-oKn-4IcF3EXY",
@@ -135,9 +155,95 @@ const Home: NextPage = () => {
             </a>
           </div>
         </div>
-        <div className="panel ml-3 flex w-[35%] flex-wrap rounded-md">
-          leaderbaords
-        </div>
+        <LeaderBoard data={rankingData}></LeaderBoard>
+      </div>
+    </div>
+  );
+};
+
+type LeaderTable = {
+  data: RankItem[];
+};
+
+const LeaderBoard = ({ data }: LeaderTable) => {
+  const [tabActive, setTabActive] = useState(0);
+  const changeTab = (id: number) => {
+    setTabActive(id);
+  };
+  return (
+    <div className="panel ml-3 flex w-[35%] flex-wrap items-start justify-center rounded-md">
+      <div className="tabs mt-3 w-10/12 justify-center p-3">
+        <a
+          onClick={() => {
+            changeTab(0);
+          }}
+          className={classNames("tab tab-bordered", {
+            "tab-active": tabActive == 0,
+          })}
+        >
+          Golems
+        </a>
+        <a
+          onClick={() => {
+            changeTab(1);
+          }}
+          className={classNames("tab tab-bordered", {
+            "tab-active": tabActive == 1,
+          })}
+        >
+          Demons
+        </a>
+        <a
+          onClick={() => {
+            changeTab(2);
+          }}
+          className={classNames("tab tab-bordered", {
+            "tab-active": tabActive == 2,
+          })}
+        >
+          All
+        </a>
+        <a
+          onClick={() => {
+            changeTab(3);
+          }}
+          className={classNames("tab tab-bordered", {
+            "tab-active": tabActive == 3,
+          })}
+        >
+          By Wallet
+        </a>
+      </div>
+      <div className="h-[550px] w-full overflow-y-scroll">
+        {data.map(({ mint, image, name, points, twitter, owner }, i) => (
+          <div
+            key={mint}
+            className={classNames(
+              "m-3 flex flex-wrap items-center rounded-xl border-2 border-slate-500 p-3",
+              { "border-orange-500": i == 0 },
+              { "border-purple-500": i == 1 },
+              { "border-blue-500": i == 2 }
+            )}
+          >
+            <span className="rounded-full p-2 text-center">{i + 1}</span>
+            <Image
+              className="mr-2 rounded-2xl"
+              alt="War staking app"
+              src={image}
+              width={64}
+              height={64}
+            />
+            <div className="w-2/4">
+              <div className=" overflow-hidden overflow-ellipsis">
+                {(tabActive == 3 ? owner : twitter.toLowerCase()) || "unknow"}
+              </div>
+              <div className="text-xs font-thin ">{name}</div>
+            </div>
+            <div className="grow text-end text-amber-100 shadow-red-400 drop-shadow-lg">
+              {points}
+            </div>
+          </div>
+        ))}
       </div>
     </div>
   );

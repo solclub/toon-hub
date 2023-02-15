@@ -15,6 +15,12 @@ const config = {
         port: "",
         pathname: "",
       },
+      {
+        protocol: "https",
+        hostname: "www.arweave.net",
+        port: "",
+        pathname: "",
+      },
     ],
     domains: ["arweave.net"],
   },
