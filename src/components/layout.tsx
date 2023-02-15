@@ -14,7 +14,7 @@ const Layout = ({ children }: Props) => {
         <meta name="description" content="Rude Dashboard" />
         <link rel="icon" href="/favicon.ico" />
       </Head>
-      <main className="container mx-auto h-screen w-screen px-8">
+      <main className="mx-auto h-screen w-screen">
         <Drawer>{children}</Drawer>
       </main>
     </>
