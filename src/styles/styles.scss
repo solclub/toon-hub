@@ -6,6 +6,14 @@
   margin: 10px 10px 10px 10px;
 }
 
+.nft-frame {
+  background-image: url(../assets/images/nft_bg.png);
+  background-size: 100% 100%;
+  background-repeat: no-repeat;
+  background-position: center;
+  position: relative;
+}
+
 .panel {
   background-image: url(../assets/images/panel.png);
   background-size: 100% 100%;
@@ -20,4 +28,15 @@
   background-repeat: no-repeat;
   background-position: center;
   position: relative;
+}
+
+.btn-rude {
+  background-image: url(../assets/images/button.png);
+  background-size: 100% 100%;
+  background-repeat: no-repeat;
+  background-position: center;
+  padding-left: 2rem;
+  padding-right: 2rem;
+  padding-top: 0.75rem /* 12px */;
+  padding-bottom: 0.75rem /* 12px */;
 }
