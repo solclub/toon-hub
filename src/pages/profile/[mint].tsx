@@ -50,7 +50,7 @@ const sampleWeapons: Weapon[] = [
       "https://cdn.discordapp.com/attachments/970702970704510976/1075386628509532231/9.png",
     name: "Common",
     points: 5000,
-    price: "0",
+    price: "$ 0.3 Sol",
     owned: true,
     expireDate: new Date("02/18/2023"),
     rarity: "COMMON",
@@ -60,7 +60,7 @@ const sampleWeapons: Weapon[] = [
       "https://cdn.discordapp.com/attachments/970702970704510976/1075386628509532231/9.png",
     name: "Rare",
     points: 5000,
-    price: "0",
+    price: "$ 0.3 Sol",
     owned: false,
     expireDate: new Date("02/18/2023"),
     rarity: "RARE",
@@ -70,7 +70,7 @@ const sampleWeapons: Weapon[] = [
       "https://cdn.discordapp.com/attachments/970702970704510976/1075386628509532231/9.png",
     name: "Legendary",
     points: 5000,
-    price: "0",
+    price: "$ 0.3 Sol",
     owned: true,
     expireDate: new Date("02/18/2023"),
     rarity: "LEGEND",
@@ -80,7 +80,7 @@ const sampleWeapons: Weapon[] = [
       "https://cdn.discordapp.com/attachments/970702970704510976/1075386628509532231/9.png",
     name: "Secret",
     points: 5000,
-    price: "0",
+    price: "$ 0.3 Sol",
     owned: false,
     expireDate: new Date("02/18/2023"),
     rarity: "SECRET",
@@ -351,6 +351,7 @@ const Armory = ({ artVersions, weapons }: ArmoryProps) => {
                     className=""
                     profileView={true}
                     revealed={owned}
+                    price={price}
                   ></Equipment>
                   <div className="mt-6 flex w-full flex-wrap gap-y-1 text-center">
                     <div className="w-full ">{name}</div>

@@ -148,6 +148,8 @@ const Home: NextPage = () => {
                       key={x.id}
                       url={x.url}
                       rarity={x.rarity as EquipmentRarity}
+                      revealed={true}
+                      profileView={false}
                     ></Equipment>
                   ))}
                 <button className="btn-rude text-center text-xl">
@@ -242,7 +244,7 @@ const LeaderBoard = ({ data }: LeaderTable) => {
           By Wallet
         </a>
       </div>
-      <div className="h-[550px] w-full overflow-y-scroll">
+      <div className="mr-2 h-[550px] w-full overflow-y-scroll">
         {data.map(({ mint, image, name, points, twitter, owner }, i) => (
           <div
             key={mint}

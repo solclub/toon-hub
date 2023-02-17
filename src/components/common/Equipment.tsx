@@ -11,6 +11,7 @@ type Props = {
   height?: number;
   profileView?: boolean;
   revealed?: boolean;
+  price?: string;
 };
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -50,6 +51,7 @@ const Equipment = ({
   height,
   profileView,
   revealed,
+  price,
 }: Props) => {
   return (
     <div
@@ -64,7 +66,7 @@ const Equipment = ({
           "clip-wrap drop-shadow-red aspect-square cursor-pointer p-1.5 ",
           {
             " bg-gradient-to-t from-[#6E5A37] to-[#BEA97E]":
-              !profileView && !revealed,
+              !profileView && revealed,
           },
           {
             " bg-gradient-to-t from-[#3a3732] to-[#5e5d5c]":
@@ -77,7 +79,7 @@ const Equipment = ({
       >
         {url && (
           <Image
-            className={classNames("clip-css drop-shadow-red")}
+            className={classNames("clip-css")}
             src={url}
             alt="Artifact equiped"
             width={width || 100}
@@ -86,11 +88,14 @@ const Equipment = ({
         )}
       </div>
       {!revealed && (
-        <button className="absolute -bottom-1 left-0 z-50 w-full">
-          <label className=" rounded-full bg-green-400 px-3 text-xs font-thin text-black">
-            buy
-          </label>
-        </button>
+        <>
+          <button className="absolute -bottom-1 left-0 z-50 w-full">
+            <label className=" rounded-full bg-green-400 px-3 text-xs font-thin text-black">
+              buy
+            </label>
+          </button>
+          <div className="absolute top-4 w-full text-green-400">{price}</div>
+        </>
       )}
     </div>
   );

@@ -1,15 +1,26 @@
+import Link from "next/link";
 import React from "react";
 import { Connect } from "./connect";
+import { useWallet } from "@solana/wallet-adapter-react";
+import dynamic from "next/dynamic";
+
+const WalletMultiButtonDynamic = dynamic(
+  async () =>
+    (await import("@solana/wallet-adapter-react-ui")).WalletMultiButton,
+  { ssr: false }
+);
 
 type Props = {
   children: JSX.Element;
 };
 
 export const Drawer = ({ children }: Props) => {
+  const { connected } = useWallet();
   return (
-    <div className="drawer pt-7">
+    <div className="drawer">
       <input id="main-drawer" type="checkbox" className="drawer-toggle" />
-      <div className="drawer-content">
+
+      <div className="drawer-content pt-7">
         <div className="flex flex-wrap px-8 ">
           <div className="flex w-1/5 justify-start align-middle">
             <label
@@ -147,10 +158,12 @@ export const Drawer = ({ children }: Props) => {
         </div>
         <div className="container m-auto">{children}</div>
       </div>
+
       <div className="drawer-side">
         <label htmlFor="main-drawer" className="drawer-overlay"></label>
-        <ul className="panel menu w-80 p-4 text-base-content">
+        <ul className="panel menu w-80 p-4 text-base-content ">
           <svg
+            className="mb-5 mt-5"
             height="29"
             viewBox="0 0 160 29"
             fill="none"
@@ -201,12 +214,27 @@ export const Drawer = ({ children }: Props) => {
               fill="white"
             />
           </svg>
-          <li>
-            <a>Sidebar Item 1</a>
-          </li>
-          <li>
-            <a>Sidebar Item 2</a>
-          </li>
+          {connected && (
+            <>
+              <li className="text-white">
+                <Link href={"/list"}>
+                  <svg
+                    width="30px"
+                    height="30px"
+                    viewBox="0 0 24 24"
+                    fill="white"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path d="M2 2v15h15V2zm1 14V3h8.81a1.487 1.487 0 0 0-.194 1.43 1.555 1.555 0 0 0-.398.614 1.306 1.306 0 0 0-.074.415 1.654 1.654 0 0 0-.511.417 1.305 1.305 0 0 0-.315 1.084 3.333 3.333 0 0 1 .063.37 1.957 1.957 0 0 0-.602.616 1.447 1.447 0 0 0-.637-.148 1.43 1.43 0 0 0-1.353 1.018 1.423 1.423 0 0 0-1.03-.422 1.598 1.598 0 0 0-1.568 1.62 2.107 2.107 0 0 0 .081.561.033.033 0 0 0 .02-.015 1.987 1.987 0 0 0-.299.992 1.355 1.355 0 0 0 .933 1.264 1.558 1.558 0 0 0 .017 1.49 1.405 1.405 0 0 0 .927.699 2.522 2.522 0 0 0-.141.81L6.73 16zm13 0h-4.874c.03-.45.041-.826.041-.833v-.136l-.012-.048a1.525 1.525 0 0 0 .928-1.353 1.276 1.276 0 0 0-.03-.277 1.557 1.557 0 0 0 .381-.659 1.376 1.376 0 0 0 .811-.3l.035.03a2.233 2.233 0 0 0 1.53.494h.606a2.194 2.194 0 0 0 .584-.104zm0-13v8.782c-.29.075-.54.136-.584.136h-.606a1.242 1.242 0 0 1-.875-.249c-.255-.22-.248-.669-.595-.669-.466 0-.501.696-.967.696-.21 0-.31-.151-.52-.151a.342.342 0 0 0-.372.305v.483c0 .409-.547.49-.547.9 0 .166.15.23.15.396 0 .559-.994.484-.994 1.042 0 .183.068.293.075.469a.113.113 0 0 1 .002.027c0 .103-.015.456-.043.833H7.73l-.001-.184a2.062 2.062 0 0 1 .17-.726A1.59 1.59 0 0 0 8 14.553c0-.528-1.006-.378-1.164-.695-.393-.785.668-.987.668-1.612 0-.154-.08-.47-.323-.497-.338-.034-.426.15-.767.15a.39.39 0 0 1-.422-.348c0-.372.297-.545.297-.917 0-.243-.1-.38-.1-.62a.597.597 0 0 1 .57-.62c.312 0 .446.255.595.52a.62.62 0 0 0 .596.298c.472 0 .769-.588.769-.942a.456.456 0 0 1 .422-.473c.334 0 .459.348.793.348.552 0 .532-.73 1.017-.99.596-.322.422-1.019.347-1.39-.033-.165.28-.483.446-.473.695.052.398-.518.398-.792a.39.39 0 0 1 .022-.136c.108-.32.574-.422.574-.807 0-.27-.224-.396-.224-.668 0-.33.4-.628.883-.889zm3 16V6h-1V5h2v15H5v-2h1v1zm3 3V9h-1V8h2v15H8v-2h1v1z" />
+                    <path fill="none" d="M0 0h24v24H0z" />
+                  </svg>
+                  My NFTs
+                </Link>
+              </li>
+            </>
+          )}
+
+          {!connected && <WalletMultiButtonDynamic />}
         </ul>
       </div>
     </div>
