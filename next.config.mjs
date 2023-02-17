@@ -21,6 +21,12 @@ const config = {
         port: "",
         pathname: "",
       },
+      {
+        protocol: "https",
+        hostname: "cdn.discordapp.com",
+        port: "",
+        pathname: "**",
+      },
     ],
     domains: ["arweave.net"],
   },

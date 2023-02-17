@@ -40,7 +40,7 @@ const Home: NextPage = () => {
   const equipment = [
     {
       id: "1",
-      url: gem,
+      url: "https://cdn.discordapp.com/attachments/970702970704510976/1075386628509532231/9.png",
       rarity: "COMMON",
     },
     {
@@ -50,7 +50,7 @@ const Home: NextPage = () => {
     },
     {
       id: "3",
-      url: gem,
+      url: "https://cdn.discordapp.com/attachments/970702970704510976/1075386628509532231/9.png",
       rarity: "ULTRA_LEGEND",
     },
     {
@@ -86,45 +86,73 @@ const Home: NextPage = () => {
         <div className="w-[60%]">
           <div className="panel flex flex-wrap rounded-md ">
             {featuredNFT && (
-              <div className="overflow-hidde relative h-[500px] w-[65%]">
-                <Image
-                  className="absolute max-h-[500px] rounded-2xl object-cover p-3"
-                  src={featuredNFT.url}
-                  alt="Picture of the author"
-                  width={560}
-                  height={500}
-                />
-                <div className="absolute bottom-3 left-3 h-[60%] w-[93%] bg-gradient-to-t from-black to-transparent"></div>
-                <div className="absolute bottom-10 left-10  h-[60%] w-[50%] ">
-                  <div className="absolute bottom-0">
-                    <div className=" text-2xl font-bold">
-                      {featuredNFT?.name || "Unknow"}
-                    </div>
-                    <div className="mt-2 text-xl font-normal">
-                      {featuredNFT?.twitter.toLowerCase() || "Unknow"}
-                    </div>
-                    <div className="mt-2 w-20 overflow-hidden overflow-ellipsis text-xs font-thin">
-                      {featuredNFT?.wallet || "Unknow"}
+              <div className="overflow-hidde w-[63%] p-3">
+                <div className=" relative h-[500px] w-full">
+                  <Image
+                    className="absolute max-h-[500px] rounded-2xl object-cover "
+                    src={featuredNFT.url}
+                    alt="Picture of the author"
+                    fill
+                  />
+                  <div className="absolute bottom-0 h-[60%] w-full rounded-xl bg-gradient-to-t from-black to-transparent"></div>
+                  <div className="absolute bottom-10 left-10  h-[60%] w-[50%] ">
+                    <div className="absolute bottom-0">
+                      <div className=" text-2xl font-bold">
+                        {featuredNFT?.name || "Unknow"}
+                      </div>
+                      <div className="mt-2 text-xl font-normal">
+                        {featuredNFT?.twitter.toLowerCase() || "Unknow"}
+                      </div>
+                      <div className="mt-2 w-20 overflow-hidden overflow-ellipsis text-xs font-thin">
+                        {featuredNFT?.wallet || "Unknow"}
+                      </div>
                     </div>
                   </div>
                 </div>
               </div>
+              // <div className="overflow-hidde relative h-[500px] w-[65%]">
+              //   <Image
+              //     className="absolute max-h-[500px] rounded-2xl object-cover p-3"
+              //     src={featuredNFT.url}
+              //     alt="Picture of the author"
+              //     width={560}
+              //     height={500}
+              //   />
+
+              //   <div className="absolute bottom-3 left-3 h-[60%] w-[93%] bg-gradient-to-t from-black to-transparent"></div>
+              //   <div className="absolute bottom-10 left-10  h-[60%] w-[50%] ">
+              //     <div className="absolute bottom-0">
+              //       <div className=" text-2xl font-bold">
+              //         {featuredNFT?.name || "Unknow"}
+              //       </div>
+              //       <div className="mt-2 text-xl font-normal">
+              //         {featuredNFT?.twitter.toLowerCase() || "Unknow"}
+              //       </div>
+              //       <div className="mt-2 w-20 overflow-hidden overflow-ellipsis text-xs font-thin">
+              //         {featuredNFT?.wallet || "Unknow"}
+              //       </div>
+              //     </div>
+              //   </div>
+              // </div>
             )}
 
             <div className="flex w-[35%] flex-wrap items-center align-middle">
-              <div className="flex w-full flex-wrap items-center justify-center py-7">
-                <div className="w-full py-5 text-center text-2xl text-slate-200">
-                  Gems
+              <div className="flex w-full flex-wrap items-center justify-center gap-6">
+                <div className="w-full pb-3 text-center text-2xl text-slate-200">
+                  Equipment
                 </div>
                 {equipment &&
                   equipment.map((x) => (
                     <Equipment
-                      className="h-32 rounded-3xl shadow-lg"
+                      className=""
                       key={x.id}
                       url={x.url}
                       rarity={x.rarity as EquipmentRarity}
                     ></Equipment>
                   ))}
+                <button className="btn-rude text-center text-xl">
+                  Customize
+                </button>
               </div>
             </div>
           </div>

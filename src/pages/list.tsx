@@ -3,6 +3,7 @@ import React from "react";
 import sampleData from "./sample-data/rankItems.json";
 import Image from "next/image";
 import classnames from "classnames";
+import Link from "next/link";
 
 type NFTItem = {
   id: string;
@@ -26,7 +27,7 @@ const Profile = () => {
       <div className="w-full pt-3 font-thin">
         Select the characters to customize
       </div>
-      <div className="flex w-full flex-wrap justify-center gap-y-6 gap-x-4 pt-8">
+      <div className="flex w-full flex-wrap justify-center gap-y-6 gap-x-4 pt-8 pb-20">
         {nfts &&
           nfts.map((x) => (
             <div
@@ -35,15 +36,22 @@ const Profile = () => {
             >
               <div className={classnames("relative h-full")}>
                 <Image
-                  className="rounded-3xl border-solid"
+                  className="octagon rounded-3xl border-solid"
                   src={x.image}
                   alt="Picture of the author"
                   width={900}
                   height={900}
                 ></Image>
-                <button className="btn-rude absolute left-16 -bottom-5 z-40 items-center">
+                <Link
+                  href={"/profile/" + x.mint}
+                  className="btn-rude absolute left-16 -bottom-5 z-40 items-center"
+                >
                   Customize
-                </button>
+                </Link>
+                <div className="absolute bottom-0 h-3/4 w-full rounded-3xl bg-gradient-to-t from-black to-transparent "></div>
+                <div className="absolute bottom-12 w-full items-center text-center text-2xl">
+                  {x.name}
+                </div>
               </div>
             </div>
           ))}

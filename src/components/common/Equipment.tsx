@@ -11,12 +11,12 @@ type Props = {
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const RarityColors: any = {
-  COMMON: "shadow-stale-800",
-  RARE: "shadow-blue-800",
-  SUPER_RARE: "shadow-purple-800",
-  LEGEND: "shadow-yellow-800",
-  ULTRA_LEGEND: "shadow-red-800",
-  SECRET: "shadow-pink-800",
+  COMMON: "drop-shadow-common",
+  RARE: "drop-shadow-rare",
+  SUPER_RARE: "drop-shadow-super-rare",
+  LEGEND: "drop-shadow-legend",
+  ULTRA_LEGEND: "drop-shadow-ultra-legend",
+  SECRET: "drop-shadow-secret",
 };
 
 export enum EquipmentRarity {
@@ -30,20 +30,24 @@ export enum EquipmentRarity {
 
 const Equipment = ({ url, rarity, className }: Props) => {
   return (
-    <div
-      className={classNames(
-        "equipment-frame red aspect-square cursor-pointer shadow-[-2px_2px_10px_5px]",
-        RarityColors[rarity.toString()],
-        className
-      )}
-    >
-      <Image
-        className="fill"
-        src={url}
-        alt="Artifact equiped"
-        width={100}
-        height={100}
-      ></Image>
+    <div className={classNames(RarityColors[rarity])}>
+      <div
+        className={classNames(
+          "clip-wrap drop-shadow-red aspect-square cursor-pointer  p-1.5 ",
+          "bg-[#6F5B38] bg-gradient-to-t from-[#6E5A37] to-[#BEA97E]",
+          className
+        )}
+      >
+        {url && (
+          <Image
+            className={classNames("clip-css drop-shadow-red")}
+            src={url}
+            alt="Artifact equiped"
+            width={100}
+            height={100}
+          ></Image>
+        )}
+      </div>
     </div>
   );
 };
