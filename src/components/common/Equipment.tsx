@@ -6,7 +6,11 @@ import classNames from "classnames";
 type Props = {
   url: string | StaticImageData;
   rarity: EquipmentRarity;
-  className: string;
+  className?: string;
+  width?: number;
+  height?: number;
+  profileView?: boolean;
+  revealed?: boolean;
 };
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -19,6 +23,16 @@ const RarityColors: any = {
   SECRET: "drop-shadow-secret",
 };
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export const EquipmentRarityLabels: any = {
+  COMMON: "Common",
+  RARE: "Rare",
+  SUPER_RARE: "Super Rare",
+  LEGEND: "Legend",
+  ULTRA_LEGEND: "Ultra Legend",
+  SECRET: "Secret",
+};
+
 export enum EquipmentRarity {
   COMMON = "COMMON",
   RARE = "RARE",
@@ -28,14 +42,37 @@ export enum EquipmentRarity {
   SECRET = "SECRET",
 }
 
-const Equipment = ({ url, rarity, className }: Props) => {
+const Equipment = ({
+  url,
+  rarity,
+  className,
+  width,
+  height,
+  profileView,
+  revealed,
+}: Props) => {
   return (
-    <div className={classNames(RarityColors[rarity])}>
+    <div
+      className={classNames(
+        revealed ? RarityColors[rarity] : "",
+        className,
+        "relative"
+      )}
+    >
       <div
         className={classNames(
-          "clip-wrap drop-shadow-red aspect-square cursor-pointer  p-1.5 ",
-          "bg-[#6F5B38] bg-gradient-to-t from-[#6E5A37] to-[#BEA97E]",
-          className
+          "clip-wrap drop-shadow-red aspect-square cursor-pointer p-1.5 ",
+          {
+            " bg-gradient-to-t from-[#6E5A37] to-[#BEA97E]":
+              !profileView && !revealed,
+          },
+          {
+            " bg-gradient-to-t from-[#3a3732] to-[#5e5d5c]":
+              profileView && revealed,
+          },
+          {
+            "bg-gradient-to-t from-green-400 to-[#39eb57]": !revealed,
+          }
         )}
       >
         {url && (
@@ -43,13 +80,20 @@ const Equipment = ({ url, rarity, className }: Props) => {
             className={classNames("clip-css drop-shadow-red")}
             src={url}
             alt="Artifact equiped"
-            width={100}
-            height={100}
+            width={width || 100}
+            height={height || 100}
           ></Image>
         )}
       </div>
+      {!revealed && (
+        <button className="absolute -bottom-1 left-0 z-50 w-full">
+          <label className=" rounded-full bg-green-400 px-3 text-xs font-thin text-black">
+            buy
+          </label>
+        </button>
+      )}
     </div>
   );
 };
-
+//{ "bg-green-400 text-black": !x.revealed }
 export default Equipment;

@@ -5,14 +5,19 @@ import Link from "next/link";
 import { useRouter } from "next/router";
 import classnames from "classnames";
 import NftHidden from "../../assets/images/nft-hidden.png";
+import ComingSoonImg from "../../assets/images/coming_soon.png";
 import classNames from "classnames";
 import { Modal } from "../../components/common/Modal";
 import type { EquipmentRarity } from "../../components/common/Equipment";
-import Equipment from "../../components/common/Equipment";
+import Equipment, {
+  EquipmentRarityLabels,
+} from "../../components/common/Equipment";
+import { CountDown } from "../../components/common/CountDown";
 
 const sampleData: Props = {
   id: "23",
-  image: "https://arweave.net/0dVi8eroB4qtkWQ6_QiXHBw7lBUk1U-oKn-4IcF3EXY",
+  image:
+    "https://arweave.net/Iw6K_HR8OzqB9MCMCT5FtZZj-JjXkfZp-sZn9i2STLw?ext=png",
   name: "Demon #23",
   mint: "2fAeFrv7iXDBpoHh2EUP6KfG9mm26Szqk9c4hA1oyRSP",
   leaderboardPosition: 23,
@@ -35,7 +40,7 @@ type Weapon = {
   points: number;
   price: string;
   rarity: string;
-  expireDate: string;
+  expireDate: Date;
   owned: boolean;
 };
 
@@ -47,7 +52,7 @@ const sampleWeapons: Weapon[] = [
     points: 5000,
     price: "0",
     owned: true,
-    expireDate: "01/02/2023",
+    expireDate: new Date("02/18/2023"),
     rarity: "COMMON",
   },
   {
@@ -57,7 +62,7 @@ const sampleWeapons: Weapon[] = [
     points: 5000,
     price: "0",
     owned: false,
-    expireDate: "01/02/2023",
+    expireDate: new Date("02/18/2023"),
     rarity: "RARE",
   },
   {
@@ -67,8 +72,8 @@ const sampleWeapons: Weapon[] = [
     points: 5000,
     price: "0",
     owned: true,
-    expireDate: "01/02/2023",
-    rarity: "LEGENDARY",
+    expireDate: new Date("02/18/2023"),
+    rarity: "LEGEND",
   },
   {
     image:
@@ -77,21 +82,23 @@ const sampleWeapons: Weapon[] = [
     points: 5000,
     price: "0",
     owned: false,
-    expireDate: "01/02/2023",
+    expireDate: new Date("02/18/2023"),
     rarity: "SECRET",
   },
 ];
 
 const sampleArtVersions: ArtVersion[] = [
   {
-    image: "https://arweave.net/0dVi8eroB4qtkWQ6_QiXHBw7lBUk1U-oKn-4IcF3EXY",
+    image:
+      "https://cdn.discordapp.com/attachments/801296760512446494/1076012516011933697/image.png",
     name: "Rework",
     equiped: true,
     price: "0",
     revealed: true,
   },
   {
-    image: "https://arweave.net/0dVi8eroB4qtkWQ6_QiXHBw7lBUk1U-oKn-4IcF3EXY",
+    image:
+      "https://arweave.net/Iw6K_HR8OzqB9MCMCT5FtZZj-JjXkfZp-sZn9i2STLw?ext=png",
     name: "OG",
     equiped: false,
     price: "0",
@@ -254,7 +261,7 @@ const Armory = ({ artVersions, weapons }: ArmoryProps) => {
         </h2>
         {artVersions &&
           artVersions.map((x) => (
-            <div key={x.name} className=" w-[27%] text-center">
+            <div key={x.name} className=" w-[25%] text-center">
               <h3
                 className={classNames("pb-3", { "text-[#BFA97F]": x.equiped })}
               >
@@ -329,22 +336,43 @@ const Armory = ({ artVersions, weapons }: ArmoryProps) => {
           ))}
       </div>
 
-      <div className="flex flex-wrap gap-x-5 gap-y-3">
-        <h2 className="block w-full text-xl">
+      <div className="flex w-full flex-wrap">
+        <h2 className="mb-3 block w-full text-xl">
           Select your alternative version
         </h2>
         {weapons &&
-          weapons.map((x) => {
-            return (
-              <div key={x.name}>
-                <Equipment
-                  url={x.image}
-                  rarity={"COMMON" as EquipmentRarity}
-                  className="sf"
-                ></Equipment>
-              </div>
-            );
-          })}
+          weapons.map(
+            ({ image, rarity, expireDate, name, owned, points, price }) => {
+              return (
+                <div key={name} className="w-1/6 text-center ">
+                  <Equipment
+                    url={image}
+                    rarity={rarity as EquipmentRarity}
+                    className=""
+                    profileView={true}
+                    revealed={owned}
+                  ></Equipment>
+                  <div className="mt-6 flex w-full flex-wrap gap-y-1 text-center">
+                    <div className="w-full ">{name}</div>
+                    <div className="w-full text-[#BFA97F]">{`P: ${points} `}</div>
+                    <div className="w-full text-red-600">
+                      <CountDown date={expireDate}></CountDown>
+                    </div>
+                    <div className="w-full">
+                      {EquipmentRarityLabels[rarity]}
+                    </div>
+                  </div>
+                </div>
+              );
+            }
+          )}
+        <div className="ml-5 grow cursor-pointer hover:shadow-sm">
+          <Image
+            src={ComingSoonImg}
+            alt="Coming soon"
+            className="object-fill"
+          ></Image>
+        </div>
       </div>
     </div>
   );
