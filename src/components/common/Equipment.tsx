@@ -12,6 +12,8 @@ type Props = {
   profileView?: boolean;
   revealed?: boolean;
   price?: string;
+  name: string;
+  event?: () => void;
 };
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -43,16 +45,19 @@ export enum EquipmentRarity {
   SECRET = "SECRET",
 }
 
-const Equipment = ({
-  url,
-  rarity,
-  className,
-  width,
-  height,
-  profileView,
-  revealed,
-  price,
-}: Props) => {
+const Equipment = (equipment: Props) => {
+  const {
+    url,
+    rarity,
+    className,
+    width,
+    height,
+    profileView,
+    revealed,
+    price,
+    name,
+    event,
+  } = equipment;
   return (
     <div
       className={classNames(
@@ -63,7 +68,7 @@ const Equipment = ({
     >
       <div
         className={classNames(
-          "clip-wrap drop-shadow-red aspect-square cursor-pointer p-1.5 ",
+          "clip-wrap aspect-square bg-[#6F5B38] bg-gradient-to-t from-[#6E5A37] to-[#BEA97E] p-1.5 hover:scale-105 hover:shadow-md hover:shadow-slate-600",
           {
             " bg-gradient-to-t from-[#6E5A37] to-[#BEA97E]":
               !profileView && revealed,
@@ -78,22 +83,31 @@ const Equipment = ({
         )}
       >
         {url && (
-          <Image
-            className={classNames("clip-css")}
-            src={url}
-            alt="Artifact equiped"
-            width={width || 100}
-            height={height || 100}
-          ></Image>
+          <div className={classNames("clip-css relative h-full")}>
+            <Image
+              src={url}
+              alt="Artifact equiped"
+              width={width || 100}
+              height={height || 100}
+            ></Image>
+          </div>
         )}
       </div>
+      <label
+        htmlFor={name}
+        className="absolute top-0 left-0 z-50 block w-full cursor-pointer"
+        style={{ height: height || 100 }}
+      ></label>
       {!revealed && (
         <>
-          <button className="absolute -bottom-1 left-0 z-50 w-full">
-            <label className=" rounded-full bg-green-400 px-3 text-xs font-thin text-black">
+          <div className="absolute -bottom-2 left-0 z-50 w-full">
+            <button
+              onClick={event}
+              className="rounded-full bg-green-400 px-3 py-1 text-xs font-thin text-black"
+            >
               buy
-            </label>
-          </button>
+            </button>
+          </div>
           <div className="absolute top-4 w-full text-green-400">{price}</div>
         </>
       )}

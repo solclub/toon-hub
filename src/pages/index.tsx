@@ -40,22 +40,22 @@ const Home: NextPage = () => {
   const equipment = [
     {
       id: "1",
-      url: "https://cdn.discordapp.com/attachments/970702970704510976/1075386628509532231/9.png",
+      url: "https://cdn.discordapp.com/attachments/970702970704510976/1077267717729558538/test-1.png",
       rarity: "COMMON",
     },
     {
       id: "2",
-      url: gem,
       rarity: "LEGEND",
+      url: "https://cdn.discordapp.com/attachments/970702970704510976/1077267717729558538/test-1.png",
     },
     {
       id: "3",
-      url: "https://cdn.discordapp.com/attachments/970702970704510976/1075386628509532231/9.png",
+      url: "https://cdn.discordapp.com/attachments/970702970704510976/1077267717729558538/test-1.png",
       rarity: "ULTRA_LEGEND",
     },
     {
+      url: "https://cdn.discordapp.com/attachments/970702970704510976/1077267717729558538/test-1.png",
       id: "4",
-      url: gem,
       rarity: "SECRET",
     },
   ];
@@ -142,7 +142,7 @@ const Home: NextPage = () => {
                   Equipment
                 </div>
                 {equipment &&
-                  equipment.map((x) => (
+                  equipment.map((x, i) => (
                     <Equipment
                       className=""
                       key={x.id}
@@ -150,6 +150,7 @@ const Home: NextPage = () => {
                       rarity={x.rarity as EquipmentRarity}
                       revealed={true}
                       profileView={false}
+                      name={`equipment-${i}`}
                     ></Equipment>
                   ))}
                 <button className="btn-rude text-center text-xl">

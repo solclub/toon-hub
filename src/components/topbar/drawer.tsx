@@ -233,8 +233,6 @@ export const Drawer = ({ children }: Props) => {
               </li>
             </>
           )}
-
-          {!connected && <WalletMultiButtonDynamic />}
         </ul>
       </div>
     </div>

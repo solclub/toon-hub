@@ -47,7 +47,7 @@ type Weapon = {
 const sampleWeapons: Weapon[] = [
   {
     image:
-      "https://cdn.discordapp.com/attachments/970702970704510976/1075386628509532231/9.png",
+      "https://cdn.discordapp.com/attachments/970702970704510976/1076862826896957520/test-2.png",
     name: "Common",
     points: 5000,
     price: "$ 0.3 Sol",
@@ -57,7 +57,7 @@ const sampleWeapons: Weapon[] = [
   },
   {
     image:
-      "https://cdn.discordapp.com/attachments/970702970704510976/1075386628509532231/9.png",
+      "https://cdn.discordapp.com/attachments/970702970704510976/1076862826007765152/test-4.png",
     name: "Rare",
     points: 5000,
     price: "$ 0.3 Sol",
@@ -67,7 +67,7 @@ const sampleWeapons: Weapon[] = [
   },
   {
     image:
-      "https://cdn.discordapp.com/attachments/970702970704510976/1075386628509532231/9.png",
+      "https://cdn.discordapp.com/attachments/970702970704510976/1077267717729558538/test-1.png",
     name: "Legendary",
     points: 5000,
     price: "$ 0.3 Sol",
@@ -77,7 +77,7 @@ const sampleWeapons: Weapon[] = [
   },
   {
     image:
-      "https://cdn.discordapp.com/attachments/970702970704510976/1075386628509532231/9.png",
+      "https://cdn.discordapp.com/attachments/970702970704510976/1077267717729558538/test-1.png",
     name: "Secret",
     points: 5000,
     price: "$ 0.3 Sol",
@@ -163,12 +163,14 @@ const Profile: NextPage = () => {
             {profileNFT && (
               <div className="overflow-hidde w-full">
                 <div className=" relative h-[500px] w-full">
-                  <Image
-                    className="absolute max-h-[500px] rounded-2xl object-cover "
-                    src={profileNFT.image}
-                    alt="Picture of the author"
-                    fill
-                  />
+                  {profileNFT.image && (
+                    <Image
+                      className="absolute max-h-[500px] rounded-2xl object-cover "
+                      src={profileNFT.image}
+                      alt={profileNFT.name}
+                      fill
+                    />
+                  )}
                   <div className="absolute bottom-0 h-[60%] w-full  rounded-2xl bg-gradient-to-t from-black to-transparent"></div>
                   <div className="absolute bottom-0 h-[60%] w-full">
                     <div className="absolute bottom-10 left-10">
@@ -249,8 +251,13 @@ type ArmoryProps = {
 };
 
 const Armory = ({ artVersions, weapons }: ArmoryProps) => {
-  const buttonEvent = (art: ArtVersion) => {
-    console.log(art);
+  const onBuyEquipment = (x: Weapon) => {
+    //check status
+    console.log(x);
+  };
+
+  const onBuyArtEvent = (x: ArtVersion) => {
+    console.log(x);
   };
 
   return (
@@ -306,7 +313,7 @@ const Armory = ({ artVersions, weapons }: ArmoryProps) => {
               <div className="relative -top-5 z-50 w-full items-center">
                 <button
                   onClick={() => {
-                    buttonEvent(x);
+                    onBuyArtEvent(x);
                   }}
                   className={classNames(
                     "hover:shadow-lg hover:shadow-slate-400",
@@ -341,32 +348,42 @@ const Armory = ({ artVersions, weapons }: ArmoryProps) => {
           Select your alternative version
         </h2>
         {weapons &&
-          weapons.map(
-            ({ image, rarity, expireDate, name, owned, points, price }) => {
-              return (
-                <div key={name} className="w-1/6 text-center ">
-                  <Equipment
-                    url={image}
-                    rarity={rarity as EquipmentRarity}
-                    className=""
-                    profileView={true}
-                    revealed={owned}
-                    price={price}
-                  ></Equipment>
-                  <div className="mt-6 flex w-full flex-wrap gap-y-1 text-center">
-                    <div className="w-full ">{name}</div>
-                    <div className="w-full text-[#BFA97F]">{`P: ${points} `}</div>
-                    <div className="w-full text-red-600">
-                      <CountDown date={expireDate}></CountDown>
-                    </div>
-                    <div className="w-full">
-                      {EquipmentRarityLabels[rarity]}
-                    </div>
+          weapons.map((x) => {
+            const { image, rarity, expireDate, name, owned, points, price } = x;
+            return (
+              <div key={name} className="w-1/6 text-center ">
+                <Equipment
+                  url={image}
+                  rarity={rarity as EquipmentRarity}
+                  className=""
+                  profileView={true}
+                  revealed={owned}
+                  price={price}
+                  name={name}
+                  event={() => {
+                    onBuyEquipment(x);
+                  }}
+                ></Equipment>
+                <div className="mt-6 flex w-full flex-wrap gap-y-1 text-center">
+                  <div className="w-full ">{name}</div>
+                  <div className="w-full text-[#BFA97F]">{`P: ${points} `}</div>
+                  <div className="w-full text-red-600">
+                    <CountDown date={expireDate}></CountDown>
                   </div>
+                  <div className="w-full">{EquipmentRarityLabels[rarity]}</div>
                 </div>
-              );
-            }
-          )}
+                <Modal className="w-full" triggerId={name}>
+                  <Image
+                    className="rounded-3xl border-solid"
+                    src={image}
+                    alt={name}
+                    width={700}
+                    height={800}
+                  ></Image>
+                </Modal>
+              </div>
+            );
+          })}
         <div className="ml-5 grow cursor-pointer hover:shadow-sm">
           <Image
             src={ComingSoonImg}
