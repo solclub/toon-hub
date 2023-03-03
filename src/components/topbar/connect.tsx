@@ -25,14 +25,29 @@ export const Connect = () => {
       {connected && (
         <div className="dropdown-end dropdown">
           <div tabIndex={0} className=" flex flex-wrap text-right ">
+            <div className="flex items-center gap-4 rounded-2xl border border-gray-600 py-2 px-4 text-white">
+              <p className="inline-flex items-center gap-2">
+                <span>🦋</span>
+                <span>0</span>
+              </p>
+              <p className="inline-flex items-center gap-2">
+                <span>🦋</span>
+                <span>87423.74</span>
+              </p>
+              <p className="inline-flex items-center gap-2">
+                <span>🦋</span> <span>8.14</span>
+              </p>
+            </div>
             <div className="px-3">
               <div className="text-xs">Hello</div>
 
               <div className="indicator  text-[#BEA97E]">
                 <span
                   className={classNames(
-                    "badge-warning badge badge-xs indicator-item",
-                    { "mt-2 hidden": user.name != "" }
+                    "badge-error badge badge-xs indicator-item",
+                    {
+                      "mt-2 hidden": user.name !== "",
+                    }
                   )}
                 ></span>
                 <span>{user.name || "Connect"}</span>
@@ -55,7 +70,7 @@ export const Connect = () => {
                     r="16"
                     transform="matrix(1 0 0 -1 0 34)"
                     stroke="#BEA97E"
-                    stroke-width="2"
+                    strokeWidth="2"
                   />
                   <path
                     d="M22.46 20L16.708 10.9998L11 20H22.46Z"
@@ -76,7 +91,7 @@ export const Connect = () => {
                     cy="17"
                     r="16"
                     stroke="#BEA97E"
-                    stroke-width="2"
+                    strokeWidth="2"
                   />
                   <path
                     d="M22.46 14L16.708 23.0002L11 14H22.46Z"
@@ -120,18 +135,22 @@ export const Connect = () => {
                     </clipPath>
                   </defs>
                 </svg>
-                <span
-                  className={classNames(
-                    "badge-warning badge badge-xs indicator-item",
-                    { "mt-2 hidden": user.twitter != "" }
-                  )}
-                ></span>
+                <div className="grid grow place-content-end">
+                  <span
+                    className={classNames(
+                      "badge-error badge badge-xs indicator-item mx-auto self-end align-middle",
+                      {
+                        "badge-success": user.twitter !== "",
+                        "badge-error": user.twitter === "",
+                      }
+                    )}
+                  ></span>
+                </div>
               </button>
             </li>
             <li>
-              <button>
+              <button className="w-full">
                 <div className={"indicator"}>
-                  {" "}
                   {user.discord || "Link with Discord"}
                 </div>
                 <svg
@@ -153,12 +172,14 @@ export const Connect = () => {
                     </clipPath>
                   </defs>
                 </svg>
-                <span
-                  className={classNames(
-                    "badge-warning badge badge-xs indicator-item",
-                    { "mt-2 hidden": user.discord != "" }
-                  )}
-                ></span>
+                <div className="grid grow place-content-end">
+                  <span
+                    className={classNames("badge badge-xs indicator-item", {
+                      "badge-success": user.discord !== "",
+                      "badge-error": user.discord === "",
+                    })}
+                  ></span>
+                </div>
               </button>
             </li>
             <li>

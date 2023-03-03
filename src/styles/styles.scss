@@ -50,6 +50,7 @@
 
 .wallet-adapter-button-trigger {
   @extend .btn-rude;
+  z-index: 1000;
 }
 
 .clip-wrap {

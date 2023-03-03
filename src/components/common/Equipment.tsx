@@ -52,7 +52,7 @@ const Equipment = (equipment: Props) => {
     className,
     width,
     height,
-    profileView,
+    // profileView,
     revealed,
     price,
     name,
@@ -69,14 +69,14 @@ const Equipment = (equipment: Props) => {
       <div
         className={classNames(
           "clip-wrap aspect-square bg-[#6F5B38] bg-gradient-to-t from-[#6E5A37] to-[#BEA97E] p-1.5 hover:scale-105 hover:shadow-md hover:shadow-slate-600",
-          {
-            " bg-gradient-to-t from-[#6E5A37] to-[#BEA97E]":
-              !profileView && revealed,
-          },
-          {
-            " bg-gradient-to-t from-[#3a3732] to-[#5e5d5c]":
-              profileView && revealed,
-          },
+          // {
+          //   "bg-gradient-to-t from-[#6E5A37] to-[#BEA97E]":
+          //     !profileView && revealed,
+          // },
+          // {
+          //   "bg-gradient-to-t from-[#6E5A37] to-[#BEA97E]":
+          //     profileView && revealed,
+          // },
           {
             "bg-gradient-to-t from-green-400 to-[#39eb57]": !revealed,
           }
