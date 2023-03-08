@@ -2,8 +2,8 @@ import type { WithId, Document, ObjectId } from "mongodb";
 
 export interface MongoUser extends WithId<Document> {
   WalletId: string;
-  twitterVeridied: boolean;
-  discordVeridied: boolean;
+  twitterVerified: boolean;
+  discordVerified: boolean;
   twitterDetails: ProviderDetails | null;
   discordDetails: ProviderDetails | null;
   totalPower: number;

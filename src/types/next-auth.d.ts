@@ -7,17 +7,7 @@ import { AdapterUser } from "next-auth/adapters";
 
 export interface IUser extends DefaultUser, MongoUser {}
 declare module "next-auth" {
-  // interface User extends DefaultUser {
-  //   custom?: string;
-  // }
-  interface Session {
-    user: MongoUser;
+  interface Session extends IUser {
+    user: MongoUser & DefaultSession["user"];
   }
-}
-
-declare module "next-auth/jwt" {
-  /** Returned by the `jwt` callback and `getToken`, when using JWT sessions */
-  // interface JWT {
-  //   user: { id: string };
-  // }
 }

@@ -17,12 +17,9 @@ import { ObjectId } from "mongodb";
 
 export const createOptions = async (
   req: NextApiRequest,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   res: NextApiResponse
 ): Promise<NextAuthOptions> => {
-  if (req.url?.includes("callback")) {
-    console.log("oncallback");
-  }
-
   return {
     callbacks: {
       jwt: ({ token, user, account, profile }) => {
@@ -157,15 +154,14 @@ export const createOptions = async (
               .findOne({ WalletId: signinMessage.publicKey });
 
             if (!exists) {
-              console.log("insert");
               try {
                 const inserted = await db
                   .collection<MongoUser>("users")
                   .insertOne({
                     WalletId: signinMessage.publicKey,
                     _id: new ObjectId(),
-                    twitterVeridied: false,
-                    discordVeridied: false,
+                    twitterVerified: false,
+                    discordVerified: false,
                     twitterDetails: null,
                     discordDetails: null,
                     totalPower: 0,
@@ -176,7 +172,6 @@ export const createOptions = async (
                     demonNumbers: null,
                     demonKeys: null,
                   });
-                console.log(inserted);
               } catch (error) {
                 console.log(error);
               }
@@ -206,7 +201,7 @@ const saveProviderData = async (provider: string, id: string, profile: any) => {
         { WalletId: id },
         {
           $set: {
-            twitterVeridied: true,
+            twitterVerified: true,
             twitterDetails: {
               email: null,
               image: profile.data.profile_image_url,
@@ -228,7 +223,7 @@ const saveProviderData = async (provider: string, id: string, profile: any) => {
         { WalletId: id },
         {
           $set: {
-            discordVeridied: true,
+            discordVerified: true,
             discordDetails: {
               email: profile.email,
               image: profile.image_url,

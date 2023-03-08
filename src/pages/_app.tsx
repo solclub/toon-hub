@@ -22,7 +22,7 @@ const MyApp: AppType<{ session: Session | null }> = ({
 
   return (
     <ConnectionProvider endpoint={endpoint}>
-      <ClientWalletProvider>
+      <ClientWalletProvider autoConnect>
         <SessionProvider session={session}>
           <Layout>
             <Component {...pageProps} />

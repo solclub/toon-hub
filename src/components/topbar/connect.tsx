@@ -8,6 +8,7 @@ import { trpc } from "../../utils/trpc";
 import bs58 from "bs58";
 import { SigninMessage } from "../../utils/SigninMessage";
 import { Modal } from "../common/Modal";
+import { disconnect } from "process";
 
 const WalletMultiButtonDynamic = dynamic(
   async () =>
@@ -16,11 +17,11 @@ const WalletMultiButtonDynamic = dynamic(
 );
 
 export const Connect = () => {
-  const { status } = useSession();
+  const { status, data } = useSession();
 
-  // const result = trpc.example.hello.useQuery({ text: "jhonny" });
-  const ses = trpc.auth.getSession.useQuery().data;
-  // const ses2 = trpc.auth.getSecretMessage.useQuery().data;
+  const user = trpc.users.getUserByWallet.useQuery({
+    walletId: data?.WalletId || "",
+  }).data;
 
   const wallet = useWallet();
   const walletModal = useWalletModal();
@@ -63,18 +64,15 @@ export const Connect = () => {
     }
   };
 
-  const [user, setUser] = useState({
-    name: "@Nereos",
-    discord: "@Nereos",
-    twitter: "",
-  });
+  if (wallet.disconnecting) {
+    signOut();
+  }
 
   return (
     <>
       {status == "unauthenticated" && <WalletMultiButtonDynamic />}
       {status == "authenticated" && (
         <div className="dropdown-end dropdown">
-          {/* {JSON.stringify(ses2)} */}
           <div tabIndex={0} className=" flex flex-wrap text-right ">
             <div className="flex items-center gap-4 rounded-2xl border border-gray-600 py-2 px-4 text-white">
               <p className="inline-flex items-center gap-2">
@@ -97,11 +95,12 @@ export const Connect = () => {
                   className={classNames(
                     "badge-error badge badge-xs indicator-item",
                     {
-                      "mt-2 hidden": user.name !== "",
+                      "mt-2 hidden":
+                        user?.twitterVerified || user?.discordVerified,
                     }
                   )}
                 ></span>
-                <span>{user.name || "Connect"}</span>
+                <span>{user?.twitterDetails?.username || "Connect"}</span>
               </div>
             </div>
             <div>
@@ -164,7 +163,7 @@ export const Connect = () => {
                 }}
               >
                 <div className={"indicator"}>
-                  {user.twitter || "Link with Twitter"}
+                  {user?.twitterDetails?.username || "Link with Twitter"}
                 </div>
 
                 <svg
@@ -194,10 +193,10 @@ export const Connect = () => {
                 <div className="grid grow place-content-end">
                   <span
                     className={classNames(
-                      "badge-error badge badge-xs indicator-item mx-auto self-end align-middle",
+                      "badge badge-xs indicator-item mx-auto self-end align-middle",
                       {
-                        "badge-success": user.twitter !== "",
-                        "badge-error": user.twitter === "",
+                        "badge-success": user?.twitterVerified,
+                        "badge-error": !user?.twitterVerified,
                       }
                     )}
                   ></span>
@@ -213,7 +212,7 @@ export const Connect = () => {
                 className="w-full"
               >
                 <div className={"indicator"}>
-                  {user.discord || "Link with Discord"}
+                  {user?.discordDetails?.username || "Link with Discord"}
                 </div>
                 <svg
                   width="16"
@@ -237,8 +236,8 @@ export const Connect = () => {
                 <div className="grid grow place-content-end">
                   <span
                     className={classNames("badge badge-xs indicator-item", {
-                      "badge-success": user.discord !== "",
-                      "badge-error": user.discord === "",
+                      "badge-success": user?.discordVerified,
+                      "badge-error": !user?.discordVerified,
                     })}
                   ></span>
                 </div>
@@ -248,10 +247,11 @@ export const Connect = () => {
               <button
                 className="w-full"
                 onClick={() => {
+                  disconnect();
                   signOut();
                 }}
               >
-                SignOut
+                Sign Out
               </button>
             </li>
             <li>
