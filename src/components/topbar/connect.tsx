@@ -1,9 +1,13 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import dynamic from "next/dynamic";
 import { useWallet } from "@solana/wallet-adapter-react";
+import { useWalletModal } from "@solana/wallet-adapter-react-ui";
 import classNames from "classnames";
-// import { signIn, signOut, useSession } from "next-auth/react";
-// import { trpc } from "../utils/trpc";
+import { getCsrfToken, signIn, signOut, useSession } from "next-auth/react";
+import { trpc } from "../../utils/trpc";
+import bs58 from "bs58";
+import { SigninMessage } from "../../utils/SigninMessage";
+import { Modal } from "../common/Modal";
 
 const WalletMultiButtonDynamic = dynamic(
   async () =>
@@ -12,7 +16,53 @@ const WalletMultiButtonDynamic = dynamic(
 );
 
 export const Connect = () => {
-  const { connected } = useWallet();
+  const { status } = useSession();
+
+  // const result = trpc.example.hello.useQuery({ text: "jhonny" });
+  const ses = trpc.auth.getSession.useQuery().data;
+  // const ses2 = trpc.auth.getSecretMessage.useQuery().data;
+
+  const wallet = useWallet();
+  const walletModal = useWalletModal();
+
+  useEffect(() => {
+    if (wallet.connected && status === "unauthenticated") {
+      handleSignIn();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [wallet.connected]);
+
+  const handleSignIn = async () => {
+    try {
+      if (!wallet.connected) {
+        walletModal.setVisible(true);
+      }
+
+      const csrf = await getCsrfToken();
+      if (!wallet.publicKey || !csrf || !wallet.signMessage) return;
+
+      const message = new SigninMessage({
+        domain: window.location.host,
+        publicKey: wallet.publicKey?.toBase58(),
+        statement: `Sign this message to sign in to the app.`,
+        nonce: csrf,
+      });
+
+      const data = new TextEncoder().encode(message.prepare());
+      const signature = await wallet.signMessage(data);
+      const serializedSignature = bs58.encode(signature);
+
+      signIn("credentials", {
+        message: JSON.stringify(message),
+        redirect: false,
+        signature: serializedSignature,
+        id: wallet.publicKey,
+      });
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
   const [user, setUser] = useState({
     name: "@Nereos",
     discord: "@Nereos",
@@ -21,9 +71,10 @@ export const Connect = () => {
 
   return (
     <>
-      {!connected && <WalletMultiButtonDynamic />}
-      {connected && (
+      {status == "unauthenticated" && <WalletMultiButtonDynamic />}
+      {status == "authenticated" && (
         <div className="dropdown-end dropdown">
+          {/* {JSON.stringify(ses2)} */}
           <div tabIndex={0} className=" flex flex-wrap text-right ">
             <div className="flex items-center gap-4 rounded-2xl border border-gray-600 py-2 px-4 text-white">
               <p className="inline-flex items-center gap-2">
@@ -106,7 +157,12 @@ export const Connect = () => {
             className="panel dropdown-content menu w-60 rounded-2xl p-2 pt-5 text-xs shadow"
           >
             <li>
-              <button className="">
+              <label
+                htmlFor="linkSocial"
+                onClick={() => {
+                  signIn("twitter");
+                }}
+              >
                 <div className={"indicator"}>
                   {user.twitter || "Link with Twitter"}
                 </div>
@@ -146,10 +202,16 @@ export const Connect = () => {
                     )}
                   ></span>
                 </div>
-              </button>
+              </label>
             </li>
             <li>
-              <button className="w-full">
+              <label
+                htmlFor="linkSocial"
+                onClick={() => {
+                  signIn("discord");
+                }}
+                className="w-full"
+              >
                 <div className={"indicator"}>
                   {user.discord || "Link with Discord"}
                 </div>
@@ -180,6 +242,16 @@ export const Connect = () => {
                     })}
                   ></span>
                 </div>
+              </label>
+            </li>
+            <li>
+              <button
+                className="w-full"
+                onClick={() => {
+                  signOut();
+                }}
+              >
+                SignOut
               </button>
             </li>
             <li>
