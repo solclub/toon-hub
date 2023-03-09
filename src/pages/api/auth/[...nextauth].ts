@@ -6,14 +6,9 @@ import { env } from "../../../env/server.mjs";
 import { getCsrfToken, getSession } from "next-auth/react";
 import { SigninMessage } from "../../../utils/SigninMessage";
 import type { NextApiRequest, NextApiResponse } from "next";
-import clientPromise from "../../../server/database/mongodb";
-import type { IUser } from "../../../types/next-auth.js";
-import type {
-  MongoUser,
-  ProviderDetails,
-} from "../../../server/database/models.js";
-import { getToken } from "next-auth/jwt";
-import { ObjectId } from "mongodb";
+import userModel from "../../../server/database/models/user.model";
+import dbConnect from "../../../server/database/mongoose";
+import { IUser } from "../../../server/database/models.js";
 
 export const createOptions = async (
   req: NextApiRequest,
@@ -32,7 +27,6 @@ export const createOptions = async (
           token.test = account?.account;
           token.picture = user.image;
           token.user = user;
-          console.log(user);
           if (account?.provider == "twitter") {
             token.user = {
               ...user,
@@ -51,18 +45,9 @@ export const createOptions = async (
         return token;
       },
       session: async ({ session, user, token }) => {
-        const client = await clientPromise;
-        const db = client.db(env.MONGODB_DB_NAME);
-
         const walletId = (token as any)?.user?.id;
-        // console.log(session);
-        // console.log(token);
-        // console.log(user);
-        const exists = await db
-          .collection<MongoUser>("users")
-          .findOne({ WalletId: walletId });
-        // console.log(exists);
-        return { ...session, ...token, ...exists };
+        const exists = await userModel().findOne({ walletId });
+        return { ...session, ...token, ...exists?.toObject() };
       },
     },
     // Configure one or more authentication providers
@@ -81,9 +66,7 @@ export const createOptions = async (
           }
 
           const user = await getSession({ req });
-          await saveProviderData("discord", user?.user.id, profile);
-          console.log("session", user);
-
+          await saveProviderData("discord", user?.user.id ?? "", profile);
           return {
             id: user?.user.id || "",
             name: profile.username,
@@ -99,9 +82,8 @@ export const createOptions = async (
         version: "2.0",
         profile: async (profile) => {
           const user = await getSession({ req });
-          await saveProviderData("twitter", user?.user.id, profile);
+          await saveProviderData("twitter", user?.user.id ?? "", profile);
 
-          // console.log(user, profile);
           return {
             id: user?.user.id || "",
             name: profile.data.username,
@@ -126,9 +108,6 @@ export const createOptions = async (
         async authorize(credentials, req2) {
           const req = req2 as NextApiRequest;
           try {
-            const client = await clientPromise;
-            const db = client.db(env.MONGODB_DB_NAME);
-
             const signinMessage: SigninMessage = new SigninMessage(
               JSON.parse(credentials?.message || "{}")
             );
@@ -149,29 +128,26 @@ export const createOptions = async (
             if (!validationResult)
               throw new Error("Could not validate the signed message");
 
-            const exists = await db
-              .collection<MongoUser>("users")
-              .findOne({ WalletId: signinMessage.publicKey });
+            const exists = await userModel().findOne({
+              walletId: signinMessage.publicKey,
+            });
 
             if (!exists) {
               try {
-                const inserted = await db
-                  .collection<MongoUser>("users")
-                  .insertOne({
-                    WalletId: signinMessage.publicKey,
-                    _id: new ObjectId(),
-                    twitterVerified: false,
-                    discordVerified: false,
-                    twitterDetails: null,
-                    discordDetails: null,
-                    totalPower: 0,
-                    totalTraining: 0,
-                    totalWarriors: 0,
-                    golemNumbers: null,
-                    golemKeys: null,
-                    demonNumbers: null,
-                    demonKeys: null,
-                  });
+                await userModel().create({
+                  walletId: signinMessage.publicKey,
+                  twitterVerified: false,
+                  discordVerified: false,
+                  twitterDetails: null,
+                  discordDetails: null,
+                  totalPower: 0,
+                  totalTraining: 0,
+                  totalWarriors: 0,
+                  golemNumbers: null,
+                  golemKeys: null,
+                  demonNumbers: null,
+                  demonKeys: null,
+                });
               } catch (error) {
                 console.log(error);
               }
@@ -192,25 +168,22 @@ export const createOptions = async (
 };
 
 const saveProviderData = async (provider: string, id: string, profile: any) => {
-  const client = await clientPromise;
-  const db = client.db(env.MONGODB_DB_NAME);
-
   if (provider == "twitter") {
     try {
-      await db.collection<MongoUser>("users").updateOne(
-        { WalletId: id },
+      await userModel().updateOne(
+        { walletId: id },
         {
-          $set: {
-            twitterVerified: true,
-            twitterDetails: {
-              email: null,
-              image: profile.data.profile_image_url,
-              name: profile.data.name,
-              username: profile.data.username,
-            },
+          twitterVerified: true,
+          twitterDetails: {
+            email: null,
+            image: profile.data.profile_image_url,
+            name: profile.data.name,
+            username: profile.data.username,
           },
         },
-        { upsert: true }
+        {
+          upsert: true,
+        }
       );
     } catch (error) {
       console.error(error);
@@ -219,20 +192,20 @@ const saveProviderData = async (provider: string, id: string, profile: any) => {
 
   if (provider == "discord") {
     try {
-      await db.collection<MongoUser>("users").updateOne(
-        { WalletId: id },
+      await userModel().updateOne(
+        { walletId: id },
         {
-          $set: {
-            discordVerified: true,
-            discordDetails: {
-              email: profile.email,
-              image: profile.image_url,
-              name: profile.username,
-              username: `${profile?.username}#${profile.discriminator}`,
-            },
+          discordVerified: true,
+          discordDetails: {
+            email: profile.email,
+            image: profile.image_url,
+            name: profile.username,
+            username: `${profile?.username}#${profile.discriminator}`,
           },
         },
-        { upsert: true }
+        {
+          upsert: true,
+        }
       );
     } catch (error) {
       console.error(error);
@@ -241,11 +214,5 @@ const saveProviderData = async (provider: string, id: string, profile: any) => {
 };
 
 export default async function auth(req: NextApiRequest, res: NextApiResponse) {
-  // Do whatever you want here, before the request is passed down to `NextAuth`
   return await NextAuth(req, res, await createOptions(req, res));
 }
-
-// const saveProfile = (profile: ProviderDetails) => {
-//   // const client = await clientPromise;
-//   //     const db = client.db(env.MONGODB_DB_NAME);
-// };

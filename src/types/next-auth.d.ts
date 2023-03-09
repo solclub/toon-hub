@@ -2,12 +2,12 @@
 import NextAuth, { User, type DefaultSession } from "next-auth";
 import type { DefaultSession, DefaultUser } from "next-auth";
 import { JWT } from "next-auth/jwt";
-import type { MongoUser } from "../server/database/models";
+import type { IUser } from "../server/database/models/user.model";
 import { AdapterUser } from "next-auth/adapters";
 
-export interface IUser extends DefaultUser, MongoUser {}
+// export interface IUser extends DefaultUser, IUser {}
 declare module "next-auth" {
   interface Session extends IUser {
-    user: MongoUser & DefaultSession["user"];
+    user: IUser & DefaultSession["user"];
   }
 }

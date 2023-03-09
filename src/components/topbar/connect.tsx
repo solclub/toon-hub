@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect } from "react";
 import dynamic from "next/dynamic";
 import { useWallet } from "@solana/wallet-adapter-react";
 import { useWalletModal } from "@solana/wallet-adapter-react-ui";
@@ -7,8 +7,6 @@ import { getCsrfToken, signIn, signOut, useSession } from "next-auth/react";
 import { trpc } from "../../utils/trpc";
 import bs58 from "bs58";
 import { SigninMessage } from "../../utils/SigninMessage";
-import { Modal } from "../common/Modal";
-import { disconnect } from "process";
 
 const WalletMultiButtonDynamic = dynamic(
   async () =>
@@ -18,9 +16,9 @@ const WalletMultiButtonDynamic = dynamic(
 
 export const Connect = () => {
   const { status, data } = useSession();
-
+  console.log(data);
   const user = trpc.users.getUserByWallet.useQuery({
-    walletId: data?.WalletId || "",
+    walletId: data?.user.id || "",
   }).data;
 
   const wallet = useWallet();
@@ -247,7 +245,7 @@ export const Connect = () => {
               <button
                 className="w-full"
                 onClick={() => {
-                  disconnect();
+                  wallet.disconnect();
                   signOut();
                 }}
               >
