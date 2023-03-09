@@ -13,6 +13,12 @@ import Equipment, {
   EquipmentRarityLabels,
 } from "../../components/common/Equipment";
 import { CountDown } from "../../components/common/CountDown";
+import LeaderBoardIcon from "../../assets/images/leaderboard_icon.png";
+import PowerRatingIcon from "../../assets/images/power_rating_icon.png";
+import TierIcon from "../../assets/images/tier_icon.png";
+import WeaponsIcon from "../../assets/images/weapons_icon.png";
+import { trpc } from "../../utils/trpc";
+import nftTierSelector from "../../utils/nfttier";
 
 const sampleData: Props = {
   id: "23",
@@ -126,13 +132,21 @@ type Props = {
 
 const Profile: NextPage = () => {
   const router = useRouter();
-  const [profileNFT, setProfileNFT] = useState<Props>({} as Props);
   const [artVersions, setArtVersions] = useState<ArtVersion[]>([]);
   const [weapons, setWeapons] = useState<Weapon[]>([]);
   const { mint } = router.query;
+  const profileNFT = trpc.nfts.getUserNFTbyMint.useQuery({
+    mint: mint as string,
+    collection: "golems",
+  }).data;
+
+  const powerRating = "8542";
+  const leaderboardPosition = "560";
+  const totalNFTPower = "56412";
+  const weaponsEquiped = "2";
+  const collection = "golems";
 
   useEffect(() => {
-    setProfileNFT(sampleData);
     setArtVersions(sampleArtVersions);
     setWeapons(sampleWeapons);
   }, [mint]);
@@ -154,7 +168,7 @@ const Profile: NextPage = () => {
               fill="white"
             />
           </svg>
-          <div className="inline w-5/12 pl-3">{profileNFT.name}</div>
+          <div className="inline w-5/12 pl-3">{profileNFT?.name}</div>
         </Link>
       </div>
       <div className="mt-5 flex flex-wrap justify-center gap-x-4">
@@ -178,7 +192,7 @@ const Profile: NextPage = () => {
                         Power
                       </div>
                       <div className=" text-3xl text-amber-100">
-                        {profileNFT?.powerRating || "Unknow"}
+                        {totalNFTPower || "Unknow"}
                       </div>
                     </div>
                     <div className="absolute bottom-9 right-10">
@@ -191,48 +205,81 @@ const Profile: NextPage = () => {
               </div>
             )}
             <div className=" mt-4 flex w-full gap-3 text-center">
-              <div className="info-card relative m-auto h-[160px] w-1/5 grow">
-                <div className="absolute top-[10%] flex h-1/2 w-full flex-wrap gap-y-1">
-                  <div className="w-full p-3 text-3xl text-[#BEA97E]">
-                    {profileNFT.leaderboardPosition}
-                  </div>
-                  <div className="w-full ">
+              <div className="info-card m-auto h-[160px] w-1/5 grow">
+                <div className="grid h-full w-full flex-wrap justify-center py-4 text-center align-middle">
+                  <div className="w-full">
                     <label className="block text-xs">Leaderboard</label>
-                    <label>Position</label>
+                  </div>
+                  <div className="w-full grow">
+                    <Image
+                      className="mx-auto"
+                      src={LeaderBoardIcon}
+                      alt="Leaderboard position"
+                      width={40}
+                    ></Image>
+                  </div>
+                  <div className="w-full text-5xl text-[#BEA97E]">
+                    {leaderboardPosition}
                   </div>
                 </div>
               </div>
 
-              <div className="info-card relative m-auto h-[160px] w-1/5 grow">
-                <div className="absolute top-[10%] flex h-1/2 w-full flex-wrap gap-y-1">
-                  <div className="w-full p-3 text-3xl text-[#BEA97E]">
-                    {profileNFT.powerRating}
+              <div className="info-card m-auto h-[160px] w-1/5 grow">
+                <div className="grid h-full w-full flex-wrap justify-center py-4 text-center align-middle">
+                  <div className="w-full">
+                    <label className="block text-xs">Power Rating</label>
                   </div>
-                  <div className="w-full ">
-                    <label className="block text-xs">Power</label>
-                    <label>Rating</label>
+                  <div className="w-full grow">
+                    <Image
+                      className="mx-auto"
+                      src={PowerRatingIcon}
+                      alt="Power Rating"
+                      width={40}
+                    ></Image>
                   </div>
-                </div>
-              </div>
-              <div className="info-card relative m-auto h-[160px] w-1/5 grow">
-                <div className="absolute top-[10%] flex h-1/2 w-full flex-wrap gap-y-1">
-                  <div className="w-full p-3 text-3xl text-[#BEA97E]">
-                    {profileNFT.tier}
-                  </div>
-                  <div className="w-full ">
-                    <label className="block text-xs">Power</label>
-                    <label>Tier</label>
+                  <div className="w-full text-2xl text-[#BEA97E]">
+                    {powerRating}
                   </div>
                 </div>
               </div>
-              <div className="info-card relative m-auto h-[160px] w-1/5 grow">
-                <div className="absolute top-[10%] flex h-1/2 w-full flex-wrap gap-y-1">
-                  <div className="w-full p-3 text-3xl text-[#BEA97E]">
-                    {profileNFT.weapons}
+
+              <div className="info-card m-auto h-[160px] w-1/5 grow">
+                <div className="grid h-full w-full flex-wrap justify-center py-4 text-center align-middle">
+                  <div className="w-full">
+                    <label className="block text-xs">Tier</label>
                   </div>
-                  <div className="w-full ">
-                    <label className="block text-xs">Weapons</label>
-                    <label>Equipped</label>
+                  <div className="w-full grow">
+                    <Image
+                      className="mx-auto"
+                      src={TierIcon}
+                      alt="Tier"
+                      width={40}
+                    ></Image>
+                  </div>
+                  <div className="w-full text-5xl text-[#BEA97E]">
+                    {nftTierSelector(
+                      profileNFT?.rudeRank ?? 100000,
+                      collection
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              <div className="info-card m-auto h-[160px] w-1/5 grow">
+                <div className="grid h-full w-full flex-wrap justify-center py-4 text-center align-middle">
+                  <div className="w-full">
+                    <label className="block text-xs">Weapos</label>
+                  </div>
+                  <div className="w-full grow">
+                    <Image
+                      className="mx-auto"
+                      src={WeaponsIcon}
+                      alt="Weapos Equiped"
+                      width={40}
+                    ></Image>
+                  </div>
+                  <div className="w-full text-5xl text-[#BEA97E]">
+                    {weaponsEquiped}
                   </div>
                 </div>
               </div>
@@ -344,9 +391,7 @@ const Armory = ({ artVersions, weapons }: ArmoryProps) => {
       </div>
 
       <div className="flex w-full flex-wrap">
-        <h2 className="mb-3 block w-full text-xl">
-          Select your alternative version
-        </h2>
+        <h2 className="mb-3 block w-full text-xl">Select your weapons</h2>
         {weapons &&
           weapons.map((x) => {
             const { image, rarity, expireDate, name, owned, points, price } = x;

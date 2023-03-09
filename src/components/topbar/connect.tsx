@@ -7,6 +7,8 @@ import { getCsrfToken, signIn, signOut, useSession } from "next-auth/react";
 import { trpc } from "../../utils/trpc";
 import bs58 from "bs58";
 import { SigninMessage } from "../../utils/SigninMessage";
+import RudeTokenImg from "../../assets/images/rudetoken.png";
+import Image from "next/image";
 
 const WalletMultiButtonDynamic = dynamic(
   async () =>
@@ -23,6 +25,10 @@ export const Connect = () => {
 
   const wallet = useWallet();
   const walletModal = useWalletModal();
+
+  const solanaAmmount = 1000;
+  const butterflies = 3;
+  const rude = 80000;
 
   useEffect(() => {
     if (wallet.connected && status === "unauthenticated") {
@@ -72,17 +78,51 @@ export const Connect = () => {
       {status == "authenticated" && (
         <div className="dropdown-end dropdown">
           <div tabIndex={0} className=" flex flex-wrap text-right ">
-            <div className="flex items-center gap-4 rounded-2xl border border-gray-600 py-2 px-4 text-white">
-              <p className="inline-flex items-center gap-2">
+            <div className="mr-3 flex items-center gap-3 rounded-2xl border border-[#BEA97E] py-2 px-4">
+              <p className="inline-flex items-center gap-x-2 ">
                 <span>🦋</span>
-                <span>0</span>
+                <span>{butterflies}</span>
               </p>
-              <p className="inline-flex items-center gap-2">
-                <span>🦋</span>
-                <span>87423.74</span>
+              <p className="inline-flex items-center gap-x-2  before:mr-1 before:block before:content-['|']">
+                <span>
+                  {
+                    <Image
+                      width={20}
+                      height={20}
+                      src={RudeTokenImg}
+                      alt={"Rude token"}
+                    ></Image>
+                  }
+                </span>
+                <span>{rude}</span>
               </p>
-              <p className="inline-flex items-center gap-2">
-                <span>🦋</span> <span>8.14</span>
+              <p className="inline-flex items-center gap-x-2 before:mr-1 before:block before:content-['|']">
+                <span>
+                  <svg width="20" height="20" viewBox="0 0 31 27" fill="none">
+                    <path
+                      d="m30.179 21.3-5.008 5.332a1.143 1.143 0 0 1-.848.368H.583a.59.59 0 0 1-.535-.348.568.568 0 0 1-.04-.328.593.593 0 0 1 .148-.298l5.002-5.332a1.141 1.141 0 0 1 .848-.368h23.74a.574.574 0 0 1 .43.971l.003.003ZM25.17 10.56a1.192 1.192 0 0 0-.848-.368H.583a.59.59 0 0 0-.535.349.569.569 0 0 0-.04.328c.02.112.071.213.148.297l5.002 5.335c.107.115.24.208.384.27.147.064.303.095.464.098h23.74a.574.574 0 0 0 .529-.348.569.569 0 0 0-.108-.623l-5-5.335.003-.003ZM.582 6.73h23.74a1.2 1.2 0 0 0 .464-.096c.147-.064.277-.154.384-.272L30.18 1.03a.579.579 0 0 0-.107-.881.571.571 0 0 0-.323-.09H6.006c-.158 0-.317.034-.464.095a1.126 1.126 0 0 0-.384.273L.156 5.759a.582.582 0 0 0-.108.625.59.59 0 0 0 .534.348V6.73Z"
+                      fill="url(#solana-gradient)"
+                    ></path>
+                    <defs>
+                      <linearGradient
+                        id="solana-gradient"
+                        x1="2.561"
+                        y1="27.642"
+                        x2="27.258"
+                        y2="-.397"
+                        gradientUnits="userSpaceOnUse"
+                      >
+                        <stop offset=".08" stop-color="#9945FF"></stop>
+                        <stop offset=".3" stop-color="#8752F3"></stop>
+                        <stop offset=".5" stop-color="#5497D5"></stop>
+                        <stop offset=".6" stop-color="#43B4CA"></stop>
+                        <stop offset=".72" stop-color="#28E0B9"></stop>
+                        <stop offset=".97" stop-color="#19FB9B"></stop>
+                      </linearGradient>
+                    </defs>
+                  </svg>
+                </span>
+                <span>{solanaAmmount}</span>
               </p>
             </div>
             <div className="px-3">
