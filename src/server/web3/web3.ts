@@ -1,7 +1,5 @@
-import { sleep } from "@tanstack/query-core/build/lib/utils";
-
 /// call web 3 part to get NFTs in wallet and staking merged
-export const getUserNFTs = async (walletid: string) => {
+export const getUserNFTs = async () => {
   await sleep(500);
   return {
     mints: [
@@ -50,3 +48,7 @@ export const getUserNFTs = async (walletid: string) => {
     ],
   };
 };
+
+function sleep(ms: number) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}

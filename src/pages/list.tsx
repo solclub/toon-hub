@@ -1,26 +1,12 @@
-import { useState, useEffect } from "react";
 import React from "react";
-import sampleData from "./sample-data/rankItems.json";
 import Image from "next/image";
 import classnames from "classnames";
 import Link from "next/link";
-
-type NFTItem = {
-  id: string;
-  name: string;
-  mint: string;
-  image: string;
-  owner: string;
-  twitter: string;
-  points: number;
-};
+import { trpc } from "../utils/trpc";
 
 const Profile = () => {
-  const [nfts, setNFTs] = useState<NFTItem[]>([]);
+  const nfts = trpc.nfts.getUserNFTs.useQuery().data;
 
-  useEffect(() => {
-    setNFTs(sampleData);
-  }, []);
   return (
     <div className="mt-8 flex flex-wrap">
       <div className="w-full text-2xl">My Collection</div>
