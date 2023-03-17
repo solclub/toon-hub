@@ -3,7 +3,6 @@ import { type NextPage } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import twitterBg from "../assets/images/twiter_banner.png";
-import gem from "../assets/images/sample_gem.png";
 import warimage from "../assets/images/war_banner.png";
 import rankImage from "../assets/images/rarity_banner.png";
 import rewardsImage from "../assets/images/rewards_banner.png";
@@ -11,6 +10,15 @@ import type { EquipmentRarity } from "../components/common/Equipment";
 import Equipment from "../components/common/Equipment";
 import classNames from "classnames";
 import sampleData from "./sample-data/rankItems.json";
+
+import gem from "../assets/weapons/SLOT1/COMMON/Stoneheart.png";
+import gem1 from "../assets/weapons/SLOT2/EPIC/Flamestreak-Bow.png";
+import gem2 from "../assets/weapons/SLOT3/LEGENDARY/Ancient-Hammer.png";
+import gem3 from "../assets/weapons/SLOT4/MYTHIC/Life-taker.png";
+
+import ImgTwitterBlue from "../assets/images/twitter_blue.png";
+import ImgPowerRating from "../assets/images/power_rating_icon.png";
+import ImgSolScan from "../assets/images/solscan.png";
 
 type RankItem = {
   id: string;
@@ -34,29 +42,29 @@ const Home: NextPage = () => {
     url: "https://arweave.net/0dVi8eroB4qtkWQ6_QiXHBw7lBUk1U-oKn-4IcF3EXY",
     name: "Demon #23",
     wallet: "2fAeFrv7iXDBpoHh2EUP6KfG9mm26Szqk9c4hA1oyRSP",
-    twitter: "@Nereos",
-    discord: "@Nereos",
+    twitter: "@NudeDemon",
+    discord: "@NudeGolem",
   };
   const equipment = [
     {
       id: "1",
-      url: "https://cdn.discordapp.com/attachments/970702970704510976/1077267717729558538/test-1.png",
+      url: gem,
       rarity: "COMMON",
     },
     {
       id: "2",
-      rarity: "LEGEND",
-      url: "https://cdn.discordapp.com/attachments/970702970704510976/1077267717729558538/test-1.png",
+      rarity: "EPIC",
+      url: gem1,
     },
     {
       id: "3",
-      url: "https://cdn.discordapp.com/attachments/970702970704510976/1077267717729558538/test-1.png",
-      rarity: "ULTRA_LEGEND",
+      url: gem2,
+      rarity: "LEGENDARY",
     },
     {
-      url: "https://cdn.discordapp.com/attachments/970702970704510976/1077267717729558538/test-1.png",
+      url: gem3,
       id: "4",
-      rarity: "SECRET",
+      rarity: "MYTHIC",
     },
   ];
   return (
@@ -65,29 +73,11 @@ const Home: NextPage = () => {
         <div className="mx-auto w-5/12">
           <div className="relative grid h-16 justify-center justify-items-center">
             <div className="z-50">
-              <svg
-                width="16"
-                height="14"
-                viewBox="0 0 16 14"
-                fill="none"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <g clipPath="url(#clip0_1241_12842)">
-                  <path
-                    d="M15.9845 2.15796C16.0321 2.09181 15.9618 2.00641 15.8858 2.03583C15.3455 2.24493 14.7808 2.386 14.2047 2.45553C14.8461 2.07298 15.341 1.49065 15.6155 0.801217C15.6434 0.730984 15.5666 0.668265 15.5004 0.704801C14.9042 1.03347 14.2613 1.27014 13.5935 1.40645C13.5656 1.41215 13.5367 1.40265 13.5171 1.38197C13.0159 0.854024 12.3562 0.502506 11.6371 0.381034C10.9028 0.25701 10.148 0.379811 9.49118 0.730179C8.83433 1.08055 8.31254 1.63866 8.00765 2.31699C7.71775 2.96196 7.63953 3.68091 7.78251 4.37138C7.79361 4.42496 7.7516 4.47554 7.69691 4.47214C6.39754 4.39157 5.12797 4.04653 3.96644 3.4578C2.80786 2.87056 1.78191 2.05362 0.951061 1.05735C0.914187 1.01314 0.8443 1.01886 0.817434 1.06976C0.558904 1.55954 0.423544 2.10544 0.423912 2.66026C0.422862 3.21254 0.558617 3.75651 0.819089 4.24373C1.07956 4.73096 1.45667 5.14633 1.91683 5.45285C1.42882 5.43959 0.950329 5.31914 0.515167 5.10076C0.459087 5.07262 0.391817 5.11269 0.394734 5.17529C0.428668 5.90352 0.696453 6.63461 1.15997 7.19552C1.65322 7.79242 2.33785 8.20091 3.09804 8.35189C2.80541 8.4408 2.50159 8.48768 2.19573 8.49111C2.02926 8.48917 1.86312 8.4769 1.69825 8.4544C1.63713 8.44606 1.58722 8.50403 1.60861 8.5618C1.83535 9.17395 2.23592 9.70809 2.76261 10.098C3.32569 10.5149 4.00493 10.7461 4.7058 10.7596C3.5223 11.6893 2.06111 12.1967 0.555158 12.2009C0.400416 12.2014 0.245743 12.1964 0.0914349 12.1859C0.00447805 12.18 -0.0355149 12.2957 0.0394391 12.3401C1.50674 13.2094 3.18384 13.6689 4.89447 13.6668C6.15746 13.6799 7.4104 13.4416 8.58011 12.9659C9.74982 12.4901 10.8128 11.7864 11.7071 10.8959C12.6014 10.0054 13.3089 8.94594 13.7885 7.77937C14.268 6.61281 14.5099 5.36254 14.5 4.1016V3.70864C14.5 3.68279 14.5123 3.65848 14.5329 3.6429C15.0893 3.22348 15.5786 2.72275 15.9845 2.15796Z"
-                    fill="#00FFFF"
-                  />
-                </g>
-                <defs>
-                  <clipPath id="clip0_1241_12842">
-                    <rect
-                      width="16"
-                      height="13.3333"
-                      transform="translate(0 0.333984)"
-                    />
-                  </clipPath>
-                </defs>
-              </svg>
+              <Image
+                className="absolute self-center"
+                src={ImgTwitterBlue}
+                alt="twit icon"
+              />
             </div>
             <Image
               className="absolute self-center"
@@ -129,21 +119,41 @@ const Home: NextPage = () => {
                         {featuredNFT?.name || "Unknow"}
                       </div>
                       <div className="mt-2 text-xl font-normal">
+                        <Image
+                          className="inline"
+                          src={ImgTwitterBlue}
+                          alt="Twitter Image"
+                          width={15}
+                          height={15}
+                        />
                         {(
                           <Link
-                            className=""
+                            className="ml-2"
                             href={
                               "https://twitter.com/" +
                               featuredNFT?.twitter.replace("@", "")
                             }
                             target="_blank"
                           >
-                            {featuredNFT?.twitter.toLowerCase()}
+                            {featuredNFT?.twitter
+                              .replace("@", "")
+                              .toLowerCase()}
                           </Link>
                         ) || "Unknow"}
                       </div>
-                      <div className="mt-2 w-20 overflow-hidden overflow-ellipsis text-xs font-thin">
-                        {featuredNFT?.wallet || "Unknow"}
+                      <div className="mt-2 overflow-hidden overflow-ellipsis text-xs font-thin">
+                        <Image
+                          className="inline"
+                          src={ImgSolScan}
+                          alt="Twitter Image"
+                          width={15}
+                          height={15}
+                        />
+                        <span className="ml-2 inline-block w-20">
+                          {"..." +
+                            featuredNFT?.wallet.substring(5, 15) +
+                            "..." || "Unknow"}
+                        </span>
                       </div>
                     </div>
                   </div>
@@ -168,9 +178,9 @@ const Home: NextPage = () => {
                       name={`equipment-${i}`}
                     ></Equipment>
                   ))}
-                <button className="btn-rude text-center text-xl">
+                {/* <button className="btn-rude text-center text-xl">
                   Customize
-                </button>
+                </button> */}
               </div>
             </div>
           </div>
@@ -338,13 +348,20 @@ const LeaderBoard = ({ data }: LeaderTable) => {
 
             <div className="w-2/4 ">
               <div className=" overflow-hidden overflow-ellipsis pb-2">
+                <Image
+                  className="inline"
+                  src={ImgTwitterBlue}
+                  alt="Picture of the author"
+                  width={15}
+                  height={15}
+                />
                 {twitter ? (
                   <Link
                     className=""
                     href={"https://twitter.com/" + twitter.replace("@", "")}
                     target="_blank"
                   >
-                    {twitter}
+                    {twitter.replace("@", " ").toLowerCase()}
                   </Link>
                 ) : (
                   "Unknow"
@@ -352,7 +369,14 @@ const LeaderBoard = ({ data }: LeaderTable) => {
               </div>
               <div className="text-xs font-thin ">{name}</div>
             </div>
-            <div className="grow text-end text-amber-100 shadow-red-400 drop-shadow-lg">
+            <div className="mr-2 grow text-end text-amber-100 shadow-red-400 drop-shadow-lg">
+              <Image
+                className="inline"
+                src={ImgPowerRating}
+                alt="Picture of the author"
+                width={18}
+                height={18}
+              />
               {points}
             </div>
           </div>

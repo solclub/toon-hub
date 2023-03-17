@@ -7,8 +7,6 @@ import { getCsrfToken, getSession } from "next-auth/react";
 import { SigninMessage } from "../../../utils/SigninMessage";
 import type { NextApiRequest, NextApiResponse } from "next";
 import userModel from "../../../server/database/models/user.model";
-import dbConnect from "../../../server/database/mongoose";
-import { IUser } from "../../../server/database/models.js";
 
 export const createOptions = async (
   req: NextApiRequest,

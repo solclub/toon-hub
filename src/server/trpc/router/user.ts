@@ -1,4 +1,5 @@
 import { z } from "zod";
+import type { IUser } from "../../database/models/user.model";
 import userModel from "../../database/models/user.model";
 import { router, publicProcedure } from "../trpc";
 export const usersRouter = router({
@@ -8,6 +9,6 @@ export const usersRouter = router({
       const exists = await userModel().findOne({
         walletId: input.walletId,
       });
-      return exists?.toObject();
+      return exists?.toObject() ?? ({} as IUser);
     }),
 });

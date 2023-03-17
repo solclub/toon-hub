@@ -13,7 +13,6 @@ const dbConnect = async () => {
   const uri = env.MONGODB_URI;
   const dbname = env.MONGODB_DB_NAME;
 
-  console.log("connect db");
   await mongoose.connect(uri, {
     dbName: dbname,
   });

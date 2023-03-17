@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { type NextPage } from "next";
-import Image from "next/image";
+import Image, { StaticImageData } from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import classnames from "classnames";
@@ -20,17 +20,14 @@ import WeaponsIcon from "../../assets/images/weapons_icon.png";
 import { trpc } from "../../utils/trpc";
 import nftTierSelector from "../../utils/nfttier";
 
-const sampleData: Props = {
-  id: "23",
-  image:
-    "https://arweave.net/Iw6K_HR8OzqB9MCMCT5FtZZj-JjXkfZp-sZn9i2STLw?ext=png",
-  name: "Demon #23",
-  mint: "2fAeFrv7iXDBpoHh2EUP6KfG9mm26Szqk9c4hA1oyRSP",
-  leaderboardPosition: 23,
-  powerRating: 23984,
-  tier: 2,
-  weapons: 2,
-};
+import gem from "../../assets/weapons/SLOT1/COMMON/Stoneheart.png";
+import gem1 from "../../assets/weapons/SLOT2/EPIC/Flamestreak-Bow.png";
+import gem2 from "../../assets/weapons/SLOT3/LEGENDARY/Ancient-Hammer.png";
+import gem3 from "../../assets/weapons/SLOT4/MYTHIC/Life-taker.png";
+
+import ImgTwitterBlue from "../assets/images/twitter_blue.png";
+import ImgPowerRating from "../assets/images/power_rating_icon.png";
+import ImgSolScan from "../assets/images/solscan.png";
 
 type ArtVersion = {
   image: string;
@@ -41,7 +38,7 @@ type ArtVersion = {
 };
 
 type Weapon = {
-  image: string;
+  image: string | StaticImageData;
   name: string;
   points: number;
   price: string;
@@ -52,8 +49,7 @@ type Weapon = {
 
 const sampleWeapons: Weapon[] = [
   {
-    image:
-      "https://cdn.discordapp.com/attachments/970702970704510976/1076862826896957520/test-2.png",
+    image: gem,
     name: "Common",
     points: 5000,
     price: "$ 0.3 Sol",
@@ -62,34 +58,31 @@ const sampleWeapons: Weapon[] = [
     rarity: "COMMON",
   },
   {
-    image:
-      "https://cdn.discordapp.com/attachments/970702970704510976/1076862826007765152/test-4.png",
+    image: gem1,
     name: "Rare",
     points: 5000,
     price: "$ 0.3 Sol",
     owned: false,
     expireDate: new Date("02/18/2023"),
-    rarity: "RARE",
+    rarity: "EPIC",
   },
   {
-    image:
-      "https://cdn.discordapp.com/attachments/970702970704510976/1077267717729558538/test-1.png",
+    image: gem2,
     name: "Legendary",
     points: 5000,
     price: "$ 0.3 Sol",
     owned: true,
     expireDate: new Date("02/18/2023"),
-    rarity: "LEGEND",
+    rarity: "LEGENDARY",
   },
   {
-    image:
-      "https://cdn.discordapp.com/attachments/970702970704510976/1077267717729558538/test-1.png",
+    image: gem3,
     name: "Secret",
     points: 5000,
     price: "$ 0.3 Sol",
     owned: false,
     expireDate: new Date("02/18/2023"),
-    rarity: "SECRET",
+    rarity: "MYTHIC",
   },
 ];
 
@@ -118,17 +111,6 @@ const sampleArtVersions: ArtVersion[] = [
     revealed: false,
   },
 ];
-
-type Props = {
-  id: string;
-  image: string;
-  name: string;
-  mint: string;
-  leaderboardPosition: number;
-  powerRating: number;
-  tier: number;
-  weapons: number;
-};
 
 const Profile: NextPage = () => {
   const router = useRouter();
@@ -218,7 +200,7 @@ const Profile: NextPage = () => {
                       width={40}
                     ></Image>
                   </div>
-                  <div className="w-full text-5xl text-[#BEA97E]">
+                  <div className="w-full text-3xl text-[#BEA97E]">
                     {leaderboardPosition}
                   </div>
                 </div>
@@ -237,7 +219,7 @@ const Profile: NextPage = () => {
                       width={40}
                     ></Image>
                   </div>
-                  <div className="w-full text-2xl text-[#BEA97E]">
+                  <div className="w-full text-3xl text-[#BEA97E]">
                     {powerRating}
                   </div>
                 </div>
@@ -256,7 +238,7 @@ const Profile: NextPage = () => {
                       width={40}
                     ></Image>
                   </div>
-                  <div className="w-full text-5xl text-[#BEA97E]">
+                  <div className="w-full text-4xl text-[#BEA97E]">
                     {nftTierSelector(
                       profileNFT?.rudeRank ?? 100000,
                       collection
@@ -278,7 +260,7 @@ const Profile: NextPage = () => {
                       width={40}
                     ></Image>
                   </div>
-                  <div className="w-full text-5xl text-[#BEA97E]">
+                  <div className="w-full text-4xl text-[#BEA97E]">
                     {weaponsEquiped}
                   </div>
                 </div>

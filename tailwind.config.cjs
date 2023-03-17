@@ -4,12 +4,12 @@ module.exports = {
   theme: {
     extend: {
       dropShadow: {
-        common: "3px 3px 5px #cbd5e1",
-        rare: "3px 3px 5px #1e40af",
-        "super-rare": "3px 3px 5px #6b21a8",
-        legend: "3px 3px 5px #854d0e",
-        "ultra-legend": "3px 3px 5px #991b1b",
-        secret: "3px 3px 5px #9f1239",
+        common: "0px 0px 10px #9e9ea0",
+        rare: "0px 0px 10px #5c87ab",
+        epic: "0px 0px 10px #8d6ab4",
+        legendary: "0px 0px 10px #c8ab00",
+        mythic: "0px 0px 10px #ff0337",
+        secret: "0px 0px 10px #00dcc7",
       },
     },
   },

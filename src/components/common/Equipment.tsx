@@ -20,9 +20,9 @@ type Props = {
 const RarityColors: any = {
   COMMON: "drop-shadow-common",
   RARE: "drop-shadow-rare",
-  SUPER_RARE: "drop-shadow-super-rare",
-  LEGEND: "drop-shadow-legend",
-  ULTRA_LEGEND: "drop-shadow-ultra-legend",
+  EPIC: "drop-shadow-epic",
+  LEGENDARY: "drop-shadow-legendary",
+  MYTHIC: "drop-shadow-mythic",
   SECRET: "drop-shadow-secret",
 };
 
@@ -52,7 +52,6 @@ const Equipment = (equipment: Props) => {
     className,
     width,
     height,
-    // profileView,
     revealed,
     price,
     name,
@@ -82,7 +81,7 @@ const Equipment = (equipment: Props) => {
           }
         )}
       >
-        {url && (
+        {url && revealed && (
           <div className={classNames("clip-css relative h-full")}>
             <Image
               src={url}
@@ -90,6 +89,15 @@ const Equipment = (equipment: Props) => {
               width={width || 100}
               height={height || 100}
             ></Image>
+          </div>
+        )}
+        {!revealed && (
+          <div
+            className={classNames(
+              "clip-css flex h-full w-[100px] items-center justify-center bg-black "
+            )}
+          >
+            Empty
           </div>
         )}
       </div>

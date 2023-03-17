@@ -17,11 +17,10 @@ const WalletMultiButtonDynamic = dynamic(
 );
 
 export const Connect = () => {
-  const { status, data } = useSession();
-  console.log(data);
-  const user = trpc.users.getUserByWallet.useQuery({
-    walletId: data?.user.id || "",
-  }).data;
+  const { status, data: session } = useSession();
+  const { isLoading, data: user } = trpc.users.getUserByWallet.useQuery({
+    walletId: session?.user.id || "",
+  });
 
   const wallet = useWallet();
   const walletModal = useWalletModal();
@@ -77,6 +76,7 @@ export const Connect = () => {
       {status == "unauthenticated" && <WalletMultiButtonDynamic />}
       {status == "authenticated" && (
         <div className="dropdown-end dropdown">
+          {isLoading && <div>Loading</div>}
           <div tabIndex={0} className=" flex flex-wrap text-right ">
             <div className="mr-3 flex items-center gap-3 rounded-2xl border border-[#BEA97E] py-2 px-4">
               <p className="inline-flex items-center gap-x-2 ">
@@ -112,12 +112,12 @@ export const Connect = () => {
                         y2="-.397"
                         gradientUnits="userSpaceOnUse"
                       >
-                        <stop offset=".08" stop-color="#9945FF"></stop>
-                        <stop offset=".3" stop-color="#8752F3"></stop>
-                        <stop offset=".5" stop-color="#5497D5"></stop>
-                        <stop offset=".6" stop-color="#43B4CA"></stop>
-                        <stop offset=".72" stop-color="#28E0B9"></stop>
-                        <stop offset=".97" stop-color="#19FB9B"></stop>
+                        <stop offset=".08" stopColor="#9945FF"></stop>
+                        <stop offset=".3" stopColor="#8752F3"></stop>
+                        <stop offset=".5" stopColor="#5497D5"></stop>
+                        <stop offset=".6" stopColor="#43B4CA"></stop>
+                        <stop offset=".72" stopColor="#28E0B9"></stop>
+                        <stop offset=".97" stopColor="#19FB9B"></stop>
                       </linearGradient>
                     </defs>
                   </svg>
