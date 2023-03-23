@@ -8,9 +8,7 @@ import { z } from "zod";
 export const serverSchema = z.object({
   NODE_ENV: z.enum(["development", "test", "production"]),
   NEXTAUTH_SECRET:
-    process.env.NODE_ENV === "production"
-      ? z.string().min(1)
-      : z.string().min(1).optional(),
+    process.env.NODE_ENV === "production" ? z.string().min(1) : z.string().min(1).optional(),
   NEXTAUTH_URL: z.preprocess(
     // This makes Vercel deployments not fail if you don't set NEXTAUTH_URL
     // Since NextAuth.js automatically uses the VERCEL_URL if present.
@@ -25,6 +23,9 @@ export const serverSchema = z.object({
 
   MONGODB_URI: z.string(),
   MONGODB_DB_NAME: z.string(),
+  WAR_PROGRAM_ID: z.string(),
+  ANCHOR_WALLET_KEYPAIR: z.string(),
+  UPDATE_AUTHORITY_ADDRESS: z.string(),
 });
 
 /**
@@ -33,7 +34,8 @@ export const serverSchema = z.object({
  * To expose them to the client, prefix them with `NEXT_PUBLIC_`.
  */
 export const clientSchema = z.object({
-  // NEXT_PUBLIC_CLIENTVAR: z.string(),
+  NEXT_PUBLIC_RUDE_TOKEN_KEY: z.string(),
+  NEXT_PUBLIC_RPC_NODE: z.string(),
 });
 
 /**
@@ -43,5 +45,6 @@ export const clientSchema = z.object({
  * @type {{ [k in keyof z.infer<typeof clientSchema>]: z.infer<typeof clientSchema>[k] | undefined }}
  */
 export const clientEnv = {
-  // NEXT_PUBLIC_CLIENTVAR: process.env.NEXT_PUBLIC_CLIENTVAR,
+  NEXT_PUBLIC_RUDE_TOKEN_KEY: process.env.NEXT_PUBLIC_RUDE_TOKEN_KEY,
+  NEXT_PUBLIC_RPC_NODE: process.env.NEXT_PUBLIC_RPC_NODE,
 };

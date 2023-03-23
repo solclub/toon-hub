@@ -1,30 +1,18 @@
 import { z } from "zod";
-import rudeNFTModels from "../../database/models/nft.model";
-import { getUserNFTs } from "../../web3/web3";
+import { getUserNFTbyMint, getUserNFTs } from "server/services/nfts-service";
 import { router, protectedProcedure } from "../trpc";
 
 export const nftsRouter = router({
-  getUserNFTs: protectedProcedure.query(async ({}) => {
-    const userNFTs = await getUserNFTs();
-    const golems = await rudeNFTModels
-      .GolemModel()
-      .find({ mint: { $in: userNFTs.mints } });
-    const demons = await rudeNFTModels
-      .DemonModel()
-      .find({ mint: { $in: userNFTs.mints } });
-
-    return [...golems, ...demons];
+  getUserNFTs: protectedProcedure.query(async ({ ctx }) => {
+    const wallet = ctx.session.walletId;
+    const userNFTs = await getUserNFTs(wallet);
+    return userNFTs;
   }),
   getUserNFTbyMint: protectedProcedure
-    .input(z.object({ mint: z.string(), collection: z.string() }))
-    .query(async ({ input }) => {
-      const { mint, collection } = input;
-      if (collection == "golems") {
-        const result = await rudeNFTModels.GolemModel().findOne({ mint: mint });
-        return result?.toObject();
-      } else {
-        const result = await rudeNFTModels.DemonModel().findOne({ mint: mint });
-        return result?.toObject();
-      }
+    .input(z.object({ mint: z.string() }))
+    .query(async ({ ctx, input }) => {
+      const { mint } = input;
+      const wallet = ctx.session.walletId;
+      return getUserNFTbyMint(wallet, mint);
     }),
 });

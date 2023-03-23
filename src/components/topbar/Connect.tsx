@@ -11,8 +11,7 @@ import RudeTokenImg from "../../assets/images/rudetoken.png";
 import Image from "next/image";
 
 const WalletMultiButtonDynamic = dynamic(
-  async () =>
-    (await import("@solana/wallet-adapter-react-ui")).WalletMultiButton,
+  async () => (await import("@solana/wallet-adapter-react-ui")).WalletMultiButton,
   { ssr: false }
 );
 
@@ -76,7 +75,6 @@ export const Connect = () => {
       {status == "unauthenticated" && <WalletMultiButtonDynamic />}
       {status == "authenticated" && (
         <div className="dropdown-end dropdown">
-          {isLoading && <div>Loading</div>}
           <div tabIndex={0} className=" flex flex-wrap text-right ">
             <div className="mr-3 flex items-center gap-3 rounded-2xl border border-[#BEA97E] py-2 px-4">
               <p className="inline-flex items-center gap-x-2 ">
@@ -85,14 +83,7 @@ export const Connect = () => {
               </p>
               <p className="inline-flex items-center gap-x-2  before:mr-1 before:block before:content-['|']">
                 <span>
-                  {
-                    <Image
-                      width={20}
-                      height={20}
-                      src={RudeTokenImg}
-                      alt={"Rude token"}
-                    ></Image>
-                  }
+                  {<Image width={20} height={20} src={RudeTokenImg} alt={"Rude token"}></Image>}
                 </span>
                 <span>{rude}</span>
               </p>
@@ -130,19 +121,15 @@ export const Connect = () => {
 
               <div className="indicator  text-[#BEA97E]">
                 <span
-                  className={classNames(
-                    "badge-error badge badge-xs indicator-item",
-                    {
-                      "mt-2 hidden":
-                        user?.twitterVerified || user?.discordVerified,
-                    }
-                  )}
+                  className={classNames("badge-error badge badge-xs indicator-item", {
+                    "mt-2 hidden": user?.twitterVerified || user?.discordVerified,
+                  })}
                 ></span>
                 <span>{user?.twitterDetails?.username || "Connect"}</span>
               </div>
             </div>
             <div>
-              <label className="swap-rotate swap ">
+              <label className="swap swap-rotate ">
                 <input type="checkbox" />
                 <svg
                   className="swap-on"
@@ -160,10 +147,7 @@ export const Connect = () => {
                     stroke="#BEA97E"
                     strokeWidth="2"
                   />
-                  <path
-                    d="M22.46 20L16.708 10.9998L11 20H22.46Z"
-                    fill="white"
-                  />
+                  <path d="M22.46 20L16.708 10.9998L11 20H22.46Z" fill="white" />
                 </svg>
 
                 <svg
@@ -174,17 +158,8 @@ export const Connect = () => {
                   fill="none"
                   xmlns="http://www.w3.org/2000/svg"
                 >
-                  <circle
-                    cx="17"
-                    cy="17"
-                    r="16"
-                    stroke="#BEA97E"
-                    strokeWidth="2"
-                  />
-                  <path
-                    d="M22.46 14L16.708 23.0002L11 14H22.46Z"
-                    fill="white"
-                  />
+                  <circle cx="17" cy="17" r="16" stroke="#BEA97E" strokeWidth="2" />
+                  <path d="M22.46 14L16.708 23.0002L11 14H22.46Z" fill="white" />
                 </svg>
               </label>
             </div>

@@ -34,9 +34,7 @@ export const createOptions = async (
           if (account?.provider == "discord") {
             token.user = {
               ...user,
-              username:
-                `${anyProfile?.username}#${anyProfile.discriminator}` ||
-                user.name,
+              username: `${anyProfile?.username}#${anyProfile.discriminator}` || user.name,
             };
           }
         }
@@ -104,33 +102,25 @@ export const createOptions = async (
           },
         },
         async authorize(credentials, req2) {
-          const req = req2 as NextApiRequest;
           try {
-            const signinMessage: SigninMessage = new SigninMessage(
-              JSON.parse(credentials?.message || "{}")
-            );
-            const nextAuthUrl = new URL(env.NEXTAUTH_URL);
-            if (signinMessage.domain !== nextAuthUrl.host) {
-              return null;
-            }
+            const req = req2 as NextApiRequest;
+
+            const { message, signature } = credentials ?? {};
+            const signinMessage = new SigninMessage(JSON.parse(message || "{}"));
 
             const nonce = await getCsrfToken({ req });
             if (signinMessage.nonce !== nonce) {
-              return null;
+              throw new Error("Could not validate the signed message");
             }
 
-            const validationResult = await signinMessage.validate(
-              credentials?.signature || ""
-            );
-
-            if (!validationResult)
+            const validationResult = await signinMessage.validate(signature || "");
+            if (!validationResult) {
               throw new Error("Could not validate the signed message");
+            }
 
-            const exists = await userModel().findOne({
-              walletId: signinMessage.publicKey,
-            });
+            const user = await userModel().findOne({ walletId: signinMessage.publicKey });
 
-            if (!exists) {
+            if (!user) {
               try {
                 await userModel().create({
                   walletId: signinMessage.publicKey,
@@ -150,13 +140,13 @@ export const createOptions = async (
                 console.log(error);
               }
             }
-
             return (async function () {
               return {
                 id: signinMessage.publicKey,
               };
             })();
           } catch (e) {
+            console.error(e);
             return null;
           }
         },
