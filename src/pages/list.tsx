@@ -3,10 +3,11 @@ import Image from "next/image";
 import classnames from "classnames";
 import Link from "next/link";
 import { trpc } from "../utils/trpc";
+import FrameBox from "../components/common/FrameBox";
+import Loader from "../components/common/Loader";
 
 const Profile = () => {
   const { isLoading, data } = trpc.nfts.getUserNFTs.useQuery();
-  console.log(data);
 
   return (
     <div className="mt-8 flex flex-wrap">
@@ -14,33 +15,59 @@ const Profile = () => {
       <div className="w-full pt-3 font-thin">
         Select the characters to customize
       </div>
+
       <div className="flex w-full flex-wrap justify-center gap-y-6 gap-x-4 pt-8 pb-20">
-        {isLoading && <div>Loading...</div>}
-        {(data ?? []).map((x) => (
-          <div
-            key={x.mint}
-            className="aspect-square w-1/5 rounded-3xl border-2 border-solid border-[#ae9970]"
-          >
-            <div className={classnames("relative h-full")}>
-              <Image
-                className="octagon rounded-3xl border-solid"
-                src={x.image}
-                alt="Picture of the author"
-                width={900}
-                height={900}
-              ></Image>
-              <Link
-                href={"/profile/" + x.mint}
-                className="btn-rude absolute left-16 -bottom-5 z-40 items-center"
-              >
-                Customize
-              </Link>
-              <div className="absolute bottom-0 h-3/4 w-full rounded-3xl bg-gradient-to-t from-black to-transparent "></div>
-              <div className="absolute bottom-12 w-full items-center text-center text-2xl">
-                {x.name}
-              </div>
-            </div>
+        {isLoading && (
+          <div>
+            <Loader></Loader>
           </div>
+        )}
+        {(data ?? []).map((x, i) => (
+          <FrameBox key={x.mint} index={i + 1}>
+            <div
+              className={classnames(
+                "relative h-full transition duration-200 ease-in-out hover:-translate-y-1 hover:scale-110"
+              )}
+            >
+              <Link href={"/profile/" + x.mint}>
+                <Image
+                  className="octagon rounded-3xl border-solid "
+                  src={x.image}
+                  alt="Picture of the author"
+                  width={300}
+                  height={300}
+                ></Image>
+                <div className="to-transparen absolute bottom-0 h-3/4 w-full bg-gradient-to-t from-black"></div>
+                <div className="absolute bottom-5 w-full items-center text-center text-2xl ">
+                  {x.name}
+                </div>
+              </Link>
+            </div>
+          </FrameBox>
+          // <div
+          //   key={x.mint}
+          //   className="aspect-square w-1/5 rounded-3xl border-2 border-solid border-[#ae9970]"
+          // >
+          //   <div className={classnames("relative h-full")}>
+          //     <Image
+          //       className="octagon rounded-3xl border-solid"
+          //       src={x.image}
+          //       alt="Picture of the author"
+          //       width={900}
+          //       height={900}
+          //     ></Image>
+          //     <Link
+          //       href={"/profile/" + x.mint}
+          //       className="btn-rude absolute left-16 -bottom-5 z-40 items-center"
+          //     >
+          //       Customize
+          //     </Link>
+          //     <div className="absolute bottom-0 h-3/4 w-full rounded-3xl bg-gradient-to-t from-black to-transparent "></div>
+          //     <div className="absolute bottom-12 w-full items-center text-center text-2xl">
+          //       {x.name}
+          //     </div>
+          //   </div>
+          // </div>
         ))}
       </div>
     </div>

@@ -9,11 +9,13 @@
     "start": "next start"
   },
   "dependencies": {
+    "@metaplex-foundation/js": "^0.18.3",
+    "@project-serum/anchor": "^0.26.0",
     "@solana/spl-token": "^0.3.7",
     "@solana/wallet-adapter-react": "^0.15.28",
     "@solana/wallet-adapter-react-ui": "^0.9.27",
     "@solana/wallet-adapter-wallets": "^0.19.11",
-    "@solana/web3.js": "^1.73.2",
+    "@solana/web3.js": "^1.74.0",
     "@tanstack/react-query": "^4.16.0",
     "@trpc/client": "^10.0.0",
     "@trpc/next": "^10.0.0",
@@ -22,9 +24,10 @@
     "bs58": "^5.0.0",
     "classnames": "^2.3.2",
     "daisyui": "^2.50.0",
+    "framer-motion": "^10.6.0",
     "mongodb": "^5.0.0",
     "mongoose": "^7.0.1",
-    "next": "^13.1.1",
+    "next": "^13.2.4",
     "next-auth": "^4.18.3",
     "react": "18.2.0",
     "react-dom": "18.2.0",
@@ -36,6 +39,7 @@
     "zod": "^3.18.0"
   },
   "devDependencies": {
+    "@svgr/webpack": "^6.5.1",
     "@types/next": "^9.0.0",
     "@types/node": "^18.0.0",
     "@types/prettier": "^2.7.2",

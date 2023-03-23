@@ -1,17 +1,14 @@
 import { type AppType } from "next/app";
 import { type Session } from "next-auth";
 import { SessionProvider } from "next-auth/react";
-
 import { trpc } from "../utils/trpc";
 import { ConnectionProvider } from "@solana/wallet-adapter-react";
-
 import "@solana/wallet-adapter-react-ui/styles.css";
-import "../styles/globals.scss";
-
 import ClientWalletProvider from "../contexts/ClientWalletProvider";
 import { useMemo } from "react";
 import "react-toastify/dist/ReactToastify.css";
-import Layout from "../components/layout";
+import Layout from "../components/Layout";
+import "../styles/globals.scss";
 import "../styles/styles.scss";
 
 const MyApp: AppType<{ session: Session | null }> = ({

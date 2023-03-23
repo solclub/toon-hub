@@ -19,6 +19,7 @@ import gem3 from "../assets/weapons/SLOT4/MYTHIC/Life-taker.png";
 import ImgTwitterBlue from "../assets/images/twitter_blue.png";
 import ImgPowerRating from "../assets/images/power_rating_icon.png";
 import ImgSolScan from "../assets/images/solscan.png";
+import Panel from "../components/common/Panel";
 
 type RankItem = {
   id: string;
@@ -71,38 +72,25 @@ const Home: NextPage = () => {
     <div className="relative">
       <div className="flex items-center gap-4 pt-5 pb-3">
         <div className="mx-auto w-5/12">
-          <div className="relative grid h-16 justify-center justify-items-center">
-            <div className="z-50">
-              <Image
-                className="absolute self-center"
-                src={ImgTwitterBlue}
-                alt="twit icon"
-              />
+          <div className="relative flex h-20 w-full flex-wrap justify-center justify-items-center gap-0">
+            <div className="z-50 flex h-1/3 w-full items-center py-2">
+              <Image className="mx-auto mt-2" src={ImgTwitterBlue} alt="twit icon" />
             </div>
-            <Image
-              className="absolute self-center"
-              src={twitterBg}
-              alt="Twit Phrase"
-            />
+            <Image className="" src={twitterBg} alt="Twit Phrase" fill />
             <Link
-              className="absolute my-3 block h-full w-full text-center text-lg italic text-white"
-              href={
-                "https://twitter.com/intent/tweet?text=" +
-                twitPhrase.replace("”", "")
-              }
+              className="h-2/3 w-full text-center "
+              href={"https://twitter.com/intent/tweet?text=" + twitPhrase.replace("”", "")}
               target="_blank"
             >
-              {twitPhrase}
-              <span className="block text-xs text-[#65514E]">
-                Click here to tweet
-              </span>
+              <span className="text-lg italic leading-none text-white">{twitPhrase}</span>
+              <span className="block text-xs text-[#65514E]">Click here to tweet</span>
             </Link>
           </div>
         </div>
       </div>
       <div className="mt-7 flex flex-wrap  align-middle">
         <div className="w-[60%]">
-          <div className="panel flex flex-wrap rounded-md ">
+          <Panel className="panel flex flex-wrap rounded-md ">
             {featuredNFT && (
               <div className="overflow-hidde w-[63%] p-3">
                 <div className=" relative h-[500px] w-full">
@@ -115,9 +103,7 @@ const Home: NextPage = () => {
                   <div className="absolute bottom-0 h-[60%] w-full rounded-xl bg-gradient-to-t from-black to-transparent"></div>
                   <div className="absolute bottom-10 left-10  h-[60%] w-[50%] ">
                     <div className="absolute bottom-0">
-                      <div className=" text-2xl font-bold">
-                        {featuredNFT?.name || "Unknow"}
-                      </div>
+                      <div className=" text-2xl font-bold">{featuredNFT?.name || "Unknow"}</div>
                       <div className="mt-2 text-xl font-normal">
                         <Image
                           className="inline"
@@ -129,15 +115,10 @@ const Home: NextPage = () => {
                         {(
                           <Link
                             className="ml-2"
-                            href={
-                              "https://twitter.com/" +
-                              featuredNFT?.twitter.replace("@", "")
-                            }
+                            href={"https://twitter.com/" + featuredNFT?.twitter.replace("@", "")}
                             target="_blank"
                           >
-                            {featuredNFT?.twitter
-                              .replace("@", "")
-                              .toLowerCase()}
+                            {featuredNFT?.twitter.replace("@", "").toLowerCase()}
                           </Link>
                         ) || "Unknow"}
                       </div>
@@ -150,9 +131,7 @@ const Home: NextPage = () => {
                           height={15}
                         />
                         <span className="ml-2 inline-block w-20">
-                          {"..." +
-                            featuredNFT?.wallet.substring(5, 15) +
-                            "..." || "Unknow"}
+                          {"..." + featuredNFT?.wallet.substring(5, 15) + "..." || "Unknow"}
                         </span>
                       </div>
                     </div>
@@ -163,9 +142,7 @@ const Home: NextPage = () => {
 
             <div className="flex w-[35%] flex-wrap items-center align-middle">
               <div className="flex w-full flex-wrap items-center justify-center gap-6">
-                <div className="w-full pb-3 text-center text-2xl text-slate-200">
-                  Equipment
-                </div>
+                <div className="w-full pb-3 text-center text-2xl text-slate-200">Equipment</div>
                 {equipment &&
                   equipment.map((x, i) => (
                     <Equipment
@@ -183,8 +160,8 @@ const Home: NextPage = () => {
                 </button> */}
               </div>
             </div>
-          </div>
-          <div className="mt-5 flex w-full flex-wrap items-center align-middle">
+          </Panel>
+          <Panel className="mt-5 flex w-full flex-wrap items-center align-middle">
             <a
               className="w-1/3 hover:scale-105 hover:transition-transform"
               href="https://app.rudegolems.com/connect"
@@ -209,7 +186,7 @@ const Home: NextPage = () => {
             >
               <Image alt="Rewards" src={rewardsImage} />
             </a>
-          </div>
+          </Panel>
         </div>
         <LeaderBoard data={rankingData}></LeaderBoard>
       </div>
@@ -227,7 +204,7 @@ const LeaderBoard = ({ data }: LeaderTable) => {
     setTabActive(id);
   };
   return (
-    <div className="panel ml-3 flex w-[35%] flex-wrap items-start justify-center rounded-md">
+    <Panel className="panel ml-3 flex w-[35%] flex-wrap items-start justify-center rounded-md">
       <div className="tabs mt-3 w-10/12 justify-center p-3">
         <a
           onClick={() => {
@@ -272,8 +249,9 @@ const LeaderBoard = ({ data }: LeaderTable) => {
       </div>
       <div className="mr-2 h-[600px] w-full overflow-y-scroll">
         {data.map(({ mint, image, name, points, twitter, owner }, i) => (
-          <div
+          <Panel
             key={mint}
+            index={i}
             className={classNames(
               " m-3 flex h-24 flex-wrap items-center overflow-hidden rounded-xl border-2 border-slate-500 p-2",
               { "border-amber-500": i === 0 },
@@ -340,9 +318,7 @@ const LeaderBoard = ({ data }: LeaderTable) => {
                   </defs>
                 </svg>
               ) : (
-                <span className="absolute bottom-0 left-1 rounded-full p-2">
-                  {i + 1}
-                </span>
+                <span className="absolute bottom-0 left-1 rounded-full p-2">{i + 1}</span>
               )}
             </div>
 
@@ -379,10 +355,10 @@ const LeaderBoard = ({ data }: LeaderTable) => {
               />
               {points}
             </div>
-          </div>
+          </Panel>
         ))}
       </div>
-    </div>
+    </Panel>
   );
 };
 

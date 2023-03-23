@@ -1,6 +1,6 @@
 import Head from "next/head";
 
-import { Drawer } from "../components/topbar/drawer";
+import { Drawer } from "components/topbar/Drawer";
 
 type Props = {
   children: JSX.Element;

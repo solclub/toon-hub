@@ -2,6 +2,7 @@ import React from "react";
 import type { StaticImageData } from "next/image";
 import Image from "next/image";
 import classNames from "classnames";
+import FrameBox, { FrameType } from "./FrameBox";
 
 type Props = {
   url: string | StaticImageData;
@@ -30,9 +31,9 @@ const RarityColors: any = {
 export const EquipmentRarityLabels: any = {
   COMMON: "Common",
   RARE: "Rare",
-  SUPER_RARE: "Super Rare",
-  LEGEND: "Legend",
-  ULTRA_LEGEND: "Ultra Legend",
+  EPIC: "Epic",
+  LEGENDARY: "Legendary",
+  MYTHIC: "Mythic",
   SECRET: "Secret",
 };
 
@@ -62,56 +63,40 @@ const Equipment = (equipment: Props) => {
       className={classNames(
         revealed ? RarityColors[rarity] : "",
         className,
-        "relative"
+        "relative "
       )}
     >
-      <div
-        className={classNames(
-          "clip-wrap aspect-square bg-[#6F5B38] bg-gradient-to-t from-[#6E5A37] to-[#BEA97E] p-1.5 hover:scale-105 hover:shadow-md hover:shadow-slate-600",
-          // {
-          //   "bg-gradient-to-t from-[#6E5A37] to-[#BEA97E]":
-          //     !profileView && revealed,
-          // },
-          // {
-          //   "bg-gradient-to-t from-[#6E5A37] to-[#BEA97E]":
-          //     profileView && revealed,
-          // },
-          {
-            "bg-gradient-to-t from-green-400 to-[#39eb57]": !revealed,
-          }
-        )}
-      >
+      <FrameBox frameType={!revealed ? FrameType.green : FrameType.default}>
         {url && revealed && (
-          <div className={classNames("clip-css relative h-full")}>
-            <Image
-              src={url}
-              alt="Artifact equiped"
-              width={width || 100}
-              height={height || 100}
-            ></Image>
-          </div>
+          <Image
+            src={url}
+            alt="Artifact equiped"
+            width={width || 100}
+            height={height || 100}
+          ></Image>
         )}
         {!revealed && (
           <div
             className={classNames(
-              "clip-css flex h-full w-[100px] items-center justify-center bg-black "
+              "flex h-full w-[100px] items-center justify-center bg-slate-900 text-6xl font-extrabold text-gray-300"
             )}
           >
-            Empty
+            +
           </div>
         )}
-      </div>
-      <label
-        htmlFor={name}
-        className="absolute top-0 left-0 z-50 block w-full cursor-pointer"
-        style={{ height: height || 100 }}
-      ></label>
+
+        <label
+          htmlFor={name}
+          className="absolute top-0 left-0 z-50 block w-full cursor-pointer"
+          style={{ height: height || 100 }}
+        ></label>
+      </FrameBox>
       {!revealed && (
         <>
           <div className="absolute -bottom-2 left-0 z-50 w-full">
             <button
               onClick={event}
-              className="rounded-full bg-green-400 px-3 py-1 text-xs font-thin text-black"
+              className="z-50 rounded-full bg-green-400 px-3 py-1 text-xs font-thin text-black"
             >
               buy
             </button>
