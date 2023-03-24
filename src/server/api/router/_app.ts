@@ -1,8 +1,8 @@
 import { router } from "../trpc";
-import { authRouter } from "./auth";
-import { exampleRouter } from "./example";
-import { nftsRouter } from "./nfts";
-import { usersRouter } from "./user";
+import { authRouter } from "../auth";
+import { exampleRouter } from "../example";
+import { nftsRouter } from "../nfts";
+import { usersRouter } from "../user";
 
 export const appRouter = router({
   example: exampleRouter,

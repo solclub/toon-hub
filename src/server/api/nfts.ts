@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { getUserNFTbyMint, getUserNFTs } from "server/services/nfts-service";
-import { router, protectedProcedure } from "../trpc";
+import { router, protectedProcedure } from "./trpc";
 
 export const nftsRouter = router({
   getUserNFTs: protectedProcedure.query(async ({ ctx }) => {

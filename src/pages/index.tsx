@@ -248,7 +248,7 @@ const LeaderBoard = ({ data }: LeaderTable) => {
         </a>
       </div>
       <div className="mr-2 h-[600px] w-full overflow-y-scroll">
-        {data.map(({ mint, image, name, points, twitter, owner }, i) => (
+        {data.map(({ mint, image, name, points, twitter }, i) => (
           <Panel
             key={mint}
             index={i}

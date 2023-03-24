@@ -10,9 +10,7 @@ import ComingSoonImg from "../../assets/images/coming_soon.png";
 import classNames from "classnames";
 import { Modal } from "../../components/common/Modal";
 import type { EquipmentRarity } from "../../components/common/Equipment";
-import Equipment, {
-  EquipmentRarityLabels,
-} from "../../components/common/Equipment";
+import Equipment, { EquipmentRarityLabels } from "../../components/common/Equipment";
 import { CountDown } from "../../components/common/CountDown";
 import LeaderBoardIcon from "../../assets/images/leaderboard_icon.png";
 import PowerRatingIcon from "../../assets/images/power_rating_icon.png";
@@ -26,12 +24,8 @@ import gem2 from "../../assets/weapons/SLOT3/LEGENDARY/Ancient-Hammer.png";
 import gem3 from "../../assets/weapons/SLOT4/MYTHIC/Life-taker.png";
 import FrameBox, { FrameType } from "../../components/common/FrameBox";
 import Panel from "../../components/common/Panel";
-import { NFTType, RudeNFT } from "../../server/database/models/nft.model";
-import {
-  DemonUpgrades,
-  GolemUpgrades,
-  UserNFT,
-} from "../../server/database/models/user-nfts.model";
+import type { DemonUpgrades, UserNFT } from "../../server/database/models/user-nfts.model";
+import { GolemUpgrades } from "../../server/database/models/user-nfts.model";
 
 type NFTUpgrades = {
   name: string;
@@ -116,7 +110,7 @@ const Profile: NextPage = () => {
   const router = useRouter();
   const [upgrades, setUpgrades] = useState<NFTUpgrades[]>([]);
   const [weapons, setWeapons] = useState<Weapon[]>([]);
-  const { mint, type } = router.query;
+  const { mint } = router.query;
   const profileNFT = trpc.nfts.getUserNFTbyMint.useQuery({
     mint: mint as string,
   }).data;
@@ -197,9 +191,7 @@ const Profile: NextPage = () => {
                       <div className="mt-2 w-20 overflow-hidden overflow-ellipsis text-sm font-thin">
                         Power
                       </div>
-                      <div className=" text-3xl text-amber-100">
-                        {totalNFTPower || "Unknow"}
-                      </div>
+                      <div className=" text-3xl text-amber-100">{totalNFTPower || "Unknow"}</div>
                     </div>
                     <div className="absolute bottom-9 right-10">
                       <button className="btn-rude w-[230px] text-xs font-thin">
@@ -224,9 +216,7 @@ const Profile: NextPage = () => {
                       width={40}
                     ></Image>
                   </div>
-                  <div className="w-full text-3xl text-[#BEA97E]">
-                    {leaderboardPosition}
-                  </div>
+                  <div className="w-full text-3xl text-[#BEA97E]">{leaderboardPosition}</div>
                 </div>
               </div>
 
@@ -243,9 +233,7 @@ const Profile: NextPage = () => {
                       width={40}
                     ></Image>
                   </div>
-                  <div className="w-full text-3xl text-[#BEA97E]">
-                    {powerRating}
-                  </div>
+                  <div className="w-full text-3xl text-[#BEA97E]">{powerRating}</div>
                 </div>
               </div>
 
@@ -255,18 +243,10 @@ const Profile: NextPage = () => {
                     <label className="block text-xs">Tier</label>
                   </div>
                   <div className="w-full grow">
-                    <Image
-                      className="mx-auto"
-                      src={TierIcon}
-                      alt="Tier"
-                      width={40}
-                    ></Image>
+                    <Image className="mx-auto" src={TierIcon} alt="Tier" width={40}></Image>
                   </div>
                   <div className="w-full text-4xl text-[#BEA97E]">
-                    {nftTierSelector(
-                      profileNFT?.rudeRank ?? 100000,
-                      collection
-                    )}
+                    {nftTierSelector(profileNFT?.rudeRank ?? 100000, collection)}
                   </div>
                 </div>
               </div>
@@ -284,19 +264,13 @@ const Profile: NextPage = () => {
                       width={40}
                     ></Image>
                   </div>
-                  <div className="w-full text-4xl text-[#BEA97E]">
-                    {weaponsEquiped}
-                  </div>
+                  <div className="w-full text-4xl text-[#BEA97E]">{weaponsEquiped}</div>
                 </div>
               </div>
             </div>
           </Panel>
         </div>
-        <Armory
-          upgrades={upgrades}
-          weapons={weapons}
-          nftUpgrades={profileNFT?.upgrades}
-        ></Armory>
+        <Armory upgrades={upgrades} weapons={weapons} nftUpgrades={profileNFT?.upgrades}></Armory>
       </div>
     </div>
   );
@@ -321,9 +295,7 @@ const Armory = ({ upgrades, weapons, nftUpgrades }: ArmoryProps) => {
   return (
     <Panel className="panel flex max-w-[65%] flex-wrap rounded-md p-8">
       <div className="flex flex-wrap justify-center gap-x-5 gap-y-3">
-        <h2 className="block w-full text-xl">
-          Select your alternative version
-        </h2>
+        <h2 className="block w-full text-xl">Select your alternative version</h2>
         {upgrades &&
           upgrades.map((x) => (
             <div key={x.name} className=" w-[25%] text-center">
@@ -336,27 +308,18 @@ const Armory = ({ upgrades, weapons, nftUpgrades }: ArmoryProps) => {
               </h3>
               <FrameBox
                 frameType={() => {
-                  if (
-                    nftUpgrades?.images?.get(x.type) &&
-                    nftUpgrades?.current == x.type
-                  )
+                  if (nftUpgrades?.images?.get(x.type) && nftUpgrades?.current == x.type)
                     return FrameType.default;
-                  if (
-                    nftUpgrades?.current != x.type &&
-                    nftUpgrades?.images?.get(x.type)
-                  )
+                  if (nftUpgrades?.current != x.type && nftUpgrades?.images?.get(x.type))
                     return FrameType.gray;
                   return FrameType.green;
                 }}
               >
                 <div
-                  className={classnames(
-                    "clip-css relative h-full text-center",
-                    {
-                      "relative h-full transition duration-200 ease-in-out hover:-translate-y-1 hover:scale-110":
-                        nftUpgrades?.images?.get(x.type) == undefined,
-                    }
-                  )}
+                  className={classnames("clip-css relative h-full text-center", {
+                    "relative h-full transition duration-200 ease-in-out hover:-translate-y-1 hover:scale-110":
+                      nftUpgrades?.images?.get(x.type) == undefined,
+                  })}
                 >
                   <Image
                     src={nftUpgrades?.images?.get(x.type) ?? NftHidden}
@@ -366,9 +329,7 @@ const Armory = ({ upgrades, weapons, nftUpgrades }: ArmoryProps) => {
                   ></Image>
 
                   {nftUpgrades?.images?.get(x.type) == undefined && (
-                    <div className="absolute top-4 w-full text-green-400">
-                      {x.price}
-                    </div>
+                    <div className="absolute top-4 w-full text-green-400">{x.price}</div>
                   )}
                   <div className="absolute bottom-0 h-3/4 w-full bg-gradient-to-t from-black to-transparent "></div>
                   <label
@@ -392,8 +353,7 @@ const Armory = ({ upgrades, weapons, nftUpgrades }: ArmoryProps) => {
                         nftUpgrades?.images?.get(x.type) != undefined,
                     },
                     {
-                      "bg-green-400 text-black":
-                        nftUpgrades?.images?.get(x.type) == undefined,
+                      "bg-green-400 text-black": nftUpgrades?.images?.get(x.type) == undefined,
                     }
                   )}
                 >
@@ -458,11 +418,7 @@ const Armory = ({ upgrades, weapons, nftUpgrades }: ArmoryProps) => {
             );
           })}
         <div className="ml-5 cursor-pointer hover:shadow-sm">
-          <Image
-            src={ComingSoonImg}
-            alt="Coming soon"
-            className="object-fill"
-          ></Image>
+          <Image src={ComingSoonImg} alt="Coming soon" className="object-fill"></Image>
         </div>
       </div>
     </Panel>
