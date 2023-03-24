@@ -5,10 +5,16 @@ import type { UserNFT } from "../database/models/user-nfts.model";
 import usernfts, { GolemUpgrades } from "../database/models/user-nfts.model";
 import { PublicKey } from "@solana/web3.js";
 import { getInTrainingNfts } from "./war-service";
-import { connection } from "./onchain-service";
+import {
+  connection,
+  getButterfliesBalance,
+  getRudeTokenBalance,
+  getSolBalance,
+} from "./onchain-service";
 import type { Metadata, JsonMetadata, Nft, Sft } from "@metaplex-foundation/js";
 import { Metaplex } from "@metaplex-foundation/js";
 import type { Model } from "mongoose";
+import { env } from "env/server.mjs";
 
 type NFT = Metadata<JsonMetadata<string>> | Nft | Sft;
 interface NFTDictionary {
@@ -86,16 +92,16 @@ export const getUserNFTbyMint = async (wallet: string, mint: string) => {
 };
 
 export const getNFTsByWalletId = async (wallet: string): Promise<NFTDictionary> => {
-  const env = process.env;
-  const UPDATE_AUTHORITY_ADDRESS = env.UPDATE_AUTHORITY_ADDRESS || "";
   const walletPubKey = new PublicKey(wallet);
   const stakedUserNfts = getInTrainingNfts(wallet);
   const walletNfts = await metaplex.nfts().findAllByOwner({
     owner: walletPubKey,
   });
 
+  console.log(walletNfts);
+
   const mints: NFTDictionary = walletNfts
-    .filter((i) => i.updateAuthorityAddress.toBase58() == UPDATE_AUTHORITY_ADDRESS)
+    .filter((i) => i.updateAuthorityAddress.toBase58() == env.UPDATE_AUTHORITY_ADDRESS)
     .reduce((acc: NFTDictionary, nft: NFT) => {
       if (isNFTValid(nft)) {
         const item = nft as Metadata;
@@ -118,6 +124,19 @@ export const getNFTsByWalletId = async (wallet: string): Promise<NFTDictionary> 
   });
 
   return mints;
+};
+
+export const getWalletBalanceTokens = async (wallet: string): Promise<Map<string, number>> => {
+  const solBalance = await getSolBalance(wallet);
+  const rudeBalance = await getRudeTokenBalance(wallet);
+  const butterfliesBalance = await getButterfliesBalance(wallet);
+
+  const balanceMap = new Map<string, number>();
+  balanceMap.set("SOL", solBalance);
+  balanceMap.set("RUDE", rudeBalance);
+  balanceMap.set("RGBF", butterfliesBalance);
+
+  return balanceMap;
 };
 
 const getNFTDocuments = async (nftType: NFTType, nftModel: Model<RudeNFT>, mintArray: string[]) => {

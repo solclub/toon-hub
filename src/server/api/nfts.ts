@@ -1,5 +1,9 @@
 import { z } from "zod";
-import { getUserNFTbyMint, getUserNFTs } from "server/services/nfts-service";
+import {
+  getUserNFTbyMint,
+  getUserNFTs,
+  getWalletBalanceTokens,
+} from "server/services/nfts-service";
 import { router, protectedProcedure } from "./trpc";
 
 export const nftsRouter = router({
@@ -15,4 +19,9 @@ export const nftsRouter = router({
       const wallet = ctx.session.walletId;
       return getUserNFTbyMint(wallet, mint);
     }),
+  getWalletBalance: protectedProcedure.query(async ({ ctx }) => {
+    const wallet = ctx.session.walletId;
+    const balance = await getWalletBalanceTokens(wallet);
+    return balance;
+  }),
 });

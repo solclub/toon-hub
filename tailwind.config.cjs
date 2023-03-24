@@ -11,6 +11,10 @@ module.exports = {
         mythic: "0px 0px 10px #ff0337",
         secret: "0px 0px 10px #00dcc7",
       },
+      fontFamily: {
+        "inknut-antiqua": ['"Inknut Antiqua"', "Helvetica"],
+        "medieval-sharp": ['"MedievalSharp"', "Helvetica"],
+      },
     },
   },
   plugins: [require("daisyui")],

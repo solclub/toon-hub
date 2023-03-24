@@ -9,6 +9,7 @@ import bs58 from "bs58";
 import { SigninMessage } from "../../utils/SigninMessage";
 import RudeTokenImg from "../../assets/images/rudetoken.png";
 import Image from "next/image";
+import SVGIcon from "assets/svg/SVGIcon";
 
 const WalletMultiButtonDynamic = dynamic(
   async () => (await import("@solana/wallet-adapter-react-ui")).WalletMultiButton,
@@ -17,106 +18,86 @@ const WalletMultiButtonDynamic = dynamic(
 
 export const Connect = () => {
   const { status, data: session } = useSession();
-  const { isLoading, data: user } = trpc.users.getUserByWallet.useQuery({
-    walletId: session?.user.id || "",
-  });
-
   const wallet = useWallet();
   const walletModal = useWalletModal();
 
-  const solanaAmmount = 1000;
-  const butterflies = 3;
-  const rude = 80000;
+  const { data: user } = trpc.users.getUserByWallet.useQuery({
+    walletId: session?.user.id || "",
+  });
+
+  const { isLoading, data } = trpc.nfts.getWalletBalance.useQuery();
 
   useEffect(() => {
+    const handleSignIn = async () => {
+      try {
+        if (!wallet.connected) {
+          walletModal.setVisible(true);
+        }
+
+        const csrf = await getCsrfToken();
+        if (!wallet.publicKey || !csrf || !wallet.signMessage) return;
+
+        const message = new SigninMessage({
+          domain: window.location.host,
+          publicKey: wallet.publicKey?.toBase58(),
+          statement: `Sign this message to sign in to the app.`,
+          nonce: csrf,
+        });
+
+        const data = new TextEncoder().encode(message.prepare());
+        const signature = await wallet.signMessage(data);
+        const serializedSignature = bs58.encode(signature);
+
+        signIn("credentials", {
+          message: JSON.stringify(message),
+          redirect: false,
+          signature: serializedSignature,
+          id: wallet.publicKey,
+        });
+      } catch (error) {
+        console.log(error);
+      }
+    };
+
     if (wallet.connected && status === "unauthenticated") {
       handleSignIn();
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [wallet.connected]);
+  }, [wallet, status, walletModal]);
 
-  const handleSignIn = async () => {
-    try {
-      if (!wallet.connected) {
-        walletModal.setVisible(true);
-      }
-
-      const csrf = await getCsrfToken();
-      if (!wallet.publicKey || !csrf || !wallet.signMessage) return;
-
-      const message = new SigninMessage({
-        domain: window.location.host,
-        publicKey: wallet.publicKey?.toBase58(),
-        statement: `Sign this message to sign in to the app.`,
-        nonce: csrf,
-      });
-
-      const data = new TextEncoder().encode(message.prepare());
-      const signature = await wallet.signMessage(data);
-      const serializedSignature = bs58.encode(signature);
-
-      signIn("credentials", {
-        message: JSON.stringify(message),
-        redirect: false,
-        signature: serializedSignature,
-        id: wallet.publicKey,
-      });
-    } catch (error) {
-      console.log(error);
+  useEffect(() => {
+    if (wallet.disconnecting) {
+      signOut();
     }
-  };
-
-  if (wallet.disconnecting) {
-    signOut();
-  }
+  }, [wallet.disconnecting]);
 
   return (
     <>
       {status == "unauthenticated" && <WalletMultiButtonDynamic />}
       {status == "authenticated" && (
         <div className="dropdown-end dropdown">
-          <div tabIndex={0} className=" flex flex-wrap text-right ">
-            <div className="mr-3 flex items-center gap-3 rounded-2xl border border-[#BEA97E] py-2 px-4">
-              <p className="inline-flex items-center gap-x-2 ">
-                <span>🦋</span>
-                <span>{butterflies}</span>
-              </p>
-              <p className="inline-flex items-center gap-x-2  before:mr-1 before:block before:content-['|']">
-                <span>
-                  {<Image width={20} height={20} src={RudeTokenImg} alt={"Rude token"}></Image>}
-                </span>
-                <span>{rude}</span>
-              </p>
-              <p className="inline-flex items-center gap-x-2 before:mr-1 before:block before:content-['|']">
-                <span>
-                  <svg width="20" height="20" viewBox="0 0 31 27" fill="none">
-                    <path
-                      d="m30.179 21.3-5.008 5.332a1.143 1.143 0 0 1-.848.368H.583a.59.59 0 0 1-.535-.348.568.568 0 0 1-.04-.328.593.593 0 0 1 .148-.298l5.002-5.332a1.141 1.141 0 0 1 .848-.368h23.74a.574.574 0 0 1 .43.971l.003.003ZM25.17 10.56a1.192 1.192 0 0 0-.848-.368H.583a.59.59 0 0 0-.535.349.569.569 0 0 0-.04.328c.02.112.071.213.148.297l5.002 5.335c.107.115.24.208.384.27.147.064.303.095.464.098h23.74a.574.574 0 0 0 .529-.348.569.569 0 0 0-.108-.623l-5-5.335.003-.003ZM.582 6.73h23.74a1.2 1.2 0 0 0 .464-.096c.147-.064.277-.154.384-.272L30.18 1.03a.579.579 0 0 0-.107-.881.571.571 0 0 0-.323-.09H6.006c-.158 0-.317.034-.464.095a1.126 1.126 0 0 0-.384.273L.156 5.759a.582.582 0 0 0-.108.625.59.59 0 0 0 .534.348V6.73Z"
-                      fill="url(#solana-gradient)"
-                    ></path>
-                    <defs>
-                      <linearGradient
-                        id="solana-gradient"
-                        x1="2.561"
-                        y1="27.642"
-                        x2="27.258"
-                        y2="-.397"
-                        gradientUnits="userSpaceOnUse"
-                      >
-                        <stop offset=".08" stopColor="#9945FF"></stop>
-                        <stop offset=".3" stopColor="#8752F3"></stop>
-                        <stop offset=".5" stopColor="#5497D5"></stop>
-                        <stop offset=".6" stopColor="#43B4CA"></stop>
-                        <stop offset=".72" stopColor="#28E0B9"></stop>
-                        <stop offset=".97" stopColor="#19FB9B"></stop>
-                      </linearGradient>
-                    </defs>
-                  </svg>
-                </span>
-                <span>{solanaAmmount}</span>
-              </p>
-            </div>
-            <div className="px-3">
+          <div className=" flex flex-wrap text-right ">
+            {!isLoading && (
+              <div className="mr-3 flex items-center gap-3 rounded-2xl border border-[#BEA97E] py-2 px-4 font-medieval-sharp font-bold ">
+                <p className="inline-flex items-center gap-x-2 ">
+                  <span>🦋</span>
+                  <span>{data?.get("RGBF")?.toFixed(0)}</span>
+                </p>
+                <p className="inline-flex items-center gap-x-2  before:mr-1 before:block before:content-['|']">
+                  <span>
+                    {<Image width={20} height={20} src={RudeTokenImg} alt={"Rude token"}></Image>}
+                  </span>
+                  <span>{data?.get("RUDE")?.toFixed(2)}</span>
+                </p>
+                <p className="inline-flex items-center gap-x-2 before:mr-1 before:block before:content-['|']">
+                  <span>
+                    <SVGIcon.sol />
+                  </span>
+                  <span>{<span>{data?.get("SOL")?.toFixed(2)}</span>}</span>
+                </p>
+              </div>
+            )}
+
+            <div tabIndex={0} className="px-3">
               <div className="text-xs">Hello</div>
 
               <div className="indicator  text-[#BEA97E]">
@@ -129,7 +110,7 @@ export const Connect = () => {
               </div>
             </div>
             <div>
-              <label className="swap swap-rotate ">
+              <label className="swap-rotate swap ">
                 <input type="checkbox" />
                 <svg
                   className="swap-on"
@@ -166,7 +147,7 @@ export const Connect = () => {
           </div>
           <ul
             tabIndex={0}
-            className="panel dropdown-content menu w-60 rounded-2xl p-2 pt-5 text-xs shadow"
+            className="panel dropdown-content menu mt-3 w-60 rounded-2xl p-2 pt-5 text-xs shadow"
           >
             <li>
               <label

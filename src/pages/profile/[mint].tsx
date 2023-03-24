@@ -112,7 +112,7 @@ const Profile: NextPage = () => {
   const [weapons, setWeapons] = useState<Weapon[]>([]);
   const { mint } = router.query;
   const profileNFT = trpc.nfts.getUserNFTbyMint.useQuery({
-    mint: mint as string,
+    mint: (mint ?? "") as string,
   }).data;
 
   const powerRating = "8542";

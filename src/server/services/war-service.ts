@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { PublicKey, Keypair } from "@solana/web3.js";
 import type { Idl } from "@project-serum/anchor";
-import { Program, AnchorProvider, Wallet } from "@project-serum/anchor";
+import { Program, AnchorProvider } from "@project-serum/anchor";
 import warIdl from "idl/rudegolems_war.json";
 import { connection } from "./onchain-service";
 import bs58 from "bs58";
