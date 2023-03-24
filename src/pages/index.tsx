@@ -73,12 +73,12 @@ const Home: NextPage = () => {
       <div className="flex items-center gap-4 pt-5 pb-3">
         <div className="mx-auto w-5/12">
           <div className="relative flex h-20 w-full flex-wrap justify-center justify-items-center gap-0">
-            <div className="z-50 flex h-1/3 w-full items-center py-2">
+            <div className="z-10 flex h-1/3 w-full items-center py-2">
               <Image className="mx-auto mt-2" src={ImgTwitterBlue} alt="twit icon" />
             </div>
             <Image className="" src={twitterBg} alt="Twit Phrase" fill />
             <Link
-              className="h-2/3 w-full text-center "
+              className="z-50 h-2/3 w-full text-center"
               href={"https://twitter.com/intent/tweet?text=" + twitPhrase.replace("”", "")}
               target="_blank"
             >
