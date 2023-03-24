@@ -5,7 +5,7 @@ import { router, publicProcedure } from "./trpc";
 export const usersRouter = router({
   getUserByWallet: publicProcedure
     .input(z.object({ walletId: z.string() }))
-    .query(async ({ ctx, input }) => {
+    .query(async ({ input }) => {
       const exists = await userModel().findOne({
         walletId: input.walletId,
       });

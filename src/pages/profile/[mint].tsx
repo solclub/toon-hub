@@ -84,7 +84,7 @@ const sampleWeapons: Weapon[] = [
 
 const toPascalCase = (str: string) => {
   return str
-    .replace(/\w+/g, (w: any) => w[0].toUpperCase() + w.slice(1).toLowerCase())
+    .replace(/\w+/g, (w: string) => w[0]?.toUpperCase() + w.slice(1).toLowerCase())
     .replace(/\s/g, "");
 };
 
