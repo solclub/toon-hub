@@ -4,23 +4,21 @@ stages:
 deploy-mainnet-railway:
   stage: deploy
   image: ubuntu
-  only:
-    - pushes
-    - main
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "push" && $CI_COMMIT_BRANCH == "main"'
   script:
     - apt-get update && apt-get install -y curl
-    - curl -fsSL https://railway.app/install.sh | sh
-    - RAILWAY_TOKEN=$RAILWAY_TOKEN railway link $RAILWAY_MAINNET_PROJECT_ID
+    - curl -fsSL https://raw.githubusercontent.com/railwayapp/cli/master/v2.sh | sh
+    - RAILWAY_TOKEN=$RAILWAY_TOKEN railway link $RAILWAY_PROJECY_ID
     - RAILWAY_TOKEN=$RAILWAY_TOKEN railway up --service=$RAILWAY_MAINNET_SERVICE_NAME -d
 
-  deploy-devnet-railway:
+deploy-devnet-railway:
   stage: deploy
   image: ubuntu
-  only:
-    - pushes
-    - devnet
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "push" && $CI_COMMIT_BRANCH == "devnet"'
   script:
     - apt-get update && apt-get install -y curl
-    - curl -fsSL https://railway.app/install.sh | sh
-    - RAILWAY_TOKEN=$RAILWAY_TOKEN railway link $RAILWAY_DEVNET_PROJECT_ID
+    - curl -fsSL https://raw.githubusercontent.com/railwayapp/cli/master/v2.sh | sh
+    - RAILWAY_TOKEN=$RAILWAY_TOKEN railway link $RAILWAY_PROJECY_ID
     - RAILWAY_TOKEN=$RAILWAY_TOKEN railway up --service=$RAILWAY_DEVNET_SERVICE_NAME -d
