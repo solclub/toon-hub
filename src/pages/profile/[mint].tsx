@@ -118,7 +118,7 @@ const Profile: NextPage = () => {
   const powerRating = "8542";
   const leaderboardPosition = "560";
   const totalNFTPower = "56412";
-  const weaponsEquiped = "2";
+  const weaponsEquiped = "0";
   const collection = "golems";
 
   useEffect(() => {
@@ -254,13 +254,13 @@ const Profile: NextPage = () => {
               <div className="info-card m-auto h-[160px] w-1/5 grow">
                 <div className="grid h-full w-full flex-wrap justify-center py-4 text-center align-middle">
                   <div className="w-full">
-                    <label className="block text-xs">Weapos</label>
+                    <label className="block text-xs">Weapons</label>
                   </div>
                   <div className="w-full grow">
                     <Image
                       className="mx-auto"
                       src={WeaponsIcon}
-                      alt="Weapos Equiped"
+                      alt="Weapons Equiped"
                       width={40}
                     ></Image>
                   </div>
@@ -294,7 +294,7 @@ const Armory = ({ upgrades, weapons, nftUpgrades }: ArmoryProps) => {
 
   return (
     <Panel className="panel flex max-w-[65%] flex-wrap rounded-md p-8">
-      <div className="flex flex-wrap justify-center gap-x-5 gap-y-3">
+      <div className="flex flex-wrap justify-center gap-x-5 gap-y-3 text-center">
         <h2 className="block w-full text-xl">Select your alternative version</h2>
         {upgrades &&
           upgrades.map((x) => (
@@ -378,8 +378,8 @@ const Armory = ({ upgrades, weapons, nftUpgrades }: ArmoryProps) => {
           ))}
       </div>
 
-      <div className="flex flex-wrap justify-center">
-        <h2 className="mb-3 block w-full text-xl">Select your weapons</h2>
+      <div className="flex w-full flex-wrap justify-center text-center">
+        <h2 className="mb-3 block w-full text-xl">Armory</h2>
         {weapons &&
           weapons.map((x) => {
             const { image, rarity, expireDate, name, owned, points, price } = x;

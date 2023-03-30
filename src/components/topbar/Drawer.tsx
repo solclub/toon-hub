@@ -22,8 +22,8 @@ export const Drawer = ({ children }: Props) => {
   }, [router.pathname]);
 
   const menuItems = [
+    { name: "Home", path: "/", isPrivate: false },
     { name: "My Collection", path: "/list", isPrivate: true },
-    { name: "Leaderboard", path: "/", isPrivate: false },
   ];
 
   return (
