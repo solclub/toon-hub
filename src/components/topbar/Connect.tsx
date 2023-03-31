@@ -10,6 +10,7 @@ import { SigninMessage } from "../../utils/SigninMessage";
 import RudeTokenImg from "../../assets/images/rudetoken.png";
 import Image from "next/image";
 import SVGIcon from "assets/svg/SVGIcon";
+import Loader from "components/common/Loader";
 
 const WalletMultiButtonDynamic = dynamic(
   async () => (await import("@solana/wallet-adapter-react-ui")).WalletMultiButton,
@@ -75,27 +76,42 @@ export const Connect = () => {
       {status == "unauthenticated" && <WalletMultiButtonDynamic />}
       {status == "authenticated" && (
         <div className="dropdown-end dropdown">
-          <div className=" flex flex-wrap text-right ">
-            {!isLoading && (
-              <div className="mr-3 flex items-center gap-3 rounded-2xl border border-[#BEA97E] py-2 px-4 font-medieval-sharp font-bold ">
-                <p className="inline-flex items-center gap-x-2 ">
-                  <span>🦋</span>
-                  <span>{data?.get("RGBF")?.toFixed(0)}</span>
-                </p>
-                <p className="inline-flex items-center gap-x-2  before:mr-1 before:block before:content-['|']">
-                  <span>
-                    {<Image width={20} height={20} src={RudeTokenImg} alt={"Rude token"}></Image>}
-                  </span>
-                  <span>{data?.get("RUDE")?.toFixed(2)}</span>
-                </p>
-                <p className="inline-flex items-center gap-x-2 before:mr-1 before:block before:content-['|']">
-                  <span>
-                    <SVGIcon.sol />
-                  </span>
-                  <span>{<span>{data?.get("SOL")?.toFixed(2)}</span>}</span>
-                </p>
-              </div>
-            )}
+          <div className="flex flex-wrap text-right ">
+            <div
+              className={classNames(
+                "mr-3 flex items-center gap-3 rounded-2xl border border-[#BEA97E] py-2 px-4 font-medieval-sharp font-bold",
+                { "loading-effect": isLoading }
+              )}
+            >
+              <p className="inline-flex items-center gap-x-2 ">
+                <span>🦋</span>
+                <span className={classNames({ "opacity-20": isLoading })}>
+                  {data?.get("RGBF")?.toFixed(2) ?? "00"}
+                </span>
+              </p>
+              <div className="divider mx-1 my-0 h-auto w-0.5 flex-col before:bg-[#BEA97E] after:bg-[#BEA97E]"></div>
+              <p className="inline-flex items-center gap-x-2">
+                <span>
+                  {<Image width={20} height={20} src={RudeTokenImg} alt={"Rude token"}></Image>}
+                </span>
+                <span className={classNames({ "opacity-20": isLoading })}>
+                  {data?.get("RUDE")?.toFixed(2) ?? "00000"}
+                </span>
+              </p>
+              <div className="divider mx-1 my-0 h-auto w-0.5 flex-col before:bg-[#BEA97E] after:bg-[#BEA97E]"></div>
+              <p className="inline-flex items-center gap-x-2">
+                <span>
+                  <SVGIcon.sol />
+                </span>
+                <span>
+                  {
+                    <span className={classNames({ "opacity-20": isLoading })}>
+                      {data?.get("SOL")?.toFixed(2) ?? "0000"}
+                    </span>
+                  }
+                </span>
+              </p>
+            </div>
 
             <div tabIndex={0} className="px-3">
               <div className="text-xs">Hello</div>

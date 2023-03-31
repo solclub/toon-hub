@@ -10,6 +10,7 @@ import type { EquipmentRarity } from "../components/common/Equipment";
 import Equipment from "../components/common/Equipment";
 import classNames from "classnames";
 import sampleData from "./sample-data/rankItems.json";
+import phrases from "./sample-data/phrases.json";
 
 import gem from "../assets/weapons/SLOT1/COMMON/Stoneheart.png";
 import gem1 from "../assets/weapons/SLOT2/EPIC/Flamestreak-Bow.png";
@@ -34,11 +35,12 @@ type RankItem = {
 const Home: NextPage = () => {
   const [rankingData, setRankingData] = useState<RankItem[]>([]);
 
+  const [twitPhrase, setTwitPhrasePhrase] = useState("");
   useEffect(() => {
     setRankingData(sampleData);
+    setTwitPhrasePhrase(`”${phrases[Math.floor(Math.random() * (phrases.length - 0 + 1)) + 0]}”`);
   }, []);
 
-  const twitPhrase = "”I am my golem and my golem is me, we are Grrrr”";
   const featuredNFT = {
     url: "https://arweave.net/0dVi8eroB4qtkWQ6_QiXHBw7lBUk1U-oKn-4IcF3EXY",
     name: "Demon #23",
@@ -71,7 +73,7 @@ const Home: NextPage = () => {
   return (
     <div className="relative">
       <div className="flex items-center gap-4 pt-5 pb-3">
-        <div className="mx-auto w-5/12">
+        <div className="mx-auto w-6/12">
           <div className="relative flex h-20 w-full flex-wrap justify-center justify-items-center gap-0">
             <div className="z-10 flex h-1/3 w-full items-center py-2">
               <Image className="mx-auto mt-2" src={ImgTwitterBlue} alt="twit icon" />
@@ -79,10 +81,10 @@ const Home: NextPage = () => {
             <Image className="" src={twitterBg} alt="Twit Phrase" fill />
             <Link
               className="z-50 h-2/3 w-full text-center"
-              href={"https://twitter.com/intent/tweet?text=" + twitPhrase.replace("”", "")}
+              href={"https://twitter.com/intent/tweet?text=" + twitPhrase + "%0a@rudegolems"}
               target="_blank"
             >
-              <span className="text-lg italic leading-none text-white">{twitPhrase}</span>
+              <span className="text-base italic leading-none text-white">{twitPhrase}</span>
               <span className="block text-xs text-[#65514E]">Click here to tweet</span>
             </Link>
           </div>
