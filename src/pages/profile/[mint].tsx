@@ -26,6 +26,7 @@ import FrameBox, { FrameType } from "../../components/common/FrameBox";
 import Panel from "../../components/common/Panel";
 import type { DemonUpgrades, UserNFT } from "../../server/database/models/user-nfts.model";
 import { GolemUpgrades } from "../../server/database/models/user-nfts.model";
+import Loader from "components/common/Loader";
 
 type NFTUpgrades = {
   name: string;
@@ -110,10 +111,14 @@ const Profile: NextPage = () => {
   const router = useRouter();
   const [upgrades, setUpgrades] = useState<NFTUpgrades[]>([]);
   const [weapons, setWeapons] = useState<Weapon[]>([]);
+  const [provileNavState, setProvileNavState] = useState({ current: 0, before: -1, after: 1 });
+
   const { mint } = router.query;
-  const profileNFT = trpc.nfts.getUserNFTbyMint.useQuery({
+  const { data: profileNFT, isLoading: isProfileLoading } = trpc.nfts.getUserNFTbyMint.useQuery({
     mint: (mint ?? "") as string,
-  }).data;
+  });
+
+  const { data: userMints, isLoading } = trpc.nfts.getUserMints.useQuery();
 
   const powerRating = "8542";
   const leaderboardPosition = "560";
@@ -126,11 +131,33 @@ const Profile: NextPage = () => {
     setWeapons(sampleWeapons);
   }, [mint]);
 
+  useEffect(() => {
+    const current = userMints?.indexOf(mint as string);
+    const getNextOrBeforeProfile = (current: number, isNext: boolean) => {
+      if (!userMints) {
+        console.log("null");
+        return current;
+      }
+
+      const tempIndex = isNext
+        ? (current + 1) % userMints.length
+        : (current - 1 + userMints.length) % userMints.length;
+      console.log(current, tempIndex, isNext, userMints[current]);
+      return tempIndex;
+    };
+    if (current) {
+      setProvileNavState({
+        current,
+        before: getNextOrBeforeProfile(current, false),
+        after: getNextOrBeforeProfile(current, true),
+      });
+    }
+  }, [userMints, mint, isLoading]);
   return (
     <div>
       <div className="mt-10 flex w-full justify-between">
         <span>
-          <Link href={"/list"}>
+          <Link href={"/profile/" + userMints?.[provileNavState.before]}>
             <svg
               className="my-auto inline"
               width="12"
@@ -149,12 +176,12 @@ const Profile: NextPage = () => {
         </span>
 
         <span>
-          <div className="inline w-5/12 pl-3">{profileNFT?.name}</div>
+          <div className="inline w-5/12 pl-3 text-xl font-extrabold">{profileNFT?.name}</div>
         </span>
 
         <span>
-          <div className="inline w-5/12 justify-end pr-3">{"Next"}</div>
-          <Link href={"/list"}>
+          <Link href={"/profile/" + userMints?.[provileNavState.after]}>
+            <div className="inline w-5/12 justify-end pr-3">{"Next"}</div>
             <svg
               className="my-auto inline"
               width="12"
@@ -174,36 +201,44 @@ const Profile: NextPage = () => {
       <div className="mt-5 flex flex-wrap justify-center gap-x-4">
         <div className="w-2/6">
           <Panel className="panel flex flex-wrap rounded-md p-3">
-            {profileNFT && (
-              <div className="overflow-hidde w-full">
-                <div className=" relative h-[500px] w-full">
-                  {profileNFT.image && (
-                    <Image
-                      className="absolute max-h-[500px] rounded-2xl object-cover "
-                      src={profileNFT.image}
-                      alt={profileNFT.name}
-                      fill
-                    />
-                  )}
-                  <div className="absolute bottom-0 h-[60%] w-full  rounded-2xl bg-gradient-to-t from-black to-transparent"></div>
-                  <div className="absolute bottom-0 h-[60%] w-full">
-                    <div className="absolute bottom-10 left-10">
-                      <div className="mt-2 w-20 overflow-hidden overflow-ellipsis text-sm font-thin">
-                        Power
-                      </div>
-                      <div className=" text-3xl text-amber-100">{totalNFTPower || "Unknow"}</div>
+            <div className="overflow-hidde w-full">
+              <div className=" relative h-[500px] w-full">
+                {profileNFT?.image ? (
+                  <Image
+                    className="absolute max-h-[500px] rounded-2xl object-cover"
+                    src={profileNFT?.image}
+                    alt={profileNFT?.name}
+                    fill
+                  />
+                ) : (
+                  <div className="flex h-full items-center justify-center">
+                    <div>
+                      <Loader></Loader>
                     </div>
-                    <div className="absolute bottom-9 right-10">
-                      <button className="btn-rude w-[230px] text-xs font-thin">
-                        Feature your warrior
-                      </button>
+                  </div>
+                )}
+                <div className="absolute bottom-0 h-[60%] w-full  rounded-2xl bg-gradient-to-t from-black to-transparent"></div>
+                <div className="absolute bottom-0 h-[60%] w-full">
+                  <div className="absolute bottom-10 left-10">
+                    <div className="mt-2 w-20 overflow-hidden overflow-ellipsis text-sm font-thin">
+                      Power
                     </div>
+                    <div className=" text-3xl text-amber-100">{totalNFTPower || "Unknow"}</div>
+                  </div>
+                  <div className="absolute bottom-9 right-10">
+                    <button className="btn-rude w-[230px] text-xs font-thin">
+                      Feature your warrior
+                    </button>
                   </div>
                 </div>
               </div>
-            )}
+            </div>
             <div className=" mt-4 flex w-full gap-3 text-center">
-              <div className="info-card m-auto h-[160px] w-1/5 grow">
+              <div
+                className={classNames("info-card m-auto h-[160px] w-1/5 grow", {
+                  "loading-effect opacity-20": isProfileLoading,
+                })}
+              >
                 <div className="grid h-full w-full flex-wrap justify-center py-4 text-center align-middle">
                   <div className="w-full">
                     <label className="block text-xs">Leaderboard</label>
@@ -220,7 +255,11 @@ const Profile: NextPage = () => {
                 </div>
               </div>
 
-              <div className="info-card m-auto h-[160px] w-1/5 grow">
+              <div
+                className={classNames("info-card m-auto h-[160px] w-1/5 grow", {
+                  "loading-effect": isProfileLoading,
+                })}
+              >
                 <div className="grid h-full w-full flex-wrap justify-center py-4 text-center align-middle">
                   <div className="w-full">
                     <label className="block text-xs">Power Rating</label>
@@ -237,7 +276,11 @@ const Profile: NextPage = () => {
                 </div>
               </div>
 
-              <div className="info-card m-auto h-[160px] w-1/5 grow">
+              <div
+                className={classNames("info-card m-auto h-[160px] w-1/5 grow", {
+                  "loading-effect": isProfileLoading,
+                })}
+              >
                 <div className="grid h-full w-full flex-wrap justify-center py-4 text-center align-middle">
                   <div className="w-full">
                     <label className="block text-xs">Tier</label>
@@ -251,7 +294,11 @@ const Profile: NextPage = () => {
                 </div>
               </div>
 
-              <div className="info-card m-auto h-[160px] w-1/5 grow">
+              <div
+                className={classNames("info-card m-auto h-[160px] w-1/5 grow", {
+                  "loading-effect": isProfileLoading,
+                })}
+              >
                 <div className="grid h-full w-full flex-wrap justify-center py-4 text-center align-middle">
                   <div className="w-full">
                     <label className="block text-xs">Weapons</label>

@@ -3,11 +3,11 @@ import NextAuth, { type NextAuthOptions } from "next-auth";
 import DiscordProvider from "next-auth/providers/discord";
 import TwitterProvider from "next-auth/providers/twitter";
 import CredentialsProvider from "next-auth/providers/credentials";
-import { env } from "../../../env/server.mjs";
+import { env } from "env/server.mjs";
 import { getCsrfToken, getSession } from "next-auth/react";
-import { SigninMessage } from "../../../utils/SigninMessage";
+import { SigninMessage } from "utils/SigninMessage";
 import type { NextApiRequest, NextApiResponse } from "next";
-import userModel from "../../../server/database/models/user.model";
+import userModel from "server/database/models/user.model";
 
 export const createOptions = async (
   req: NextApiRequest,
@@ -125,25 +125,22 @@ export const createOptions = async (
             const user = await userModel().findOne({ walletId: signinMessage.publicKey });
 
             if (!user) {
-              try {
-                await userModel().create({
-                  walletId: signinMessage.publicKey,
-                  twitterVerified: false,
-                  discordVerified: false,
-                  twitterDetails: null,
-                  discordDetails: null,
-                  totalPower: 0,
-                  totalTraining: 0,
-                  totalWarriors: 0,
-                  golemNumbers: null,
-                  golemKeys: null,
-                  demonNumbers: null,
-                  demonKeys: null,
-                });
-              } catch (error) {
-                console.log(error);
-              }
+              await userModel().create({
+                walletId: signinMessage.publicKey,
+                twitterVerified: false,
+                discordVerified: false,
+                twitterDetails: null,
+                discordDetails: null,
+                totalPower: 0,
+                totalTraining: 0,
+                totalWarriors: 0,
+                golemNumbers: null,
+                golemKeys: null,
+                demonNumbers: null,
+                demonKeys: null,
+              });
             }
+
             return (async function () {
               return {
                 id: signinMessage.publicKey,

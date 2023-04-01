@@ -7,15 +7,13 @@ import { getCsrfToken, signIn, signOut, useSession } from "next-auth/react";
 import { trpc } from "../../utils/trpc";
 import bs58 from "bs58";
 import { SigninMessage } from "../../utils/SigninMessage";
-import RudeTokenImg from "../../assets/images/rudetoken.png";
-import Image from "next/image";
-import SVGIcon from "assets/svg/SVGIcon";
-import Loader from "components/common/Loader";
 
 const WalletMultiButtonDynamic = dynamic(
   async () => (await import("@solana/wallet-adapter-react-ui")).WalletMultiButton,
   { ssr: false }
 );
+
+const BalancePanel = dynamic(async () => (await import("./Balance")).default, { ssr: false });
 
 export const Connect = () => {
   const { status, data: session } = useSession();
@@ -25,8 +23,6 @@ export const Connect = () => {
   const { data: user } = trpc.users.getUserByWallet.useQuery({
     walletId: session?.user.id || "",
   });
-
-  const { isLoading, data } = trpc.nfts.getWalletBalance.useQuery();
 
   useEffect(() => {
     const handleSignIn = async () => {
@@ -77,42 +73,7 @@ export const Connect = () => {
       {status == "authenticated" && (
         <div className="dropdown-end dropdown">
           <div className="flex flex-wrap text-right ">
-            <div
-              className={classNames(
-                "mr-3 flex items-center gap-3 rounded-2xl border border-[#BEA97E] py-2 px-4 font-medieval-sharp font-bold",
-                { "loading-effect": isLoading }
-              )}
-            >
-              <p className="inline-flex items-center gap-x-2 ">
-                <span>🦋</span>
-                <span className={classNames({ "opacity-20": isLoading })}>
-                  {data?.get("RGBF")?.toFixed(2) ?? "00"}
-                </span>
-              </p>
-              <div className="divider mx-1 my-0 h-auto w-0.5 flex-col before:bg-[#BEA97E] after:bg-[#BEA97E]"></div>
-              <p className="inline-flex items-center gap-x-2">
-                <span>
-                  {<Image width={20} height={20} src={RudeTokenImg} alt={"Rude token"}></Image>}
-                </span>
-                <span className={classNames({ "opacity-20": isLoading })}>
-                  {data?.get("RUDE")?.toFixed(2) ?? "00000"}
-                </span>
-              </p>
-              <div className="divider mx-1 my-0 h-auto w-0.5 flex-col before:bg-[#BEA97E] after:bg-[#BEA97E]"></div>
-              <p className="inline-flex items-center gap-x-2">
-                <span>
-                  <SVGIcon.sol />
-                </span>
-                <span>
-                  {
-                    <span className={classNames({ "opacity-20": isLoading })}>
-                      {data?.get("SOL")?.toFixed(2) ?? "0000"}
-                    </span>
-                  }
-                </span>
-              </p>
-            </div>
-
+            <BalancePanel></BalancePanel>
             <div tabIndex={0} className="px-3">
               <div className="text-xs">Hello</div>
 

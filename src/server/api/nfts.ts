@@ -1,5 +1,6 @@
 import { z } from "zod";
 import {
+  getSyncedNfts,
   getUserNFTbyMint,
   getUserNFTs,
   getWalletBalanceTokens,
@@ -23,5 +24,10 @@ export const nftsRouter = router({
     const wallet = ctx.session.walletId;
     const balance = await getWalletBalanceTokens(wallet);
     return balance;
+  }),
+  getUserMints: protectedProcedure.query(async ({ ctx }) => {
+    const wallet = ctx.session.walletId;
+    const mints = await getSyncedNfts(wallet);
+    return mints;
   }),
 });

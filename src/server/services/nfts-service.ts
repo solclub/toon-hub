@@ -71,6 +71,14 @@ export const syncUserNFTs = async (wallet: string, nfts: RudeNFT[]) => {
   }
 };
 
+export const getSyncedNfts = async (wallet: string) => {
+  let nfts: string[] = [];
+  if (wallet) {
+    nfts = (await usernfts.UserNFTsModel().find({ wallet, active: true })).map((x) => x.mint);
+  }
+  return nfts;
+};
+
 export const getUserNFTbyMint = async (wallet: string, mint: string) => {
   const upgrades = (
     await usernfts.UserNFTsModel().findOne({ mint: mint, active: true, wallet })
@@ -97,8 +105,6 @@ export const getNFTsByWalletId = async (wallet: string): Promise<NFTDictionary> 
   const walletNfts = await metaplex.nfts().findAllByOwner({
     owner: walletPubKey,
   });
-
-  console.log(walletNfts);
 
   const mints: NFTDictionary = walletNfts
     .filter((i) => i.updateAuthorityAddress.toBase58() == env.UPDATE_AUTHORITY_ADDRESS)
