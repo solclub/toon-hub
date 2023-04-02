@@ -2,7 +2,7 @@ import { Html, Head, Main, NextScript } from "next/document";
 
 export default function Document() {
   return (
-    <Html>
+    <Html data-theme="halloween">
       <Head>
         <link rel="preconnect" href="https://fonts.googleapis.com"></link>
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous"></link>
@@ -13,6 +13,7 @@ export default function Document() {
       </Head>
       <body>
         <Main />
+        <div id="modal-portal"></div>
         <NextScript />
       </body>
     </Html>

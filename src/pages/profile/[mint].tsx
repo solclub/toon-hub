@@ -1,6 +1,5 @@
 import { useState, useEffect } from "react";
 import { type NextPage } from "next";
-import type { StaticImageData } from "next/image";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/router";
@@ -24,25 +23,12 @@ import gem2 from "../../assets/weapons/SLOT3/LEGENDARY/Ancient-Hammer.png";
 import gem3 from "../../assets/weapons/SLOT4/MYTHIC/Life-taker.png";
 import FrameBox, { FrameType } from "../../components/common/FrameBox";
 import Panel from "../../components/common/Panel";
-import type { DemonUpgrades, UserNFT } from "../../server/database/models/user-nfts.model";
+import type { UserNFT } from "../../server/database/models/user-nfts.model";
 import { GolemUpgrades } from "../../server/database/models/user-nfts.model";
 import Loader from "components/common/Loader";
-
-type NFTUpgrades = {
-  name: string;
-  type: GolemUpgrades | DemonUpgrades;
-  price: string;
-};
-
-type Weapon = {
-  image: string | StaticImageData;
-  name: string;
-  points: number;
-  price: string;
-  rarity: string;
-  expireDate: Date;
-  owned: boolean;
-};
+import { motion } from "framer-motion";
+import { NFTUpgrade, PriceUnit, Weapon } from "./types";
+import NftVersion from "./components/nft-version";
 
 const sampleWeapons: Weapon[] = [
   {
@@ -89,27 +75,30 @@ const toPascalCase = (str: string) => {
     .replace(/\s/g, "");
 };
 
-const sampleUpgrades: NFTUpgrades[] = [
+const sampleUpgrades: NFTUpgrade[] = [
   {
     name: toPascalCase(GolemUpgrades.ORIGINAL),
     type: GolemUpgrades.ORIGINAL,
-    price: "$ 0.3 Sol",
+    price: 0.3,
+    priceUnit: PriceUnit.SOL,
   },
   {
     name: toPascalCase(GolemUpgrades.REWORK),
     type: GolemUpgrades.REWORK,
-    price: "$ 0.3 Sol",
+    price: 0.3,
+    priceUnit: PriceUnit.SOL,
   },
   {
     name: toPascalCase(GolemUpgrades.CARTOON),
     type: GolemUpgrades.CARTOON,
-    price: "$ 1 Sol",
+    price: 0.3,
+    priceUnit: PriceUnit.SOL,
   },
 ];
 
 const Profile: NextPage = () => {
   const router = useRouter();
-  const [upgrades, setUpgrades] = useState<NFTUpgrades[]>([]);
+  const [upgrades, setUpgrades] = useState<NFTUpgrade[]>([]);
   const [weapons, setWeapons] = useState<Weapon[]>([]);
   const [provileNavState, setProvileNavState] = useState({ current: 0, before: -1, after: 1 });
 
@@ -324,18 +313,14 @@ const Profile: NextPage = () => {
 };
 
 type ArmoryProps = {
-  upgrades: NFTUpgrades[];
+  upgrades: NFTUpgrade[];
   nftUpgrades?: UserNFT;
   weapons: Weapon[];
 };
 
-const Armory = ({ upgrades, weapons, nftUpgrades }: ArmoryProps) => {
+const Armory = ({ upgrades, weapons, nftUpgrades: userNft }: ArmoryProps) => {
   const onBuyEquipment = (x: Weapon) => {
     //check status
-    console.log(x);
-  };
-
-  const onBuyArtEvent = (x: NFTUpgrades) => {
     console.log(x);
   };
 
@@ -344,84 +329,8 @@ const Armory = ({ upgrades, weapons, nftUpgrades }: ArmoryProps) => {
       <div className="flex flex-wrap justify-center gap-x-5 gap-y-3 text-center">
         <h2 className="block w-full text-xl">Select your alternative version</h2>
         {upgrades &&
-          upgrades.map((x) => (
-            <div key={x.name} className=" w-[25%] text-center">
-              <h3
-                className={classNames("pb-3", {
-                  "text-[#BFA97F]": nftUpgrades?.current == x.type,
-                })}
-              >
-                {x.name}
-              </h3>
-              <FrameBox
-                frameType={() => {
-                  if (nftUpgrades?.images?.get(x.type) && nftUpgrades?.current == x.type)
-                    return FrameType.default;
-                  if (nftUpgrades?.current != x.type && nftUpgrades?.images?.get(x.type))
-                    return FrameType.gray;
-                  return FrameType.green;
-                }}
-              >
-                <div
-                  className={classnames("clip-css relative h-full text-center", {
-                    "relative h-full transition duration-200 ease-in-out hover:-translate-y-1 hover:scale-110":
-                      nftUpgrades?.images?.get(x.type) == undefined,
-                  })}
-                >
-                  <Image
-                    src={nftUpgrades?.images?.get(x.type) ?? NftHidden}
-                    alt="Picture of the author"
-                    width={900}
-                    height={900}
-                  ></Image>
-
-                  {nftUpgrades?.images?.get(x.type) == undefined && (
-                    <div className="absolute top-4 w-full text-green-400">{x.price}</div>
-                  )}
-                  <div className="absolute bottom-0 h-3/4 w-full bg-gradient-to-t from-black to-transparent "></div>
-                  <label
-                    htmlFor={x.name}
-                    className="absolute top-0 left-0 h-full w-full cursor-pointer"
-                  ></label>
-                </div>
-              </FrameBox>
-              <div className="relative -top-5 z-50 w-full items-center">
-                <button
-                  onClick={() => {
-                    onBuyArtEvent(x);
-                  }}
-                  className={classNames(
-                    "hover:shadow-lg hover:shadow-slate-400",
-                    "rounded-full px-3 py-1",
-                    { "bg-[#6F5B38]": nftUpgrades?.current == x.type },
-                    {
-                      "bg-gray-600":
-                        nftUpgrades?.current != x.type &&
-                        nftUpgrades?.images?.get(x.type) != undefined,
-                    },
-                    {
-                      "bg-green-400 text-black": nftUpgrades?.images?.get(x.type) == undefined,
-                    }
-                  )}
-                >
-                  {nftUpgrades?.current == x.type
-                    ? "Used"
-                    : nftUpgrades?.current != x.type &&
-                      nftUpgrades?.images?.get(x.type) != undefined
-                    ? "Select"
-                    : "Reveal"}
-                </button>
-              </div>
-              <Modal className="w-fit" triggerId={x.name}>
-                <Image
-                  className="rounded-3xl border-solid"
-                  src={nftUpgrades?.images?.get(x.type) ?? NftHidden}
-                  alt={x.name}
-                  width={700}
-                  height={800}
-                ></Image>
-              </Modal>
-            </div>
+          upgrades.map((upgrade) => (
+            <NftVersion key={upgrade.name} upgrade={upgrade} userNft={userNft}></NftVersion>
           ))}
       </div>
 
@@ -452,15 +361,6 @@ const Armory = ({ upgrades, weapons, nftUpgrades }: ArmoryProps) => {
                   </div>
                   <div className="w-full">{EquipmentRarityLabels[rarity]}</div>
                 </div>
-                <Modal className="w-full" triggerId={name}>
-                  <Image
-                    className="rounded-3xl border-solid"
-                    src={image}
-                    alt={name}
-                    width={700}
-                    height={800}
-                  ></Image>
-                </Modal>
               </div>
             );
           })}

@@ -30,7 +30,7 @@ const Balance = () => {
       <div className="divider mx-1 my-0 h-auto w-0.5 flex-col before:bg-[#BEA97E] after:bg-[#BEA97E]"></div>
       <p className="inline-flex items-center gap-x-2">
         <span>
-          <SVGIcon.sol />
+          <SVGIcon.Sol />
         </span>
         <span>
           {
