@@ -44,8 +44,11 @@
   background-position: center;
   padding-left: 2rem;
   padding-right: 2rem;
-  padding-top: 0.75rem /* 12px */;
-  padding-bottom: 0.75rem /* 12px */;
+}
+
+.btn-rude-secondary {
+  @extend .btn-rude;
+  background-image: url(../assets/images/button-secondary.png);
 }
 
 .wallet-adapter-button-trigger {

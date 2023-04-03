@@ -2,6 +2,7 @@ import * as React from "react";
 
 const Sol: React.FC<{ size?: number }> = ({ size }) => (
   <svg
+    className="inline"
     width={size || 20}
     height={size || 20}
     fill="none"

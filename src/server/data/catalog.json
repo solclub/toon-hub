@@ -1,0 +1,162 @@
+[
+  {
+    "collection": "GOLEM",
+    "type": "NFT_UPGRADE",
+    "enabled": true,
+    "options": [
+      {
+        "key": "ORIGINAL",
+        "name": "Original",
+        "isAvailable": false
+      },
+      {
+        "key": "REWORK",
+        "name": "Rework",
+        "isAvailable": true,
+        "paymentOptions": [
+          {
+            "type": "RUDE_BTF",
+            "order": 1,
+            "enabled": true,
+            "ammounts": [
+              {
+                "token": "RUDE",
+                "amount": 888
+              },
+              {
+                "token": "BTF",
+                "amount": 1
+              }
+            ]
+          },
+          {
+            "type": "RUDE",
+            "order": 2,
+            "enabled": true,
+            "ammounts": [
+              {
+                "token": "RUDE",
+                "amount": 2888
+              }
+            ]
+          },
+          {
+            "type": "SOL",
+            "order": 3,
+            "enabled": true,
+            "ammounts": [
+              {
+                "token": "SOL",
+                "amount": 1.75
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "key": "CARTOON",
+        "name": "Cartoon",
+        "isAvailable": true,
+        "paymentOptions": [
+          {
+            "type": "RUDE",
+            "order": 1,
+            "enabled": true,
+            "ammounts": [
+              {
+                "token": "RUDE",
+                "amount": 2888
+              }
+            ]
+          },
+          {
+            "type": "SOL",
+            "order": 2,
+            "enabled": true,
+            "ammounts": [
+              {
+                "token": "SOL",
+                "amount": 1.75
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "collection": "DEMON",
+    "type": "NFT_UPGRADE",
+    "enabled": true,
+    "options": [
+      {
+        "key": "ORIGINAL",
+        "name": "Original",
+        "isAvailable": false
+      },
+      {
+        "name": "Cartoon",
+        "key": "CARTOON",
+        "isAvailable": true,
+        "paymentOptions": [
+          {
+            "type": "RUDE",
+            "order": 1,
+            "enabled": true,
+            "ammounts": [
+              {
+                "token": "RUDE",
+                "amount": 2888
+              }
+            ]
+          },
+          {
+            "type": "SOL",
+            "order": 2,
+            "enabled": true,
+            "ammounts": [
+              {
+                "token": "SOL",
+                "amount": 1.75
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "type": "NFT_FEATURE",
+    "enabled": true,
+    "options": [
+      {
+        "key": "FEATURE",
+        "name": "Feature",
+        "paymentOptions": [
+          {
+            "type": "RUDE",
+            "order": 1,
+            "enabled": true,
+            "ammounts": [
+              {
+                "token": "RUDE",
+                "amount": 2888
+              }
+            ]
+          },
+          {
+            "type": "SOL",
+            "order": 2,
+            "enabled": true,
+            "ammounts": [
+              {
+                "token": "SOL",
+                "amount": 1.75
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+]

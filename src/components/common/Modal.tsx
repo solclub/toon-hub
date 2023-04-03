@@ -30,7 +30,7 @@ const Backdrop = ({ children, handleClose }: BackdropProps) => (
     className="
       bg-backdrop fixed inset-0
       z-50 flex justify-center
-      overflow-y-auto backdrop-blur-sm backdrop-filter lg:items-center
+      overflow-y-auto backdrop-blur-md  backdrop-filter lg:items-center
     "
     onClick={handleClose}
     initial={{ opacity: 0 }}
@@ -47,7 +47,7 @@ const ModalContent = ({ className, children, handleClose, ariaLabel }: ModalCont
     role="dialog"
     aria-modal={true}
     aria-label={ariaLabel}
-    className={`relative rounded-2xl ${className || "rounded-lg shadow-lg"}`}
+    className={`relative mx-auto rounded-2xl ${className || "w-fit rounded-lg shadow-lg"}`}
     variants={effect}
     initial="hidden"
     animate="visible"

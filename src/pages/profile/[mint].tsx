@@ -3,32 +3,30 @@ import { type NextPage } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/router";
-import classnames from "classnames";
-import NftHidden from "../../assets/images/nft-hidden.png";
-import ComingSoonImg from "../../assets/images/coming_soon.png";
+import ComingSoonImg from "assets/images/coming_soon.png";
 import classNames from "classnames";
-import { Modal } from "../../components/common/Modal";
-import type { EquipmentRarity } from "../../components/common/Equipment";
-import Equipment, { EquipmentRarityLabels } from "../../components/common/Equipment";
-import { CountDown } from "../../components/common/CountDown";
-import LeaderBoardIcon from "../../assets/images/leaderboard_icon.png";
-import PowerRatingIcon from "../../assets/images/power_rating_icon.png";
-import TierIcon from "../../assets/images/tier_icon.png";
-import WeaponsIcon from "../../assets/images/weapons_icon.png";
-import { trpc } from "../../utils/trpc";
-import nftTierSelector from "../../utils/nfttier";
-import gem from "../../assets/weapons/SLOT1/COMMON/Stoneheart.png";
-import gem1 from "../../assets/weapons/SLOT2/EPIC/Flamestreak-Bow.png";
-import gem2 from "../../assets/weapons/SLOT3/LEGENDARY/Ancient-Hammer.png";
-import gem3 from "../../assets/weapons/SLOT4/MYTHIC/Life-taker.png";
-import FrameBox, { FrameType } from "../../components/common/FrameBox";
-import Panel from "../../components/common/Panel";
-import type { UserNFT } from "../../server/database/models/user-nfts.model";
-import { GolemUpgrades } from "../../server/database/models/user-nfts.model";
+import type { EquipmentRarity } from "components/common/Equipment";
+import Equipment, { EquipmentRarityLabels } from "components/common/Equipment";
+import { CountDown } from "components/common/CountDown";
+import LeaderBoardIcon from "assets/images/leaderboard_icon.png";
+import PowerRatingIcon from "assets/images/power_rating_icon.png";
+import TierIcon from "assets/images/tier_icon.png";
+import WeaponsIcon from "assets/images/weapons_icon.png";
+import { trpc } from "utils/trpc";
+import nftTierSelector from "utils/nfttier";
+import gem from "assets/weapons/SLOT1/COMMON/Stoneheart.png";
+import gem1 from "assets/weapons/SLOT2/EPIC/Flamestreak-Bow.png";
+import gem2 from "assets/weapons/SLOT3/LEGENDARY/Ancient-Hammer.png";
+import gem3 from "assets/weapons/SLOT4/MYTHIC/Life-taker.png";
+import Panel from "components/common/Panel";
+import type { UserNFT } from "server/database/models/user-nfts.model";
+import { GolemUpgrades } from "server/database/models/user-nfts.model";
 import Loader from "components/common/Loader";
-import { motion } from "framer-motion";
-import { NFTUpgrade, PriceUnit, Weapon } from "./types";
+import type { NFTUpgrade, Weapon } from "./types";
+import { PriceUnit } from "./types";
 import NftVersion from "./components/nft-version";
+import { Product, ProductType } from "types/catalog";
+import { NFTType } from "server/database/models/nft.model";
 
 const sampleWeapons: Weapon[] = [
   {
@@ -98,7 +96,6 @@ const sampleUpgrades: NFTUpgrade[] = [
 
 const Profile: NextPage = () => {
   const router = useRouter();
-  const [upgrades, setUpgrades] = useState<NFTUpgrade[]>([]);
   const [weapons, setWeapons] = useState<Weapon[]>([]);
   const [provileNavState, setProvileNavState] = useState({ current: 0, before: -1, after: 1 });
 
@@ -108,7 +105,6 @@ const Profile: NextPage = () => {
   });
 
   const { data: userMints, isLoading } = trpc.nfts.getUserMints.useQuery();
-
   const powerRating = "8542";
   const leaderboardPosition = "560";
   const totalNFTPower = "56412";
@@ -116,7 +112,6 @@ const Profile: NextPage = () => {
   const collection = "golems";
 
   useEffect(() => {
-    setUpgrades(sampleUpgrades);
     setWeapons(sampleWeapons);
   }, [mint]);
 
@@ -215,7 +210,7 @@ const Profile: NextPage = () => {
                     <div className=" text-3xl text-amber-100">{totalNFTPower || "Unknow"}</div>
                   </div>
                   <div className="absolute bottom-9 right-10">
-                    <button className="btn-rude w-[230px] text-xs font-thin">
+                    <button className="btn-rude btn w-[230px] text-xs font-thin">
                       Feature your warrior
                     </button>
                   </div>
@@ -306,19 +301,32 @@ const Profile: NextPage = () => {
             </div>
           </Panel>
         </div>
-        <Armory upgrades={upgrades} weapons={weapons} nftUpgrades={profileNFT?.upgrades}></Armory>
+        {profileNFT && (
+          <CustomizePanel
+            collection={profileNFT?.type}
+            weapons={weapons}
+            nftUpgrades={profileNFT?.upgrades}
+          ></CustomizePanel>
+        )}
       </div>
     </div>
   );
 };
 
 type ArmoryProps = {
-  upgrades: NFTUpgrade[];
+  collection: NFTType;
   nftUpgrades?: UserNFT;
   weapons: Weapon[];
 };
 
-const Armory = ({ upgrades, weapons, nftUpgrades: userNft }: ArmoryProps) => {
+const CustomizePanel = ({ collection, weapons, nftUpgrades: userNft }: ArmoryProps) => {
+  const { data: product, isLoading: isLoadingProducts } = trpc.catalog.getProduct.useQuery({
+    type: ProductType.NFT_UPGRADE,
+    collection: collection,
+  });
+
+  const options = product?.options;
+
   const onBuyEquipment = (x: Weapon) => {
     //check status
     console.log(x);
@@ -328,9 +336,14 @@ const Armory = ({ upgrades, weapons, nftUpgrades: userNft }: ArmoryProps) => {
     <Panel className="panel flex max-w-[65%] flex-wrap rounded-md p-8">
       <div className="flex flex-wrap justify-center gap-x-5 gap-y-3 text-center">
         <h2 className="block w-full text-xl">Select your alternative version</h2>
-        {upgrades &&
-          upgrades.map((upgrade) => (
-            <NftVersion key={upgrade.name} upgrade={upgrade} userNft={userNft}></NftVersion>
+        {options &&
+          options.map((opt) => (
+            <NftVersion
+              key={opt.name}
+              upgrade={opt}
+              userNft={userNft}
+              isOriginal={opt.key === "ORIGINAL"}
+            ></NftVersion>
           ))}
       </div>
 
