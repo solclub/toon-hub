@@ -1,32 +1,31 @@
 import { useState, useEffect } from "react";
-import { type NextPage } from "next";
 import Image from "next/image";
+import { type NextPage } from "next";
 import Link from "next/link";
 import { useRouter } from "next/router";
-import ComingSoonImg from "assets/images/coming_soon.png";
-import classNames from "classnames";
 import type { EquipmentRarity } from "components/common/Equipment";
 import Equipment, { EquipmentRarityLabels } from "components/common/Equipment";
 import { CountDown } from "components/common/CountDown";
+import Panel from "components/common/Panel";
+import Loader from "components/common/Loader";
+import NftVersion from "./components/nft-version";
+import type { UserNFT } from "server/database/models/user-nfts.model";
+import type { Weapon } from "./types";
+import { ProductType } from "types/catalog";
+import type { NFTType } from "server/database/models/nft.model";
+import { trpc } from "utils/trpc";
+import nftTierSelector from "utils/nfttier";
+import classNames from "classnames";
+
+import ComingSoonImg from "assets/images/coming_soon.png";
 import LeaderBoardIcon from "assets/images/leaderboard_icon.png";
 import PowerRatingIcon from "assets/images/power_rating_icon.png";
 import TierIcon from "assets/images/tier_icon.png";
 import WeaponsIcon from "assets/images/weapons_icon.png";
-import { trpc } from "utils/trpc";
-import nftTierSelector from "utils/nfttier";
 import gem from "assets/weapons/SLOT1/COMMON/Stoneheart.png";
 import gem1 from "assets/weapons/SLOT2/EPIC/Flamestreak-Bow.png";
 import gem2 from "assets/weapons/SLOT3/LEGENDARY/Ancient-Hammer.png";
 import gem3 from "assets/weapons/SLOT4/MYTHIC/Life-taker.png";
-import Panel from "components/common/Panel";
-import type { UserNFT } from "server/database/models/user-nfts.model";
-import { GolemUpgrades } from "server/database/models/user-nfts.model";
-import Loader from "components/common/Loader";
-import type { NFTUpgrade, Weapon } from "./types";
-import { PriceUnit } from "./types";
-import NftVersion from "./components/nft-version";
-import { Product, ProductType } from "types/catalog";
-import { NFTType } from "server/database/models/nft.model";
 
 const sampleWeapons: Weapon[] = [
   {
@@ -64,33 +63,6 @@ const sampleWeapons: Weapon[] = [
     owned: true,
     expireDate: new Date("02/18/2023"),
     rarity: "MYTHIC",
-  },
-];
-
-const toPascalCase = (str: string) => {
-  return str
-    .replace(/\w+/g, (w: string) => w[0]?.toUpperCase() + w.slice(1).toLowerCase())
-    .replace(/\s/g, "");
-};
-
-const sampleUpgrades: NFTUpgrade[] = [
-  {
-    name: toPascalCase(GolemUpgrades.ORIGINAL),
-    type: GolemUpgrades.ORIGINAL,
-    price: 0.3,
-    priceUnit: PriceUnit.SOL,
-  },
-  {
-    name: toPascalCase(GolemUpgrades.REWORK),
-    type: GolemUpgrades.REWORK,
-    price: 0.3,
-    priceUnit: PriceUnit.SOL,
-  },
-  {
-    name: toPascalCase(GolemUpgrades.CARTOON),
-    type: GolemUpgrades.CARTOON,
-    price: 0.3,
-    priceUnit: PriceUnit.SOL,
   },
 ];
 
@@ -137,6 +109,7 @@ const Profile: NextPage = () => {
       });
     }
   }, [userMints, mint, isLoading]);
+
   return (
     <div>
       <div className="mt-10 flex w-full justify-between">
@@ -301,13 +274,15 @@ const Profile: NextPage = () => {
             </div>
           </Panel>
         </div>
-        {profileNFT && (
-          <CustomizePanel
-            collection={profileNFT?.type}
-            weapons={weapons}
-            nftUpgrades={profileNFT?.upgrades}
-          ></CustomizePanel>
-        )}
+        <Panel className="panel flex w-full max-w-[65%] flex-wrap rounded-md p-8">
+          {profileNFT && profileNFT?.type && (
+            <CustomizePanel
+              collection={profileNFT?.type}
+              weapons={weapons}
+              nftUpgrades={profileNFT?.upgrades}
+            ></CustomizePanel>
+          )}
+        </Panel>
       </div>
     </div>
   );
@@ -320,7 +295,7 @@ type ArmoryProps = {
 };
 
 const CustomizePanel = ({ collection, weapons, nftUpgrades: userNft }: ArmoryProps) => {
-  const { data: product, isLoading: isLoadingProducts } = trpc.catalog.getProduct.useQuery({
+  const { data: product } = trpc.catalog.getProduct.useQuery({
     type: ProductType.NFT_UPGRADE,
     collection: collection,
   });
@@ -333,7 +308,7 @@ const CustomizePanel = ({ collection, weapons, nftUpgrades: userNft }: ArmoryPro
   };
 
   return (
-    <Panel className="panel flex max-w-[65%] flex-wrap rounded-md p-8">
+    <>
       <div className="flex flex-wrap justify-center gap-x-5 gap-y-3 text-center">
         <h2 className="block w-full text-xl">Select your alternative version</h2>
         {options &&
@@ -381,7 +356,7 @@ const CustomizePanel = ({ collection, weapons, nftUpgrades: userNft }: ArmoryPro
           <Image src={ComingSoonImg} alt="Coming soon" className="object-fill"></Image>
         </div>
       </div>
-    </Panel>
+    </>
   );
 };
 

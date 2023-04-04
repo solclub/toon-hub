@@ -79,7 +79,10 @@ export const getSyncedNfts = async (wallet: string) => {
   return nfts;
 };
 
-export const getUserNFTbyMint = async (wallet: string, mint: string) => {
+export const getUserNFTbyMint = async (
+  wallet: string,
+  mint: string
+): Promise<RudeNFT & { upgrades: UserNFT | undefined }> => {
   const upgrades = (
     await usernfts.UserNFTsModel().findOne({ mint: mint, active: true, wallet })
   )?.toObject();
@@ -96,7 +99,7 @@ export const getUserNFTbyMint = async (wallet: string, mint: string) => {
     return { ...demons?.toObject(), type: NFTType.DEMON, upgrades };
   }
 
-  return null;
+  return {} as RudeNFT & { upgrades: UserNFT | undefined };
 };
 
 export const getNFTsByWalletId = async (wallet: string): Promise<NFTDictionary> => {

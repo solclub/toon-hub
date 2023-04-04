@@ -18,7 +18,8 @@ export const nftsRouter = router({
     .query(async ({ ctx, input }) => {
       const { mint } = input;
       const wallet = ctx.session.walletId;
-      return getUserNFTbyMint(wallet, mint);
+      const finded = getUserNFTbyMint(wallet, mint);
+      return finded;
     }),
   getWalletBalance: protectedProcedure.query(async ({ ctx }) => {
     const wallet = ctx.session.walletId;

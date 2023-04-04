@@ -6,7 +6,7 @@ import NftHidden from "assets/images/nft-hidden.png";
 import { Modal } from "components/common/Modal";
 import { motion } from "framer-motion";
 import type { DemonUpgrades, UserNFT } from "server/database/models/user-nfts.model";
-import BuyNFT from "components/common/BuyNFT";
+import UpgradeNFT from "components/common/UpgradeNFT";
 import type { ProductOption } from "types/catalog";
 import { GolemUpgrades } from "server/database/models/user-nfts.model";
 import { NFTType } from "server/database/models/nft.model";
@@ -102,14 +102,13 @@ const NftVersion: React.FC<{ upgrade?: ProductOption; userNft?: UserNFT; isOrigi
             handleClose={() => setOpen(false)}
           >
             {upgrade.isAvailable ? (
-              <BuyNFT
-                description="Lorem ipsum dolor sit amet consectetur adipiscing, elit ad scelerisque senectus habitasse Lorem ipsum dolor sit amet consectetur adipiscing, elit ad scelerisque senectus habitasse"
+              <UpgradeNFT
+                nft={userNft}
                 title={upgrade.name}
                 upgradeOption={upgrade}
-                previewImage={() => {
-                  return userNft?.images?.get(upgradeType) ?? NftHidden;
-                }}
-              ></BuyNFT>
+                imageUrl={userNft?.images?.get(upgradeType)}
+                sourceImageUrl={userNft?.images?.get(userNft.current)}
+              ></UpgradeNFT>
             ) : (
               <Image
                 className="items-center rounded-3xl border-solid bg-gray-600 object-cover"

@@ -26,6 +26,11 @@ export const serverSchema = z.object({
   WAR_PROGRAM_ID: z.string(),
   ANCHOR_WALLET_KEYPAIR: z.string(),
   UPDATE_AUTHORITY_ADDRESS: z.string(),
+
+  // cloudinary
+  CLOUDINARY_CLOUD_NAME: z.string(),
+  CLOUDINARY_API_KEY: z.string(),
+  CLOUDINARY_API_SECRET: z.string(),
 });
 
 /**

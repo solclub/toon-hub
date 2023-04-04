@@ -27,8 +27,8 @@ export const showSuccessToast = (msg: string, autoClose = 5000) => {
   });
 };
 
-export const showErrorToast = (msg: string) => {
-  toast.error(`${msg}`, {
+export const showErrorToast = (error: string) => {
+  toast.error(`${error}`, {
     position: "bottom-right",
     autoClose: 5000,
     hideProgressBar: false,

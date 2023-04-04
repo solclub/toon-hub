@@ -3,7 +3,7 @@ import SVGIcon from "assets/svg/SVGIcon";
 import { motion } from "framer-motion";
 import React, { useEffect, useState } from "react";
 import Image from "next/image";
-import { PaymentOption, PaymentType } from "types/catalog";
+import type { PaymentOption } from "types/catalog";
 import { PaymentToken } from "types/catalog";
 import classNames from "classnames";
 
@@ -59,7 +59,7 @@ const PaymentMethodSelector: React.FC<{
                         <div>{balanceIcons[token]}</div>
                       </div>
                     </div>
-                    {j < opt.ammounts.length - 1 && <span className="">&</span>}
+                    {j < opt.ammounts.length - 1 && <span className="">+</span>}
                   </React.Fragment>
                 ))}
               </motion.button>

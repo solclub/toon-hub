@@ -22,7 +22,7 @@ export interface NFTAttribute extends Record<string, unknown> {
   rarity: number;
 }
 
-const NFTAttributeSchema = new Schema<NFTAttribute>({
+export const NFTAttributeSchema = new Schema<NFTAttribute>({
   name: String,
   value: String,
   rarity: Number,
