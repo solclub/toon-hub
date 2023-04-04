@@ -45,7 +45,7 @@ export const saveFileToCloud = async (
     });
     return result.secure_url;
   } catch (err) {
-    // console.error(err);
+    console.error(err);
     return null;
   }
 };

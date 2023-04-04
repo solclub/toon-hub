@@ -1,4 +1,5 @@
-import sharp, { JpegOptions, OverlayOptions } from "sharp";
+import type { OverlayOptions } from "sharp";
+import sharp from "sharp";
 
 interface Source {
   src: string;
@@ -66,8 +67,7 @@ const mergeImages = async ({
 
   const buffer = await composite.png().toBuffer();
   const base64 = buffer.toString("base64");
-  const base = `data:${options.format || "png"};base64,${base64}`;
-
+  const base = `data:image/${options.format || "png"};base64,${base64}`;
   //test
   // composite.toFile("C:\\Users\\Jhonny\\Downloads\\sharp\\image.png");
 
