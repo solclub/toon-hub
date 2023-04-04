@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import type { StaticImageData } from "next/image";
 import Image from "next/image";
 import { type NextPage } from "next";
 import Link from "next/link";
@@ -10,7 +11,6 @@ import Panel from "components/common/Panel";
 import Loader from "components/common/Loader";
 import NftVersion from "./components/nft-version";
 import type { UserNFT } from "server/database/models/user-nfts.model";
-import type { Weapon } from "./types";
 import { ProductType } from "types/catalog";
 import type { NFTType } from "server/database/models/nft.model";
 import { trpc } from "utils/trpc";
@@ -26,6 +26,16 @@ import gem from "assets/weapons/SLOT1/COMMON/Stoneheart.png";
 import gem1 from "assets/weapons/SLOT2/EPIC/Flamestreak-Bow.png";
 import gem2 from "assets/weapons/SLOT3/LEGENDARY/Ancient-Hammer.png";
 import gem3 from "assets/weapons/SLOT4/MYTHIC/Life-taker.png";
+
+type Weapon = {
+  image: string | StaticImageData;
+  name: string;
+  points: number;
+  price: string;
+  rarity: string;
+  expireDate: Date;
+  owned: boolean;
+};
 
 const sampleWeapons: Weapon[] = [
   {
