@@ -115,6 +115,8 @@ const UpgradeNFT: React.FC<BuyProperties> = ({
                 className="panel w-full items-center rounded-3xl"
                 src={(data as string) ?? NftHidden}
                 alt={title}
+                width={500}
+                height={500}
               ></Image>
             </FrameBox>
           </div>

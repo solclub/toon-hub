@@ -1,6 +1,6 @@
 import type { NFTAttribute, NFTType } from "server/database/models/nft.model";
 import { collectionsSchemas } from "../data/collections";
-import mergeImages from "utils/mergeImages";
+import mergeImages from "../services/sharp-service";
 import { saveFileToCloud } from "./cloudinary-service";
 import type { DemonUpgrades, GolemUpgrades } from "server/database/models/user-nfts.model";
 
@@ -46,7 +46,7 @@ export const buildUpgradeImage = async (
 
   const nftLayers: NFTLayer = collection.traitsOrder.reduce((carry: NFTLayer, trait) => {
     carry[trait] = {
-      src: getTraitFile(collection?.path, trait, upgradeType.toString(), formattedTraits),
+      src: getTraitFile(collection?.path, upgradeType.toString(), trait, formattedTraits),
       x: 0,
       y: 0,
       label: formattedTraits[trait],
@@ -79,7 +79,9 @@ const getTraitFile = (
   trait: string,
   formattedTraits: Record<string, string>
 ) => {
-  return `assets/traits/${collectionName}/${upgradeName}/${trait.toLowerCase()}/${
+  const url = `src/assets/traits/${collectionName}/${upgradeName}/${trait.toLowerCase()}/${
     formattedTraits[trait]
   }.png`;
+
+  return url;
 };

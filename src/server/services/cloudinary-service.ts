@@ -36,6 +36,7 @@ export const saveFileToCloud = async (
   folderName: string
 ): Promise<string | null> => {
   try {
+    console.log("cloudinary folder");
     const result: UploadApiResponse = await cloudinary.uploader.upload(imageData, {
       resource_type: "image",
       public_id: imageName,
@@ -44,6 +45,7 @@ export const saveFileToCloud = async (
     });
     return result.secure_url;
   } catch (err) {
+    // console.error(err);
     return null;
   }
 };

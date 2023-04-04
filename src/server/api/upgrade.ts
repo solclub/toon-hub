@@ -19,7 +19,14 @@ export const upgradeRouter = router({
       const wallet = ctx.session.walletId;
       const nft = await getUserNFTbyMint(wallet, mint);
       if (nft && nft.type) {
-        return await buildUpgradeImage(mint, nft.type, upgradeType, nft.attributes);
+        const upgradeUrlImage = await buildUpgradeImage(
+          mint,
+          nft.type,
+          upgradeType,
+          nft.attributes
+        );
+        console.log("upgradeUrlImage", upgradeUrlImage);
+        return upgradeUrlImage;
       }
       return "";
     }),
