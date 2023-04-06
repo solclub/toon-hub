@@ -1,4 +1,4 @@
-import { Metaplex } from "@metaplex-foundation/js";
+import { Metadata, Metaplex, Nft, Sft } from "@metaplex-foundation/js";
 import { getAssociatedTokenAddress } from "@solana/spl-token";
 import { Connection, LAMPORTS_PER_SOL, PublicKey } from "@solana/web3.js";
 import { env } from "env/client.mjs";
@@ -24,7 +24,7 @@ export const getSolBalance = async (wallet: string): Promise<number> => {
   return Number(balanceValue || 0);
 };
 
-export const getButterfliesBalance = async (wallet: string): Promise<number> => {
+export const getButterflies = async (wallet: string): Promise<(Metadata | Nft | Sft)[]> => {
   const walletPubKey = new PublicKey(wallet);
   const walletNfts = await metaplex.nfts().findAllByOwner({ owner: walletPubKey });
   const filteredNfts = walletNfts.filter(
@@ -32,5 +32,10 @@ export const getButterfliesBalance = async (wallet: string): Promise<number> => 
       nft.updateAuthorityAddress.toBase58() === "9dASnA6jbwLc7xjhCm7JYasTwAiyhypvC7PfDw7nfLBN" &&
       nft.name.includes("Butterfly")
   );
+  return filteredNfts;
+};
+
+export const getButterfliesBalance = async (wallet: string): Promise<number> => {
+  const filteredNfts = await getButterflies(wallet);
   return filteredNfts.length;
 };

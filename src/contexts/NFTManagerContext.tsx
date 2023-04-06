@@ -1,0 +1,171 @@
+// NFTManagerContext.ts
+import {
+  createAssociatedTokenAccountInstruction,
+  createTransferInstruction,
+  getAssociatedTokenAddress,
+} from "@solana/spl-token";
+import type { TransactionInstruction, VersionedTransaction } from "@solana/web3.js";
+import { SystemProgram } from "@solana/web3.js";
+import { LAMPORTS_PER_SOL, PublicKey, Transaction } from "@solana/web3.js";
+import { createContext, useContext } from "react";
+import { connection, getButterflies } from "server/services/onchain-service";
+import type { Amount, PaymentOption } from "types/catalog";
+import { PaymentToken } from "types/catalog";
+
+interface NFTManagerContextType {
+  performTransaction: (
+    owner: PublicKey,
+    payment: PaymentOption,
+    txSigner: <T extends Transaction | VersionedTransaction>(transaction: T) => Promise<T>
+  ) => Promise<string>;
+}
+
+const LAMPORTS_PER_RUDE = LAMPORTS_PER_SOL;
+const RUDE_SINK_1 = new PublicKey("process.env.NEXT_PUBLIC_SINK1");
+const RUDE_SINK_2 = new PublicKey("process.env.NEXT_PUBLIC_SINK2");
+const RUDE_TOKEN_KEY = new PublicKey("process.env.NEXT_PUBLIC_RUDE_TOKEN_KEY");
+
+const NFTManagerContext = createContext<NFTManagerContextType | null>(null);
+
+export function useNFTManager(): NFTManagerContextType {
+  const context = useContext(NFTManagerContext);
+  if (!context) {
+    throw new Error("useNFTManager must be inside of NFTManagerProvider");
+  }
+  return context;
+}
+
+export function NFTManagerProvider(props: { children: React.ReactNode }) {
+  const value: NFTManagerContextType = {
+    performTransaction,
+  };
+
+  return <NFTManagerContext.Provider value={value} {...props} />;
+}
+
+const performTransaction = async (
+  owner: PublicKey,
+  payment: PaymentOption,
+  txSigner: <T extends Transaction | VersionedTransaction>(transaction: T) => Promise<T>
+): Promise<string> => {
+  const instructions: TransactionInstruction[] = [];
+
+  for (const paymentAmount of payment.amounts) {
+    await buildTokenInstruction(owner, paymentAmount, instructions);
+  }
+
+  const txAll = new Transaction().add(...instructions);
+
+  const latestBlockhash = await connection.getLatestBlockhash();
+  txAll.recentBlockhash = latestBlockhash.blockhash;
+  txAll.lastValidBlockHeight = latestBlockhash.lastValidBlockHeight;
+  txAll.feePayer = owner;
+  const signedTx = await txSigner(txAll);
+  const wireTransaction = signedTx.serialize();
+  const base64 = wireTransaction.toString("base64");
+
+  return base64;
+};
+
+const buildTokenInstruction = async (
+  owner: PublicKey,
+  payment: Amount,
+  instructions: TransactionInstruction[]
+): Promise<void> => {
+  const tokenInstructionBuilder = {
+    [PaymentToken.BTF]: async () => {
+      const instruction = await buildButterflyInstructions(owner, payment.amount);
+      instructions.push(...instruction);
+    },
+    [PaymentToken.RUDE]: async () => {
+      const rudeTokenSinkAccount = await getAssociatedTokenAddress(RUDE_TOKEN_KEY, RUDE_SINK_1);
+      const userRudeTokenAccount = await getAssociatedTokenAddress(RUDE_TOKEN_KEY, owner);
+      const instruction = await buildRudeTokenInstruction(
+        userRudeTokenAccount,
+        rudeTokenSinkAccount,
+        owner,
+        payment.amount
+      );
+      instructions.push(...instruction);
+    },
+    [PaymentToken.SOL]: async () => {
+      const instruction = await buildSolanaInstruction(owner, payment.amount);
+      instructions.push(...instruction);
+    },
+  };
+
+  await tokenInstructionBuilder[payment.token]();
+};
+
+const buildButterflyInstructions = async (
+  userWallet: PublicKey,
+  amount: number
+): Promise<TransactionInstruction[]> => {
+  const instructions: TransactionInstruction[] = [];
+  const butterflies = await getButterflies(userWallet.toBase58());
+  if (butterflies.length < amount) throw Error("The user does not have enough butterflies");
+
+  for (let index = 0; index < amount; index++) {
+    const butterfly = butterflies[index];
+
+    const userButterflyMint = butterfly?.address as PublicKey;
+    const userButterflyTokenAccount = await getAssociatedTokenAddress(
+      userButterflyMint,
+      userWallet
+    );
+
+    const butterflyKeyAccount = await getAssociatedTokenAddress(userButterflyMint, RUDE_SINK_1);
+    const butterflyKeyAccountData = await connection.getAccountInfo(butterflyKeyAccount);
+
+    if (butterflyKeyAccountData === null) {
+      const Ix = createAssociatedTokenAccountInstruction(
+        userWallet,
+        butterflyKeyAccount,
+        RUDE_SINK_1,
+        userButterflyMint
+      );
+      instructions.push(Ix);
+    }
+
+    const Ix2 = createTransferInstruction(
+      userButterflyTokenAccount,
+      butterflyKeyAccount,
+      userWallet,
+      1
+    );
+    instructions.push(Ix2);
+  }
+
+  return instructions;
+};
+
+const buildRudeTokenInstruction = async (
+  rudeTokenAccount: PublicKey,
+  rudeSinkAccount: PublicKey,
+  userPublicKey: PublicKey,
+  amount: number
+): Promise<TransactionInstruction[]> => {
+  const instructions: TransactionInstruction[] = [];
+
+  const Ix3 = createTransferInstruction(
+    rudeTokenAccount,
+    rudeSinkAccount,
+    userPublicKey,
+    amount * LAMPORTS_PER_RUDE
+  );
+  instructions.push(Ix3);
+
+  return instructions;
+};
+
+const buildSolanaInstruction = async (userPublicKey: PublicKey, amount: number) => {
+  const instructions = new Transaction().add(
+    SystemProgram.transfer({
+      fromPubkey: userPublicKey,
+      toPubkey: RUDE_SINK_2,
+      lamports: amount * LAMPORTS_PER_SOL,
+    })
+  ).instructions;
+
+  return instructions;
+};

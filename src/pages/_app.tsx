@@ -10,6 +10,7 @@ import "react-toastify/dist/ReactToastify.css";
 import Layout from "../components/Layout";
 import "../styles/globals.scss";
 import "../styles/styles.scss";
+import { NFTManagerProvider } from "contexts/NFTManagerContext";
 
 const MyApp: AppType<{ session: Session | null }> = ({
   Component,
@@ -22,7 +23,9 @@ const MyApp: AppType<{ session: Session | null }> = ({
       <ClientWalletProvider autoConnect>
         <SessionProvider session={session}>
           <Layout>
-            <Component {...pageProps} />
+            <NFTManagerProvider>
+              <Component {...pageProps} />
+            </NFTManagerProvider>
           </Layout>
         </SessionProvider>
       </ClientWalletProvider>

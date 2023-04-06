@@ -51,7 +51,7 @@ const PaymentMethodSelector: React.FC<{
                 whileHover={{ scale: 1.1 }}
                 whileTap={{ scale: 0.9 }}
               >
-                {opt.ammounts.map(({ token, amount }, j) => (
+                {opt.amounts.map(({ token, amount }, j) => (
                   <React.Fragment key={j}>
                     <div className="flex w-full grow items-center text-center">
                       <div className="w-full">
@@ -59,7 +59,7 @@ const PaymentMethodSelector: React.FC<{
                         <div>{balanceIcons[token]}</div>
                       </div>
                     </div>
-                    {j < opt.ammounts.length - 1 && <span className="">+</span>}
+                    {j < opt.amounts.length - 1 && <span className="">+</span>}
                   </React.Fragment>
                 ))}
               </motion.button>

@@ -41,9 +41,7 @@ export const Connect = () => {
           nonce: csrf,
         });
 
-        const data = new TextEncoder().encode(message.prepare());
-        const signature = await wallet.signMessage(data);
-        const serializedSignature = bs58.encode(signature);
+        const serializedSignature = message.sign(wallet.signMessage);
 
         signIn("credentials", {
           message: JSON.stringify(message),

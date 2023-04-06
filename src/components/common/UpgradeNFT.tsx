@@ -1,47 +1,80 @@
 import { motion } from "framer-motion";
 import Image from "next/image";
-import React, { useEffect, useState } from "react";
-import type { ProductOption } from "types/catalog";
+import React, { useEffect, useRef, useState } from "react";
+import type { PaymentOption, ProductOption } from "types/catalog";
 import PaymentMethodSelector from "./PaymentMethodSelector";
-import Loader from "./Loader";
 import NftHidden from "assets/images/nft-hidden.png";
 import Divider from "assets/images/divider.png";
 import FrameBox from "./FrameBox";
-import type { DemonUpgrades, GolemUpgrades, UserNFT } from "server/database/models/user-nfts.model";
-import { showSuccessToast, showErrorToast } from "utils/toastUtils";
+import type { UserNFT } from "server/database/models/user-nfts.model";
+import { showSuccessToast, showErrorToast, showPromisedToast } from "utils/toastUtils";
 import { trpc } from "utils/trpc";
-import { NFTType } from "server/database/models/nft.model";
+import type { RudeNFT } from "server/database/models/nft.model";
+import Balance from "components/topbar/Balance";
+import { useWallet } from "@solana/wallet-adapter-react";
+import { useNFTManager } from "contexts/NFTManagerContext";
+import { SigninMessage } from "utils/SigninMessage";
+import { getCsrfToken } from "next-auth/react";
 
 interface BuyProperties {
   title: string;
   upgradeOption: ProductOption;
-  imageUrl?: string;
   sourceImageUrl?: string;
-  nft: UserNFT;
+  nft: RudeNFT & {
+    upgrades: UserNFT | undefined;
+  };
 }
 
-const UpgradeNFT: React.FC<BuyProperties> = ({
-  title,
-  upgradeOption,
-  imageUrl,
-  sourceImageUrl,
-  nft,
-}) => {
-  const previewMutation = trpc.upgradeNft.buildNFTUpgradeImage.useMutation();
-  const { data, isLoading, error, isError, isSuccess } = previewMutation;
+const UpgradeNFT: React.FC<BuyProperties> = ({ title, upgradeOption, sourceImageUrl, nft }) => {
+  const [paymentOption, setpaymentOption] = useState<PaymentOption>();
+  const { publicKey, signMessage, signTransaction } = useWallet();
+  const { performTransaction: prepTransaction } = useNFTManager();
+  const toastRef = useRef("");
+  const previewMutation = trpc.upgradeNft.upgradeNFT.useMutation();
+  const { data: imageUrl, isLoading, error, isError, isSuccess } = previewMutation;
   const { paymentOptions } = upgradeOption;
 
   const initiatePreview = async (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
     e.stopPropagation();
+    const csrf = await getCsrfToken();
+    if (!publicKey || !csrf || !signMessage || !signTransaction || !paymentOption) return;
     try {
-      previewMutation.mutate({
-        mint: nft.mint,
-        upgradeType:
-          nft.type == NFTType.GOLEM
-            ? (upgradeOption.key as GolemUpgrades)
-            : (upgradeOption.key as DemonUpgrades),
+      showPromisedToast(toastRef, "Initating Upgrade: Sign message...", false);
+      const signatureMessage = `Do you wish to upgrade your ${nft.name} permanently! This will approve the upgrade of metadata but will not affect the Rarity of the NFT. Do you wish to continue?`;
+
+      const message = new SigninMessage({
+        domain: window.location.host,
+        publicKey: publicKey.toBase58(),
+        statement: signatureMessage,
+        nonce: csrf,
       });
-      showSuccessToast("Preview Generated", 1000);
+
+      const signedMessage = await message.sign(signMessage);
+
+      const serializedSignature = await prepTransaction(publicKey, paymentOption, signTransaction);
+
+      const data = {
+        mintAddress: nft.mint,
+        txid: serializedSignature,
+        golem: nft.name,
+        signedMessage: signedMessage,
+        wallet: publicKey.toString(),
+        owner: publicKey.toBase58(),
+        image: previewMutation.data,
+      };
+      showPromisedToast(
+        toastRef,
+        "Upgrading Golem: Transaction sent, waiting for confirmation...",
+        true
+      );
+
+      // previewMutation.mutate({
+      //   mint: nft.mint,
+      //   upgradeType:
+      //     nft.type == NFTType.GOLEM
+      //       ? (upgradeOption.key as GolemUpgrades)
+      //       : (upgradeOption.key as DemonUpgrades),
+      // });
     } catch (error) {
       showErrorToast("Error generating Preview, try again or contact support!");
       console.error(error);
@@ -60,6 +93,7 @@ const UpgradeNFT: React.FC<BuyProperties> = ({
   }, [error?.message, isError, isSuccess]);
 
   const upgradeGolem = async (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
+    await initiatePreview(e);
     e.stopPropagation();
   };
 
@@ -113,7 +147,7 @@ const UpgradeNFT: React.FC<BuyProperties> = ({
             <FrameBox className="w-full">
               <Image
                 className="panel w-full items-center rounded-3xl"
-                src={(data as string) ?? NftHidden}
+                src={(imageUrl as string) ?? NftHidden}
                 alt={title}
                 width={500}
                 height={500}
@@ -124,12 +158,13 @@ const UpgradeNFT: React.FC<BuyProperties> = ({
       </div>
       <div className="mb-5 w-1/2 p-5 sm:p-0">
         <div className="w-full text-center sm:w-auto">
+          <Balance className="mx-auto mb-2 w-fit"></Balance>
           <p className="titles-color textStroke mb-4 text-2xl">Current Golem Upgrade Costs:</p>
           {paymentOptions && (
             <PaymentMethodSelector
               paymentOptions={paymentOptions}
               onChange={(opt) => {
-                console.log(opt);
+                setpaymentOption(opt);
               }}
             ></PaymentMethodSelector>
           )}

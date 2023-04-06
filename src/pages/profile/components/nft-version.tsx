@@ -10,13 +10,18 @@ import UpgradeNFT from "components/common/UpgradeNFT";
 import type { ProductOption } from "types/catalog";
 import { GolemUpgrades } from "server/database/models/user-nfts.model";
 import { NFTType } from "server/database/models/nft.model";
+import type { RudeNFT } from "server/database/models/nft.model";
 
-const NftVersion: React.FC<{ upgrade?: ProductOption; userNft?: UserNFT; isOriginal: boolean }> = ({
-  upgrade,
-  userNft,
-  isOriginal = false,
-}) => {
+const NftVersion: React.FC<{
+  upgrade?: ProductOption;
+  nft?: RudeNFT & {
+    upgrades: UserNFT | undefined;
+  };
+  isOriginal: boolean;
+}> = ({ upgrade, nft, isOriginal = false }) => {
   const [isOpen, setOpen] = useState(false);
+  const userNft = nft?.upgrades;
+
   const upgradeType =
     userNft?.type == NFTType.GOLEM
       ? (upgrade?.key as GolemUpgrades)
@@ -103,7 +108,7 @@ const NftVersion: React.FC<{ upgrade?: ProductOption; userNft?: UserNFT; isOrigi
           >
             {upgrade.isAvailable ? (
               <UpgradeNFT
-                nft={userNft}
+                nft={nft}
                 title={upgrade.name}
                 upgradeOption={upgrade}
                 imageUrl={userNft?.images?.get(upgradeType)}

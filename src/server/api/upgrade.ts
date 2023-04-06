@@ -7,7 +7,7 @@ import { DemonUpgrades, GolemUpgrades } from "server/database/models/user-nfts.m
 import { getUserNFTbyMint } from "server/services/nfts-service";
 
 export const upgradeRouter = router({
-  buildNFTUpgradeImage: protectedProcedure
+  buildImagePreview: protectedProcedure
     .input(
       z.object({
         mint: z.string(),
@@ -29,5 +29,24 @@ export const upgradeRouter = router({
         return upgradeUrlImage;
       }
       return "";
+    }),
+  upgradeNFT: protectedProcedure
+    .input(
+      z.object({
+        mint: z.string(),
+        upgradeType: z.nativeEnum(DemonUpgrades).or(z.nativeEnum(GolemUpgrades)),
+        imageUrl: z.string().url().nullish(),
+      })
+    )
+    .mutation(async ({ input, ctx }) => {
+      const { mint, upgradeType, imageUrl } = input;
+      const wallet = ctx.session.walletId;
+      const nft = await getUserNFTbyMint(wallet, mint);
+      let upgradeUrlImage;
+      if (nft && nft.type && !imageUrl) {
+        upgradeUrlImage = await buildUpgradeImage(mint, nft.type, upgradeType, nft.attributes);
+      }
+
+      return upgradeUrlImage ?? "";
     }),
 });

@@ -22,7 +22,7 @@ export interface PaymentOption {
   type: PaymentType;
   order: number;
   enabled: boolean;
-  ammounts: Amount[];
+  amounts: Amount[];
 }
 
 export interface Amount {

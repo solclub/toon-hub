@@ -5,12 +5,19 @@ import SVGIcon from "assets/svg/SVGIcon";
 import classNames from "classnames";
 import { trpc } from "../../utils/trpc";
 
-const Balance = () => {
+const Balance: React.FC<{ className?: string }> = ({ className }) => {
   const { isLoading, data } = trpc.nfts.getWalletBalance.useQuery();
+
+  // const utils = trpc.useContext();
+  // const result = utils.nfts.getWalletBalance.fetch();
+  // console.log("getWalletBalance", result);
+
   return (
     <div
       className={classNames(
-        "mr-3 flex items-center gap-3 rounded-2xl border border-[#BEA97E] py-2 px-4 font-medieval-sharp font-bold",
+        `${
+          className || "mr-3"
+        }  flex items-center gap-3 rounded-2xl border border-[#BEA97E] py-2 px-4 font-medieval-sharp font-bold`,
         { "loading-effect": isLoading }
       )}
     >

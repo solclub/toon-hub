@@ -12,7 +12,7 @@ import Loader from "components/common/Loader";
 import NftVersion from "./components/nft-version";
 import type { UserNFT } from "server/database/models/user-nfts.model";
 import { ProductType } from "types/catalog";
-import type { NFTType } from "server/database/models/nft.model";
+import type { NFTType, RudeNFT } from "server/database/models/nft.model";
 import { trpc } from "utils/trpc";
 import nftTierSelector from "utils/nfttier";
 import classNames from "classnames";
@@ -35,6 +35,10 @@ type Weapon = {
   rarity: string;
   expireDate: Date;
   owned: boolean;
+};
+
+type NFTInfo = RudeNFT & {
+  upgrades: UserNFT | undefined;
 };
 
 const sampleWeapons: Weapon[] = [
@@ -289,7 +293,7 @@ const Profile: NextPage = () => {
             <CustomizePanel
               collection={profileNFT?.type}
               weapons={weapons}
-              nftUpgrades={profileNFT?.upgrades}
+              nft={profileNFT}
             ></CustomizePanel>
           )}
         </Panel>
@@ -300,11 +304,11 @@ const Profile: NextPage = () => {
 
 type ArmoryProps = {
   collection: NFTType;
-  nftUpgrades?: UserNFT;
+  nft?: NFTInfo;
   weapons: Weapon[];
 };
 
-const CustomizePanel = ({ collection, weapons, nftUpgrades: userNft }: ArmoryProps) => {
+const CustomizePanel = ({ collection, weapons, nft }: ArmoryProps) => {
   const { data: product } = trpc.catalog.getProduct.useQuery({
     type: ProductType.NFT_UPGRADE,
     collection: collection,
@@ -326,7 +330,7 @@ const CustomizePanel = ({ collection, weapons, nftUpgrades: userNft }: ArmoryPro
             <NftVersion
               key={opt.name}
               upgrade={opt}
-              userNft={userNft}
+              nft={nft}
               isOriginal={opt.key === "ORIGINAL"}
             ></NftVersion>
           ))}

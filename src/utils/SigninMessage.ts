@@ -1,36 +1,30 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import bs58 from "bs58";
 import nacl from "tweetnacl";
-type SignMessage = {
+
+interface SignMessage {
   domain: string;
   publicKey: string;
   nonce: string;
   statement: string;
-};
+}
 
 export class SigninMessage {
-  domain: any;
-  publicKey: any;
-  nonce: any;
-  statement: any;
+  constructor(private readonly message: SignMessage) {}
 
-  constructor({ domain, publicKey, nonce, statement }: SignMessage) {
-    this.domain = domain;
-    this.publicKey = publicKey;
-    this.nonce = nonce;
-    this.statement = statement;
+  private prepareMessage(): Uint8Array {
+    const { statement, nonce } = this.message;
+    return new TextEncoder().encode(`${statement}${nonce}`);
   }
 
-  prepare() {
-    return `${this.statement}${this.nonce}`;
+  async sign(signer: (message: Uint8Array) => Promise<Uint8Array>): Promise<string> {
+    const signature = await signer(this.prepareMessage());
+    return bs58.encode(signature);
   }
 
-  async validate(signature: string) {
-    const msg = this.prepare();
+  async validate(signature: string): Promise<boolean> {
+    const message = this.prepareMessage();
     const signatureUint8 = bs58.decode(signature);
-    const msgUint8 = new TextEncoder().encode(msg);
-    const pubKeyUint8 = bs58.decode(this.publicKey);
-
-    return nacl.sign.detached.verify(msgUint8, signatureUint8, pubKeyUint8);
+    const pubKeyUint8 = bs58.decode(this.message.publicKey);
+    return nacl.sign.detached.verify(message, signatureUint8, pubKeyUint8);
   }
 }
