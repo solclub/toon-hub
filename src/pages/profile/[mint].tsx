@@ -112,7 +112,7 @@ const Profile: NextPage = () => {
       const tempIndex = isNext
         ? (current + 1) % userMints.length
         : (current - 1 + userMints.length) % userMints.length;
-      console.log(current, tempIndex, isNext, userMints[current]);
+      //console.log(current, tempIndex, isNext, userMints[current]);
       return tempIndex;
     };
     if (current) {

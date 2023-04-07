@@ -2,9 +2,7 @@ import { Metadata, Metaplex, Nft, Sft } from "@metaplex-foundation/js";
 import { getAssociatedTokenAddress } from "@solana/spl-token";
 import { Connection, LAMPORTS_PER_SOL, PublicKey } from "@solana/web3.js";
 import { env } from "env/client.mjs";
-
-export const connection = new Connection(env.NEXT_PUBLIC_RPC_NODE, "confirmed");
-const metaplex = new Metaplex(connection);
+import { connection } from "./web3-connections";
 
 export const getRudeTokenBalance = async (wallet: string): Promise<number> => {
   const walletPubKey = new PublicKey(wallet);

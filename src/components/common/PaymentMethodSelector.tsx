@@ -9,11 +9,7 @@ import classNames from "classnames";
 
 const balanceIcons = {
   [PaymentToken.BTF]: <span className="inline">🦋</span>,
-  [PaymentToken.SOL]: (
-    <span className="inline">
-      <SVGIcon.Sol size={30} />
-    </span>
-  ),
+  [PaymentToken.SOL]: <SVGIcon.Sol size={30} />,
   [PaymentToken.RUDE]: (
     <Image className="inline" src={RudeToken} alt={"title"} width={30} height={30}></Image>
   ),
@@ -56,7 +52,7 @@ const PaymentMethodSelector: React.FC<{
                     <div className="flex w-full grow items-center text-center">
                       <div className="w-full">
                         <div>{amount}</div>
-                        <div>{balanceIcons[token]}</div>
+                        <div className="items-center">{balanceIcons[token]}</div>
                       </div>
                     </div>
                     {j < opt.amounts.length - 1 && <span className="">+</span>}

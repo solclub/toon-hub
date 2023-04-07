@@ -18,7 +18,7 @@
             "type": "RUDE_BTF",
             "order": 1,
             "enabled": true,
-            "ammounts": [
+            "amounts": [
               {
                 "token": "RUDE",
                 "amount": 888
@@ -33,7 +33,7 @@
             "type": "RUDE",
             "order": 2,
             "enabled": true,
-            "ammounts": [
+            "amounts": [
               {
                 "token": "RUDE",
                 "amount": 2888
@@ -44,7 +44,7 @@
             "type": "SOL",
             "order": 3,
             "enabled": true,
-            "ammounts": [
+            "amounts": [
               {
                 "token": "SOL",
                 "amount": 1.75
@@ -62,7 +62,7 @@
             "type": "RUDE",
             "order": 1,
             "enabled": true,
-            "ammounts": [
+            "amounts": [
               {
                 "token": "RUDE",
                 "amount": 2888
@@ -73,7 +73,7 @@
             "type": "SOL",
             "order": 2,
             "enabled": true,
-            "ammounts": [
+            "amounts": [
               {
                 "token": "SOL",
                 "amount": 1.75
@@ -103,7 +103,7 @@
             "type": "RUDE",
             "order": 1,
             "enabled": true,
-            "ammounts": [
+            "amounts": [
               {
                 "token": "RUDE",
                 "amount": 2888
@@ -114,7 +114,7 @@
             "type": "SOL",
             "order": 2,
             "enabled": true,
-            "ammounts": [
+            "amounts": [
               {
                 "token": "SOL",
                 "amount": 1.75
@@ -137,7 +137,7 @@
             "type": "RUDE",
             "order": 1,
             "enabled": true,
-            "ammounts": [
+            "amounts": [
               {
                 "token": "RUDE",
                 "amount": 2888
@@ -148,7 +148,7 @@
             "type": "SOL",
             "order": 2,
             "enabled": true,
-            "ammounts": [
+            "amounts": [
               {
                 "token": "SOL",
                 "amount": 1.75

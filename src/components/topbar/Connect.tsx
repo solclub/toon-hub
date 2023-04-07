@@ -40,8 +40,9 @@ export const Connect = () => {
           statement: `Sign this message to sign in to the app.`,
           nonce: csrf,
         });
-
-        const serializedSignature = message.sign(wallet.signMessage);
+        const data = message.prepare();
+        const signature = await wallet.signMessage(data);
+        const serializedSignature = bs58.encode(signature);
 
         signIn("credentials", {
           message: JSON.stringify(message),

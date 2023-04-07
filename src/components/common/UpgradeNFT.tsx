@@ -15,6 +15,7 @@ import { useWallet } from "@solana/wallet-adapter-react";
 import { useNFTManager } from "contexts/NFTManagerContext";
 import { SigninMessage } from "utils/SigninMessage";
 import { getCsrfToken } from "next-auth/react";
+import bs58 from "bs58";
 
 interface BuyProperties {
   title: string;
@@ -28,7 +29,7 @@ interface BuyProperties {
 const UpgradeNFT: React.FC<BuyProperties> = ({ title, upgradeOption, sourceImageUrl, nft }) => {
   const [paymentOption, setpaymentOption] = useState<PaymentOption>();
   const { publicKey, signMessage, signTransaction } = useWallet();
-  const { performTransaction: prepTransaction } = useNFTManager();
+  const { prepTransaction } = useNFTManager();
   const toastRef = useRef("");
   const previewMutation = trpc.upgradeNft.upgradeNFT.useMutation();
   const { data: imageUrl, isLoading, error, isError, isSuccess } = previewMutation;
@@ -37,10 +38,11 @@ const UpgradeNFT: React.FC<BuyProperties> = ({ title, upgradeOption, sourceImage
   const initiatePreview = async (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
     e.stopPropagation();
     const csrf = await getCsrfToken();
+    console.log(!publicKey, !csrf, !signMessage, !signTransaction, !paymentOption);
     if (!publicKey || !csrf || !signMessage || !signTransaction || !paymentOption) return;
     try {
       showPromisedToast(toastRef, "Initating Upgrade: Sign message...", false);
-      const signatureMessage = `Do you wish to upgrade your ${nft.name} permanently! This will approve the upgrade of metadata but will not affect the Rarity of the NFT. Do you wish to continue?`;
+      const signatureMessage = `Do you wish to upgrade your ${nft.name}! This will approve the upgrade of metadata but will not affect the Rarity of the NFT. Do you wish to continue?`;
 
       const message = new SigninMessage({
         domain: window.location.host,
@@ -49,19 +51,28 @@ const UpgradeNFT: React.FC<BuyProperties> = ({ title, upgradeOption, sourceImage
         nonce: csrf,
       });
 
-      const signedMessage = await message.sign(signMessage);
+      const data = message.prepare();
+      const signature = await signMessage(data);
+      const serializedSignature = bs58.encode(signature);
+      const stringMessage = JSON.stringify(message);
 
-      const serializedSignature = await prepTransaction(publicKey, paymentOption, signTransaction);
+      const serializedtransaction = await prepTransaction(
+        publicKey,
+        paymentOption,
+        signTransaction
+      );
 
-      const data = {
-        mintAddress: nft.mint,
-        txid: serializedSignature,
-        golem: nft.name,
-        signedMessage: signedMessage,
-        wallet: publicKey.toString(),
-        owner: publicKey.toBase58(),
-        image: previewMutation.data,
-      };
+      console.log(serializedtransaction);
+
+      // const data = {
+      //   mintAddress: nft.mint,
+      //   txid: serializedSignature,
+      //   golem: nft.name,
+      //   signedMessage: signedMessage,
+      //   wallet: publicKey.toString(),
+      //   owner: publicKey.toBase58(),
+      //   image: previewMutation.data,
+      // };
       showPromisedToast(
         toastRef,
         "Upgrading Golem: Transaction sent, waiting for confirmation...",
@@ -94,7 +105,6 @@ const UpgradeNFT: React.FC<BuyProperties> = ({ title, upgradeOption, sourceImage
 
   const upgradeGolem = async (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
     await initiatePreview(e);
-    e.stopPropagation();
   };
 
   return (
@@ -115,8 +125,6 @@ const UpgradeNFT: React.FC<BuyProperties> = ({ title, upgradeOption, sourceImage
           <div className="flex w-full flex-wrap items-center lg:w-2/6">
             <div className="mx-auto flex w-full flex-wrap">
               <motion.button
-                whileHover={{ scale: 1.1 }}
-                whileTap={{ scale: 0.9 }}
                 className="btn-rude btn mx-auto"
                 onClick={initiatePreview}
                 disabled={isLoading}
@@ -133,8 +141,6 @@ const UpgradeNFT: React.FC<BuyProperties> = ({ title, upgradeOption, sourceImage
             </div>
             <div className="mx-auto flex w-full flex-wrap">
               <motion.button
-                whileHover={{ scale: 1.1 }}
-                whileTap={{ scale: 0.9 }}
                 className="btn-rude btn mx-auto"
                 onClick={upgradeGolem}
                 disabled={isLoading}
@@ -159,7 +165,7 @@ const UpgradeNFT: React.FC<BuyProperties> = ({ title, upgradeOption, sourceImage
       <div className="mb-5 w-1/2 p-5 sm:p-0">
         <div className="w-full text-center sm:w-auto">
           <Balance className="mx-auto mb-2 w-fit"></Balance>
-          <p className="titles-color textStroke mb-4 text-2xl">Current Golem Upgrade Costs:</p>
+          <p className="titles-color textStroke mb-4 text-2xl">Current Upgrade Costs:</p>
           {paymentOptions && (
             <PaymentMethodSelector
               paymentOptions={paymentOptions}

@@ -11,7 +11,14 @@ import {
   getRudeTokenBalance,
   getSolBalance,
 } from "./onchain-service";
-import type { Metadata, JsonMetadata, Nft, Sft } from "@metaplex-foundation/js";
+import type {
+  Metadata,
+  JsonMetadata,
+  Nft,
+  Sft,
+  NftWithToken,
+  SftWithToken,
+} from "@metaplex-foundation/js";
 import { Metaplex } from "@metaplex-foundation/js";
 import type { Model } from "mongoose";
 import { env } from "env/server.mjs";
@@ -133,6 +140,14 @@ export const getNFTsByWalletId = async (wallet: string): Promise<NFTDictionary> 
   });
 
   return mints;
+};
+
+export const getNFTsByMint = async (
+  mintAddress: string
+): Promise<Nft | Sft | SftWithToken | NftWithToken> => {
+  const mint = new PublicKey(mintAddress);
+  const nft = await metaplex.nfts().findByMint({ mintAddress: mint });
+  return nft;
 };
 
 export const getWalletBalanceTokens = async (wallet: string): Promise<Map<string, number>> => {

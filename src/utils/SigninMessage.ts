@@ -1,30 +1,45 @@
 import bs58 from "bs58";
 import nacl from "tweetnacl";
-
-interface SignMessage {
+type SignMessage = {
   domain: string;
   publicKey: string;
   nonce: string;
   statement: string;
-}
+};
 
 export class SigninMessage {
-  constructor(private readonly message: SignMessage) {}
+  domain: string;
+  publicKey: string;
+  nonce: string;
+  statement: string;
 
-  private prepareMessage(): Uint8Array {
-    const { statement, nonce } = this.message;
-    return new TextEncoder().encode(`${statement}${nonce}`);
+  constructor(message: SignMessage);
+  constructor(serialized: string);
+  constructor(arg: SignMessage | string) {
+    if (typeof arg === "string") {
+      const message: SignMessage = JSON.parse(arg);
+      this.domain = message.domain;
+      this.publicKey = message.publicKey;
+      this.nonce = message.nonce;
+      this.statement = message.statement;
+    } else {
+      const message = arg;
+      this.domain = message.domain;
+      this.publicKey = message.publicKey;
+      this.nonce = message.nonce;
+      this.statement = message.statement;
+    }
   }
 
-  async sign(signer: (message: Uint8Array) => Promise<Uint8Array>): Promise<string> {
-    const signature = await signer(this.prepareMessage());
-    return bs58.encode(signature);
+  prepare() {
+    return new TextEncoder().encode(`${this.statement}${this.nonce}`);
   }
 
-  async validate(signature: string): Promise<boolean> {
-    const message = this.prepareMessage();
+  validate(signature: string) {
+    const msgUint8 = this.prepare();
     const signatureUint8 = bs58.decode(signature);
-    const pubKeyUint8 = bs58.decode(this.message.publicKey);
-    return nacl.sign.detached.verify(message, signatureUint8, pubKeyUint8);
+    const pubKeyUint8 = bs58.decode(this.publicKey);
+
+    return nacl.sign.detached.verify(msgUint8, signatureUint8, pubKeyUint8);
   }
 }

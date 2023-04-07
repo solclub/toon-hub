@@ -7,13 +7,14 @@ import {
 import type { TransactionInstruction, VersionedTransaction } from "@solana/web3.js";
 import { SystemProgram } from "@solana/web3.js";
 import { LAMPORTS_PER_SOL, PublicKey, Transaction } from "@solana/web3.js";
+import { env } from "env/client.mjs";
 import { createContext, useContext } from "react";
 import { connection, getButterflies } from "server/services/onchain-service";
 import type { Amount, PaymentOption } from "types/catalog";
 import { PaymentToken } from "types/catalog";
 
 interface NFTManagerContextType {
-  performTransaction: (
+  prepTransaction: (
     owner: PublicKey,
     payment: PaymentOption,
     txSigner: <T extends Transaction | VersionedTransaction>(transaction: T) => Promise<T>
@@ -21,9 +22,9 @@ interface NFTManagerContextType {
 }
 
 const LAMPORTS_PER_RUDE = LAMPORTS_PER_SOL;
-const RUDE_SINK_1 = new PublicKey("process.env.NEXT_PUBLIC_SINK1");
-const RUDE_SINK_2 = new PublicKey("process.env.NEXT_PUBLIC_SINK2");
-const RUDE_TOKEN_KEY = new PublicKey("process.env.NEXT_PUBLIC_RUDE_TOKEN_KEY");
+const RUDE_SINK_KEY = new PublicKey(env.NEXT_PUBLIC_RUDE_SINK_KEY);
+const RUDE_TOKEN_KEY = new PublicKey(env.NEXT_PUBLIC_RUDE_TOKEN_KEY);
+const SOLANA_SINK_KEY = new PublicKey(env.NEXT_PUBLIC_SOLANA_SINK_KEY);
 
 const NFTManagerContext = createContext<NFTManagerContextType | null>(null);
 
@@ -37,13 +38,13 @@ export function useNFTManager(): NFTManagerContextType {
 
 export function NFTManagerProvider(props: { children: React.ReactNode }) {
   const value: NFTManagerContextType = {
-    performTransaction,
+    prepTransaction,
   };
 
   return <NFTManagerContext.Provider value={value} {...props} />;
 }
 
-const performTransaction = async (
+const prepTransaction = async (
   owner: PublicKey,
   payment: PaymentOption,
   txSigner: <T extends Transaction | VersionedTransaction>(transaction: T) => Promise<T>
@@ -78,8 +79,11 @@ const buildTokenInstruction = async (
       instructions.push(...instruction);
     },
     [PaymentToken.RUDE]: async () => {
-      const rudeTokenSinkAccount = await getAssociatedTokenAddress(RUDE_TOKEN_KEY, RUDE_SINK_1);
+      console.log(RUDE_TOKEN_KEY.toString(), RUDE_SINK_KEY.toString());
+
       const userRudeTokenAccount = await getAssociatedTokenAddress(RUDE_TOKEN_KEY, owner);
+      const rudeTokenSinkAccount = await getAssociatedTokenAddress(RUDE_TOKEN_KEY, RUDE_SINK_KEY);
+
       const instruction = await buildRudeTokenInstruction(
         userRudeTokenAccount,
         rudeTokenSinkAccount,
@@ -114,14 +118,14 @@ const buildButterflyInstructions = async (
       userWallet
     );
 
-    const butterflyKeyAccount = await getAssociatedTokenAddress(userButterflyMint, RUDE_SINK_1);
+    const butterflyKeyAccount = await getAssociatedTokenAddress(userButterflyMint, RUDE_SINK_KEY);
     const butterflyKeyAccountData = await connection.getAccountInfo(butterflyKeyAccount);
 
     if (butterflyKeyAccountData === null) {
       const Ix = createAssociatedTokenAccountInstruction(
         userWallet,
         butterflyKeyAccount,
-        RUDE_SINK_1,
+        RUDE_SINK_KEY,
         userButterflyMint
       );
       instructions.push(Ix);
@@ -162,7 +166,7 @@ const buildSolanaInstruction = async (userPublicKey: PublicKey, amount: number) 
   const instructions = new Transaction().add(
     SystemProgram.transfer({
       fromPubkey: userPublicKey,
-      toPubkey: RUDE_SINK_2,
+      toPubkey: SOLANA_SINK_KEY,
       lamports: amount * LAMPORTS_PER_SOL,
     })
   ).instructions;

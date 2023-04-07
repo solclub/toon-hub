@@ -27,7 +27,6 @@ const mergeImages = async ({
   sources: Source[];
   options?: Options;
 }): Promise<ReturnData> => {
-  console.log(sources.length);
   const images = await Promise.all(
     sources.map(async (source) => {
       const { src, ...data } = typeof source === "string" ? { src: source } : source;
@@ -52,8 +51,6 @@ const mergeImages = async ({
       background: { r: 0, g: 0, b: 0, alpha: 0 },
     },
   }).png();
-
-  console.log(images.length);
 
   const overlayImages: OverlayOptions[] = images.map((image) => {
     return {

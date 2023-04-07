@@ -26,6 +26,7 @@ export const serverSchema = z.object({
   WAR_PROGRAM_ID: z.string(),
   ANCHOR_WALLET_KEYPAIR: z.string(),
   UPDATE_AUTHORITY_ADDRESS: z.string(),
+  UPDATE_AUTHORITY_KEYPAIR: z.string(),
 
   // cloudinary
   CLOUDINARY_CLOUD_NAME: z.string(),
@@ -41,6 +42,8 @@ export const serverSchema = z.object({
 export const clientSchema = z.object({
   NEXT_PUBLIC_RUDE_TOKEN_KEY: z.string(),
   NEXT_PUBLIC_RPC_NODE: z.string(),
+  NEXT_PUBLIC_RUDE_SINK_KEY: z.string(),
+  NEXT_PUBLIC_SOLANA_SINK_KEY: z.string(),
 });
 
 /**
@@ -52,4 +55,6 @@ export const clientSchema = z.object({
 export const clientEnv = {
   NEXT_PUBLIC_RUDE_TOKEN_KEY: process.env.NEXT_PUBLIC_RUDE_TOKEN_KEY,
   NEXT_PUBLIC_RPC_NODE: process.env.NEXT_PUBLIC_RPC_NODE,
+  NEXT_PUBLIC_RUDE_SINK_KEY: process.env.NEXT_PUBLIC_RUDE_SINK_KEY,
+  NEXT_PUBLIC_SOLANA_SINK_KEY: process.env.NEXT_PUBLIC_SOLANA_SINK_KEY,
 };

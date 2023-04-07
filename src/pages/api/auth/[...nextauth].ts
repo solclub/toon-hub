@@ -105,19 +105,22 @@ export const createOptions = async (
             type: "text",
           },
         },
-        async authorize(credentials, req2) {
+        async authorize(credentials) {
           try {
-            const req = req2 as NextApiRequest;
-
             const { message, signature } = credentials ?? {};
-            const signinMessage = new SigninMessage(JSON.parse(message || "{}"));
-
             const nonce = await getCsrfToken({ req });
+
+            if (!message || !signature) {
+              throw new Error("Could not validate the signed message");
+            }
+
+            const signinMessage = new SigninMessage(message);
+
             if (signinMessage.nonce !== nonce) {
               throw new Error("Could not validate the signed message");
             }
 
-            const validationResult = await signinMessage.validate(signature || "");
+            const validationResult = signinMessage.validate(signature || "");
             if (!validationResult) {
               throw new Error("Could not validate the signed message");
             }

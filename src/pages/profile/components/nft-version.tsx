@@ -18,10 +18,9 @@ const NftVersion: React.FC<{
     upgrades: UserNFT | undefined;
   };
   isOriginal: boolean;
-}> = ({ upgrade, nft, isOriginal = false }) => {
+}> = ({ upgrade, nft }) => {
   const [isOpen, setOpen] = useState(false);
   const userNft = nft?.upgrades;
-
   const upgradeType =
     userNft?.type == NFTType.GOLEM
       ? (upgrade?.key as GolemUpgrades)
@@ -111,7 +110,6 @@ const NftVersion: React.FC<{
                 nft={nft}
                 title={upgrade.name}
                 upgradeOption={upgrade}
-                imageUrl={userNft?.images?.get(upgradeType)}
                 sourceImageUrl={userNft?.images?.get(userNft.current)}
               ></UpgradeNFT>
             ) : (
