@@ -5,12 +5,7 @@ import type { UserNFT } from "../database/models/user-nfts.model";
 import usernfts, { GolemUpgrades } from "../database/models/user-nfts.model";
 import { PublicKey } from "@solana/web3.js";
 import { getInTrainingNfts } from "./war-service";
-import {
-  connection,
-  getButterfliesBalance,
-  getRudeTokenBalance,
-  getSolBalance,
-} from "./onchain-service";
+import { getButterfliesBalance, getRudeTokenBalance, getSolBalance } from "./onchain-service";
 import type {
   Metadata,
   JsonMetadata,
@@ -22,6 +17,7 @@ import type {
 import { Metaplex } from "@metaplex-foundation/js";
 import type { Model } from "mongoose";
 import { env } from "env/server.mjs";
+import { connection } from "./connections/web3-public";
 
 type NFT = Metadata<JsonMetadata<string>> | Nft | Sft;
 interface NFTDictionary {

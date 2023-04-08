@@ -2,7 +2,7 @@ import { z } from "zod";
 
 import { router, protectedProcedure } from "./trpc";
 import { NFTType } from "server/database/models/nft.model";
-import { buildUpgradeImage } from "server/services/upgrade-service";
+import upgradeService, { UpdateMetadataRequest } from "server/services/upgrade-service";
 import { DemonUpgrades, GolemUpgrades } from "server/database/models/user-nfts.model";
 import { getUserNFTbyMint } from "server/services/nfts-service";
 
@@ -19,7 +19,7 @@ export const upgradeRouter = router({
       const wallet = ctx.session.walletId;
       const nft = await getUserNFTbyMint(wallet, mint);
       if (nft && nft.type) {
-        const upgradeUrlImage = await buildUpgradeImage(
+        const upgradeUrlImage = await upgradeService.buildUpgradeImage(
           mint,
           nft.type,
           upgradeType,
@@ -30,23 +30,38 @@ export const upgradeRouter = router({
       }
       return "";
     }),
-  upgradeNFT: protectedProcedure
+  upgradeMetadata: protectedProcedure
     .input(
       z.object({
         mint: z.string(),
         upgradeType: z.nativeEnum(DemonUpgrades).or(z.nativeEnum(GolemUpgrades)),
-        imageUrl: z.string().url().nullish(),
+        nonce: z.string(),
+        serializedTx: z.string(),
+        signedMessage: z.string(),
+        stringMessage: z.string(),
       })
     )
     .mutation(async ({ input, ctx }) => {
-      const { mint, upgradeType, imageUrl } = input;
+      const { mint, upgradeType, nonce, serializedTx, signedMessage, stringMessage } = input;
+
       const wallet = ctx.session.walletId;
       const nft = await getUserNFTbyMint(wallet, mint);
       let upgradeUrlImage;
-      if (nft && nft.type && !imageUrl) {
-        upgradeUrlImage = await buildUpgradeImage(mint, nft.type, upgradeType, nft.attributes);
+      if (nft && nft.type) {
+        const request: UpdateMetadataRequest = {
+          wallet: wallet,
+          attributes: nft.attributes,
+          collection: nft.type,
+          mintAddress: mint,
+          nonce,
+          serializedTx,
+          signedMessage,
+          stringMessage,
+          upgradeType: upgradeType,
+        };
+        upgradeUrlImage = await upgradeService.upgradeMetadata(request);
       }
 
-      return upgradeUrlImage ?? "";
+      return upgradeUrlImage;
     }),
 });

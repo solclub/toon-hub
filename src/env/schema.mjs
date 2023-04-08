@@ -16,22 +16,25 @@ export const serverSchema = z.object({
     // VERCEL_URL doesn't include `https` so it cant be validated as a URL
     process.env.VERCEL ? z.string() : z.string().url()
   ),
+
+  //socials
   DISCORD_CLIENT_ID: z.string(),
   DISCORD_CLIENT_SECRET: z.string(),
   TWITTER_CLIENT_ID: z.string(),
   TWITTER_CLIENT_SECRET: z.string(),
 
+  // file storage
+  CLOUDINARY_CLOUD_NAME: z.string(),
+  CLOUDINARY_API_KEY: z.string(),
+  CLOUDINARY_API_SECRET: z.string(),
+
   MONGODB_URI: z.string(),
   MONGODB_DB_NAME: z.string(),
+
   WAR_PROGRAM_ID: z.string(),
   ANCHOR_WALLET_KEYPAIR: z.string(),
   UPDATE_AUTHORITY_ADDRESS: z.string(),
   UPDATE_AUTHORITY_KEYPAIR: z.string(),
-
-  // cloudinary
-  CLOUDINARY_CLOUD_NAME: z.string(),
-  CLOUDINARY_API_KEY: z.string(),
-  CLOUDINARY_API_SECRET: z.string(),
 });
 
 /**

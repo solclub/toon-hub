@@ -6,10 +6,10 @@ import PaymentMethodSelector from "./PaymentMethodSelector";
 import NftHidden from "assets/images/nft-hidden.png";
 import Divider from "assets/images/divider.png";
 import FrameBox from "./FrameBox";
-import type { UserNFT } from "server/database/models/user-nfts.model";
+import type { DemonUpgrades, GolemUpgrades, UserNFT } from "server/database/models/user-nfts.model";
 import { showSuccessToast, showErrorToast, showPromisedToast } from "utils/toastUtils";
 import { trpc } from "utils/trpc";
-import type { RudeNFT } from "server/database/models/nft.model";
+import { NFTType, RudeNFT } from "server/database/models/nft.model";
 import Balance from "components/topbar/Balance";
 import { useWallet } from "@solana/wallet-adapter-react";
 import { useNFTManager } from "contexts/NFTManagerContext";
@@ -31,8 +31,8 @@ const UpgradeNFT: React.FC<BuyProperties> = ({ title, upgradeOption, sourceImage
   const { publicKey, signMessage, signTransaction } = useWallet();
   const { prepTransaction } = useNFTManager();
   const toastRef = useRef("");
-  const previewMutation = trpc.upgradeNft.upgradeNFT.useMutation();
-  const { data: imageUrl, isLoading, error, isError, isSuccess } = previewMutation;
+  const upgradeMetadata = trpc.upgradeNft.upgradeMetadata.useMutation();
+  const { data: upgradeResult, isLoading, error, isError, isSuccess } = upgradeMetadata;
   const { paymentOptions } = upgradeOption;
 
   const initiatePreview = async (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
@@ -53,39 +53,30 @@ const UpgradeNFT: React.FC<BuyProperties> = ({ title, upgradeOption, sourceImage
 
       const data = message.prepare();
       const signature = await signMessage(data);
-      const serializedSignature = bs58.encode(signature);
+      const signedMessage = bs58.encode(signature);
       const stringMessage = JSON.stringify(message);
 
-      const serializedtransaction = await prepTransaction(
-        publicKey,
-        paymentOption,
-        signTransaction
-      );
+      const serializedtx = await prepTransaction(publicKey, paymentOption, signTransaction);
 
-      console.log(serializedtransaction);
+      console.log(serializedtx);
 
-      // const data = {
-      //   mintAddress: nft.mint,
-      //   txid: serializedSignature,
-      //   golem: nft.name,
-      //   signedMessage: signedMessage,
-      //   wallet: publicKey.toString(),
-      //   owner: publicKey.toBase58(),
-      //   image: previewMutation.data,
-      // };
       showPromisedToast(
         toastRef,
-        "Upgrading Golem: Transaction sent, waiting for confirmation...",
+        "Upgrading NFT: Transaction sent, waiting for confirmation...",
         true
       );
 
-      // previewMutation.mutate({
-      //   mint: nft.mint,
-      //   upgradeType:
-      //     nft.type == NFTType.GOLEM
-      //       ? (upgradeOption.key as GolemUpgrades)
-      //       : (upgradeOption.key as DemonUpgrades),
-      // });
+      upgradeMetadata.mutate({
+        nonce: csrf,
+        serializedTx: serializedtx,
+        signedMessage: signedMessage,
+        stringMessage: stringMessage,
+        mint: nft.mint,
+        upgradeType:
+          nft.type == NFTType.GOLEM
+            ? (upgradeOption.key as GolemUpgrades)
+            : (upgradeOption.key as DemonUpgrades),
+      });
     } catch (error) {
       showErrorToast("Error generating Preview, try again or contact support!");
       console.error(error);
@@ -153,7 +144,7 @@ const UpgradeNFT: React.FC<BuyProperties> = ({ title, upgradeOption, sourceImage
             <FrameBox className="w-full">
               <Image
                 className="panel w-full items-center rounded-3xl"
-                src={(imageUrl as string) ?? NftHidden}
+                src={upgradeResult?.image ?? NftHidden}
                 alt={title}
                 width={500}
                 height={500}

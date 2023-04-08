@@ -3,7 +3,6 @@ import mongoose, { model, Schema } from "mongoose";
 export enum NFTType {
   GOLEM = "GOLEM",
   DEMON = "DEMON",
-  OTHER = "OTHER",
 }
 export interface RudeNFT {
   id: string;

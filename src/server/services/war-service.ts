@@ -7,7 +7,7 @@ import warIdl from "idl/rudegolems_war.json";
 import bs58 from "bs58";
 import { env } from "env/server.mjs";
 import NodeWallet from "@project-serum/anchor/dist/cjs/nodewallet";
-import { connection } from "./web3-connections";
+import { connection } from "./connections/web3-public";
 
 const PayerKeyPair = Keypair.fromSecretKey(bs58.decode(env.ANCHOR_WALLET_KEYPAIR));
 
