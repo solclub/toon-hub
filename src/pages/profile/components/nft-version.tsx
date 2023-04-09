@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import FrameBox, { FrameType } from "components/common/FrameBox";
 import classNames from "classnames";
 import Image from "next/image";
-import NftHidden from "assets/images/nft-hidden.png";
+import NftHidden from "assets/images/skin.png";
 import { Modal } from "components/common/Modal";
 import { motion } from "framer-motion";
 import type { DemonUpgrades, UserNFT } from "server/database/models/user-nfts.model";

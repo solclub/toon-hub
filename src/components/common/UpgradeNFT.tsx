@@ -3,13 +3,14 @@ import Image from "next/image";
 import React, { useEffect, useRef, useState } from "react";
 import type { PaymentOption, ProductOption } from "types/catalog";
 import PaymentMethodSelector from "./PaymentMethodSelector";
-import NftHidden from "assets/images/nft-hidden.png";
+import NftHidden from "assets/images/skin.png";
 import Divider from "assets/images/divider.png";
 import FrameBox from "./FrameBox";
 import type { DemonUpgrades, GolemUpgrades, UserNFT } from "server/database/models/user-nfts.model";
 import { showSuccessToast, showErrorToast, showPromisedToast } from "utils/toastUtils";
 import { trpc } from "utils/trpc";
-import { NFTType, RudeNFT } from "server/database/models/nft.model";
+import type { RudeNFT } from "server/database/models/nft.model";
+import { NFTType } from "server/database/models/nft.model";
 import Balance from "components/topbar/Balance";
 import { useWallet } from "@solana/wallet-adapter-react";
 import { useNFTManager } from "contexts/NFTManagerContext";
@@ -148,6 +149,8 @@ const UpgradeNFT: React.FC<BuyProperties> = ({ title, upgradeOption, sourceImage
                 alt={title}
                 width={500}
                 height={500}
+                unoptimized
+                priority
               ></Image>
             </FrameBox>
           </div>

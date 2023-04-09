@@ -4,7 +4,7 @@ import Image from "next/image";
 import { type NextPage } from "next";
 import Link from "next/link";
 import { useRouter } from "next/router";
-import type { EquipmentRarity } from "components/common/Equipment";
+import { EquipmentRarity } from "components/common/Equipment";
 import Equipment, { EquipmentRarityLabels } from "components/common/Equipment";
 import { CountDown } from "components/common/CountDown";
 import Panel from "components/common/Panel";
@@ -26,13 +26,14 @@ import gem from "assets/weapons/SLOT1/COMMON/Stoneheart.png";
 import gem1 from "assets/weapons/SLOT2/EPIC/Flamestreak-Bow.png";
 import gem2 from "assets/weapons/SLOT3/LEGENDARY/Ancient-Hammer.png";
 import gem3 from "assets/weapons/SLOT4/MYTHIC/Life-taker.png";
+import WeaponChest from "assets/weapons/weapon-chest.png";
 
 type Weapon = {
   image: string | StaticImageData;
   name: string;
   points: number;
   price: string;
-  rarity: string;
+  rarity: EquipmentRarity;
   expireDate: Date;
   owned: boolean;
 };
@@ -52,13 +53,13 @@ const sampleWeapons: Weapon[] = [
     rarity: "COMMON",
   },
   {
-    image: gem1,
+    image: WeaponChest,
     name: "Rare",
     points: 5000,
     price: "$ 0.3 Sol",
     owned: false,
     expireDate: new Date("02/18/2023"),
-    rarity: "EPIC",
+    rarity: "NONE",
   },
   {
     image: gem2,

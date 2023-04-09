@@ -17,8 +17,17 @@ type Props = {
   event?: () => void;
 };
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const RarityColors: any = {
+export type EquipmentRarity =
+  | "NONE"
+  | "COMMON"
+  | "RARE"
+  | "EPIC"
+  | "LEGENDARY"
+  | "MYTHIC"
+  | "SECRET";
+
+const RarityColors: Record<EquipmentRarity, string> = {
+  NONE: "drop-shadow-none",
   COMMON: "drop-shadow-common",
   RARE: "drop-shadow-rare",
   EPIC: "drop-shadow-epic",
@@ -27,8 +36,8 @@ const RarityColors: any = {
   SECRET: "drop-shadow-secret",
 };
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export const EquipmentRarityLabels: any = {
+export const EquipmentRarityLabels: Record<EquipmentRarity, string> = {
+  NONE: "None",
   COMMON: "Common",
   RARE: "Rare",
   EPIC: "Epic",
@@ -37,52 +46,13 @@ export const EquipmentRarityLabels: any = {
   SECRET: "Secret",
 };
 
-export enum EquipmentRarity {
-  COMMON = "COMMON",
-  RARE = "RARE",
-  SUPER_RARE = "SUPER_RARE",
-  LEGEND = "LEGEND",
-  ULTRA_LEGEND = "ULTRA_LEGEND",
-  SECRET = "SECRET",
-}
-
 const Equipment = (equipment: Props) => {
-  const {
-    url,
-    rarity,
-    className,
-    width,
-    height,
-    revealed,
-    price,
-    name,
-    event,
-  } = equipment;
+  const { url, rarity, className, width, height, revealed, price, name, event } = equipment;
   return (
-    <div
-      className={classNames(
-        revealed ? RarityColors[rarity] : "",
-        className,
-        "relative "
-      )}
-    >
+    <div className={classNames(RarityColors[rarity], className, "relative ")}>
       <FrameBox frameType={!revealed ? FrameType.green : FrameType.default}>
-        {url && revealed && (
-          <Image
-            src={url}
-            alt="Artifact equiped"
-            width={width || 100}
-            height={height || 100}
-          ></Image>
-        )}
-        {!revealed && (
-          <div
-            className={classNames(
-              "flex h-full w-[100px] items-center justify-center bg-slate-900 text-6xl font-extrabold text-gray-300"
-            )}
-          >
-            +
-          </div>
+        {url && (
+          <Image src={url} alt="weapon equiped" width={width || 100} height={height || 100}></Image>
         )}
 
         <label
@@ -107,5 +77,4 @@ const Equipment = (equipment: Props) => {
     </div>
   );
 };
-//{ "bg-green-400 text-black": !x.revealed }
 export default Equipment;

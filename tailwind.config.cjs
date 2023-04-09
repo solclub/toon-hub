@@ -4,6 +4,7 @@ module.exports = {
   theme: {
     extend: {
       dropShadow: {
+        none: "0px 0px 10px #074f40",
         common: "0px 0px 10px #9e9ea0",
         rare: "0px 0px 10px #5c87ab",
         epic: "0px 0px 10px #8d6ab4",

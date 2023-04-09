@@ -12,10 +12,11 @@ import classNames from "classnames";
 import sampleData from "./sample-data/rankItems.json";
 import phrases from "./sample-data/phrases.json";
 
-import gem from "../assets/weapons/SLOT1/COMMON/Stoneheart.png";
-import gem1 from "../assets/weapons/SLOT2/EPIC/Flamestreak-Bow.png";
-import gem2 from "../assets/weapons/SLOT3/LEGENDARY/Ancient-Hammer.png";
-import gem3 from "../assets/weapons/SLOT4/MYTHIC/Life-taker.png";
+import EmptyWeaponImage from "../assets/weapons/no-weapon.png";
+// import gem from "../assets/weapons/SLOT1/COMMON/Stoneheart.png";
+// import gem1 from "../assets/weapons/SLOT2/EPIC/Flamestreak-Bow.png";
+// import gem2 from "../assets/weapons/SLOT3/LEGENDARY/Ancient-Hammer.png";
+// import gem3 from "../assets/weapons/SLOT4/MYTHIC/Life-taker.png";
 
 import ImgTwitterBlue from "../assets/images/twitter_blue.png";
 import ImgPowerRating from "../assets/images/power_rating_icon.png";
@@ -51,23 +52,23 @@ const Home: NextPage = () => {
   const equipment = [
     {
       id: "1",
-      url: gem,
-      rarity: "COMMON",
+      url: EmptyWeaponImage,
+      rarity: "NONE",
     },
     {
       id: "2",
-      rarity: "EPIC",
-      url: gem1,
+      rarity: "NONE",
+      url: EmptyWeaponImage,
     },
     {
       id: "3",
-      url: gem2,
-      rarity: "LEGENDARY",
+      url: EmptyWeaponImage,
+      rarity: "NONE",
     },
     {
-      url: gem3,
+      url: EmptyWeaponImage,
       id: "4",
-      rarity: "MYTHIC",
+      rarity: "NONE",
     },
   ];
   return (
