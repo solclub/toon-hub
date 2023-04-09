@@ -25,8 +25,10 @@ export const upgradeRouter = router({
           upgradeType,
           nft.attributes
         );
-        console.log("upgradeUrlImage", upgradeUrlImage);
-        return upgradeUrlImage;
+
+        const base64 = upgradeUrlImage.toString("base64");
+        const base = `data:image/png"};base64,${base64}`;
+        return base;
       }
       return "";
     }),

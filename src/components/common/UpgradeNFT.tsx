@@ -36,7 +36,33 @@ const UpgradeNFT: React.FC<BuyProperties> = ({ title, upgradeOption, sourceImage
   const { data: upgradeResult, isLoading, error, isError, isSuccess } = upgradeMetadata;
   const { paymentOptions } = upgradeOption;
 
+  const buildImagePreview = trpc.upgradeNft.buildImagePreview.useMutation();
+  const { data: prevResult } = buildImagePreview;
+
+  useEffect(() => {
+    if (isError) {
+      showErrorToast(error?.message || "unexpected error");
+      console.error(error?.message);
+    }
+
+    if (isSuccess) {
+      showSuccessToast("Preview Generated", 1000);
+    }
+  }, [error?.message, isError, isSuccess]);
+
   const initiatePreview = async (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
+    e.stopPropagation();
+
+    buildImagePreview.mutate({
+      mint: nft.mint,
+      upgradeType:
+        nft.type == NFTType.GOLEM
+          ? (upgradeOption.key as GolemUpgrades)
+          : (upgradeOption.key as DemonUpgrades),
+    });
+  };
+
+  const upgradeGolem = async (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
     e.stopPropagation();
     const csrf = await getCsrfToken();
     console.log(!publicKey, !csrf, !signMessage, !signTransaction, !paymentOption);
@@ -82,21 +108,6 @@ const UpgradeNFT: React.FC<BuyProperties> = ({ title, upgradeOption, sourceImage
       showErrorToast("Error generating Preview, try again or contact support!");
       console.error(error);
     }
-  };
-
-  useEffect(() => {
-    if (isError) {
-      showErrorToast(error?.message || "unexpected error");
-      console.error(error?.message);
-    }
-
-    if (isSuccess) {
-      showSuccessToast("Preview Generated", 1000);
-    }
-  }, [error?.message, isError, isSuccess]);
-
-  const upgradeGolem = async (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
-    await initiatePreview(e);
   };
 
   return (
@@ -145,7 +156,7 @@ const UpgradeNFT: React.FC<BuyProperties> = ({ title, upgradeOption, sourceImage
             <FrameBox className="w-full">
               <Image
                 className="panel w-full items-center rounded-3xl"
-                src={upgradeResult?.image ?? NftHidden}
+                src={upgradeResult?.image ?? prevResult ?? NftHidden}
                 alt={title}
                 width={500}
                 height={500}

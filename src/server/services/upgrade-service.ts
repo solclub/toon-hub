@@ -2,7 +2,7 @@ import type { NFTAttribute } from "server/database/models/nft.model";
 import { NFTType } from "server/database/models/nft.model";
 import { collectionsSchemas } from "../data/collections";
 import mergeImages from "./sharp-service";
-import { saveFileToCloud } from "./cloudinary-service";
+import { saveFileToCloud, getUrlFile } from "./cloudinary-service";
 import { DemonUpgrades, GolemUpgrades } from "server/database/models/user-nfts.model";
 import { SigninMessage } from "utils/SigninMessage";
 import { PublicKey } from "@solana/web3.js";
@@ -58,10 +58,10 @@ const upgradeMetadata = async (req: UpdateMetadataRequest) => {
   }
 
   const metadataUpdater = getMetadataUpdater(req.upgradeType, req.collection);
-  const newImage = await upgradeImagePromise;
+  const imageBuffer = await upgradeImagePromise;
 
-  if (metadataUpdater && newImage) {
-    const result = await metadataUpdater(req.mintAddress, newImage);
+  if (metadataUpdater && imageBuffer) {
+    const result = await metadataUpdater(req.mintAddress, imageBuffer);
 
     const signature = await connection.sendEncodedTransaction(req.serializedTx, {
       skipPreflight: true,
@@ -88,13 +88,15 @@ const buildUpgradeImage = async (
   collectionType: NFTType,
   upgradeType: string,
   attributes: NFTAttribute[]
-): Promise<string | undefined> => {
+): Promise<Buffer> => {
   const collection =
     collectionsSchemas[collectionType.toString() as keyof typeof collectionsSchemas];
 
   if (Object.keys(rebelUrl).includes(mint)) {
-    const imageUploadedUrl = rebelUrl[mint];
-    return imageUploadedUrl;
+    const data = Buffer.from(
+      (await axios.get(rebelUrl[mint] ?? "", { responseType: "arraybuffer" })).data
+    );
+    return data;
   }
 
   const formattedTraits: Record<string, string> = attributes.reduce(
@@ -118,13 +120,8 @@ const buildUpgradeImage = async (
   }, {});
 
   const layers = Object.values(nftLayers).filter((x) => x.label !== "none");
-  const mergedData = await mergeImages({ sources: layers });
-  const imageUploadedUrl = await saveFileToCloud(
-    mergedData.base,
-    mint,
-    `${collection?.path}/upgrades/${upgradeType}`
-  );
-  return imageUploadedUrl ? imageUploadedUrl : undefined;
+  const resultBuffer = await mergeImages({ sources: layers });
+  return resultBuffer;
 };
 
 const getMetadataUpdater = (upgradeType: string, collection: NFTType) => {
@@ -142,10 +139,8 @@ const getMetadataUpdater = (upgradeType: string, collection: NFTType) => {
   return updaters[collection][upgradeType];
 };
 
-const updateMetadataGolem = async (mintAddress: string, image: string) => {
+const updateMetadataGolem = async (mintAddress: string, imageBuffer: Buffer) => {
   console.log(`[${Date.now()}]`, "updateMetadataGolem: start");
-  const response = await axios.get(image, { responseType: "arraybuffer" });
-  const imageBuffer = Buffer.from(response.data, "utf-8");
   const mint = new PublicKey(mintAddress);
   console.log(`[${Date.now()}]`, "updateMetadataGolem: mint", mintAddress);
 
@@ -236,9 +231,12 @@ const getTraitFile = (
   trait: string,
   formattedTraits: Record<string, string>
 ) => {
-  const url = `src/assets/traits/${collectionName}/${upgradeName}/${trait.toLowerCase()}/${
-    formattedTraits[trait]
-  }.png`;
+  const url = getUrlFile(
+    collectionName,
+    upgradeName,
+    trait.toLowerCase(),
+    formattedTraits[trait] ?? ""
+  );
 
   return url;
 };

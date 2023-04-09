@@ -50,6 +50,15 @@ export const saveFileToCloud = async (
   }
 };
 
+export const getUrlFile = (
+  colletionName: string,
+  upgradeType: string,
+  trait: string,
+  traitName: string
+) => {
+  return `https://res.cloudinary.com/${env.CLOUDINARY_CLOUD_NAME}/image/upload/collections/${colletionName}/art/${upgradeType}/${trait}/${traitName}.png`;
+};
+
 export const generateTwitterPostImage = (golem: string, wallet: string, mint: string) => {
   const golemTitle = getGolemTitle(golem);
   const subtitle = getsubTitle();

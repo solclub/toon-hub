@@ -1,3 +1,4 @@
+import axios from "axios";
 import type { OverlayOptions } from "sharp";
 import sharp from "sharp";
 
@@ -15,25 +16,27 @@ interface Options {
   height?: number;
 }
 
-interface ReturnData {
-  buffer: Buffer;
-  base: string;
-}
-
 const mergeImages = async ({
   sources,
   options = {},
 }: {
   sources: Source[];
   options?: Options;
-}): Promise<ReturnData> => {
+}): Promise<Buffer> => {
   const images = await Promise.all(
     sources.map(async (source) => {
       const { src, ...data } = typeof source === "string" ? { src: source } : source;
-      const image = sharp(src);
+      console.log("iamgeurl: ", src);
+      const buffer = Buffer.from(
+        (await axios.get(src, { responseType: "arraybuffer" })).data,
+        "binary"
+      );
+      const image = isUrl(src) ? sharp(buffer) : sharp(src);
+
       const metadata = await image.metadata();
+
       return {
-        buffer: await image.toBuffer(),
+        buffer: buffer,
         width: metadata.width || 0,
         height: metadata.height || 0,
         ...data,
@@ -63,15 +66,18 @@ const mergeImages = async ({
   composite.composite(overlayImages);
 
   const buffer = await composite.png().toBuffer();
-  const base64 = buffer.toString("base64");
-  const base = `data:image/${options.format || "png"};base64,${base64}`;
-  //test
-  // composite.toFile("C:\\Users\\Jhonny\\Downloads\\sharp\\image.png");
 
-  return {
-    buffer,
-    base,
-  };
+  return buffer;
+};
+
+const getImageBytes = (str: string): boolean => {
+  const urlRegex = /^(https?:\/\/)?([\da-z\.-]+)\.([a-z\.]{2,6})([\/\w \.-]*)*\/?$/;
+  return urlRegex.test(str);
+};
+
+const isUrl = (str: string): boolean => {
+  const urlRegex = /^(https?:\/\/)?([\da-z\.-]+)\.([a-z\.]{2,6})([\/\w \.-]*)*\/?$/;
+  return urlRegex.test(str);
 };
 
 export default mergeImages;
