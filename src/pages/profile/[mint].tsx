@@ -4,7 +4,7 @@ import Image from "next/image";
 import { type NextPage } from "next";
 import Link from "next/link";
 import { useRouter } from "next/router";
-import { EquipmentRarity } from "components/common/Equipment";
+import type { EquipmentRarity } from "components/common/Equipment";
 import Equipment, { EquipmentRarityLabels } from "components/common/Equipment";
 import { CountDown } from "components/common/CountDown";
 import Panel from "components/common/Panel";
@@ -23,11 +23,14 @@ import PowerRatingIcon from "assets/images/power_rating_icon.png";
 import TierIcon from "assets/images/tier_icon.png";
 import WeaponsIcon from "assets/images/weapons_icon.png";
 import gem from "assets/weapons/SLOT1/COMMON/Stoneheart.png";
-import gem1 from "assets/weapons/SLOT2/EPIC/Flamestreak-Bow.png";
+//import gem1 from "assets/weapons/SLOT2/EPIC/Flamestreak-Bow.png";
 import gem2 from "assets/weapons/SLOT3/LEGENDARY/Ancient-Hammer.png";
 import gem3 from "assets/weapons/SLOT4/MYTHIC/Life-taker.png";
 import WeaponChest from "assets/weapons/weapon-chest.png";
 import { useNFTManager } from "contexts/NFTManagerContext";
+import { Modal } from "components/common/Modal";
+import FeatureNFT from "components/common/FeatureNFT";
+import { userInfo } from "os";
 
 type Weapon = {
   image: string | StaticImageData;
@@ -91,6 +94,11 @@ const Profile: NextPage = () => {
   const { data: profileNFT, isLoading: isProfileLoading } = trpc.nfts.getUserNFTbyMint.useQuery({
     mint: (mint ?? "") as string,
   });
+  const [isOpen, setOpen] = useState(false);
+  const { data: product } = trpc.catalog.getProduct.useQuery({
+    type: ProductType.NFT_FEATURE,
+  });
+
   const { txState } = useNFTManager();
   const utils = trpc.useContext();
 
@@ -210,7 +218,33 @@ const Profile: NextPage = () => {
                     <div className=" text-3xl text-amber-100">{totalNFTPower || "Unknow"}</div>
                   </div>
                   <div className="absolute bottom-9 right-10">
-                    <button className="btn-rude btn text-xs font-thin">Feature your warrior</button>
+                    {product?.options[0] && profileNFT && (
+                      <>
+                        <button
+                          className="btn-rude btn text-xs font-thin"
+                          onClick={() => {
+                            setOpen(true);
+                          }}
+                        >
+                          Feature your warrior
+                        </button>
+                        <Modal
+                          className={classNames({ "lg:w-2/3": true })}
+                          isOpen={isOpen}
+                          backdropDismiss={true}
+                          handleClose={() => setOpen(false)}
+                        >
+                          <FeatureNFT
+                            nft={profileNFT}
+                            title={product?.options[0]?.name ?? " Feature NFT"}
+                            featureOption={product.options[0]}
+                            sourceImageUrl={profileNFT?.upgrades?.images?.get(
+                              profileNFT?.upgrades?.current
+                            )}
+                          ></FeatureNFT>
+                        </Modal>
+                      </>
+                    )}
                   </div>
                 </div>
               </div>

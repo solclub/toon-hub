@@ -4,6 +4,7 @@ import { nftsRouter } from "../nfts";
 import { usersRouter } from "../user";
 import { catalogRouter } from "../catalog";
 import { upgradeRouter } from "../upgrade";
+import { featureRouter } from "../feature";
 
 export const appRouter = router({
   auth: authRouter,
@@ -11,6 +12,7 @@ export const appRouter = router({
   nfts: nftsRouter,
   catalog: catalogRouter,
   upgradeNft: upgradeRouter,
+  featureNft: featureRouter,
 });
 
 // export type definition of API
