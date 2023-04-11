@@ -17,6 +17,7 @@ import { useNFTManager } from "contexts/NFTManagerContext";
 import { SigninMessage } from "utils/SigninMessage";
 import { getCsrfToken } from "next-auth/react";
 import bs58 from "bs58";
+import Loader from "./Loader";
 
 interface BuyProperties {
   title: string;
@@ -30,29 +31,48 @@ interface BuyProperties {
 const UpgradeNFT: React.FC<BuyProperties> = ({ title, upgradeOption, sourceImageUrl, nft }) => {
   const [paymentOption, setpaymentOption] = useState<PaymentOption>();
   const { publicKey, signMessage, signTransaction } = useWallet();
-  const { prepTransaction } = useNFTManager();
+  const { prepTransaction, setTxState, txState } = useNFTManager();
   const toastRef = useRef("");
   const upgradeMetadata = trpc.upgradeNft.upgradeMetadata.useMutation();
   const { data: upgradeResult, isLoading, error, isError, isSuccess } = upgradeMetadata;
   const { paymentOptions } = upgradeOption;
 
   const buildImagePreview = trpc.upgradeNft.buildImagePreview.useMutation();
-  const { data: prevResult } = buildImagePreview;
+  const {
+    data: prevResult,
+    status,
+    isLoading: isPreviewLoading,
+    isSuccess: isSuccessPreview,
+  } = buildImagePreview;
+
+  useEffect(() => {
+    setTxState("NONE");
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  useEffect(() => {
+    if (status == "success") {
+      showSuccessToast("Success Preview", 1000);
+      setTxState("SUCCESS");
+    }
+  }, [status, setTxState]);
 
   useEffect(() => {
     if (isError) {
       showErrorToast(error?.message || "unexpected error");
+      setTxState("ERROR");
       console.error(error?.message);
     }
 
     if (isSuccess) {
-      showSuccessToast("Preview Generated", 1000);
+      showSuccessToast("Success Upgrade", 1000);
+      setTxState("SUCCESS");
     }
-  }, [error?.message, isError, isSuccess]);
+  }, [error?.message, isError, isSuccess, setTxState]);
 
   const initiatePreview = async (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
     e.stopPropagation();
-
+    setTxState("BEGIN");
     buildImagePreview.mutate({
       mint: nft.mint,
       upgradeType:
@@ -64,6 +84,7 @@ const UpgradeNFT: React.FC<BuyProperties> = ({ title, upgradeOption, sourceImage
 
   const upgradeGolem = async (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
     e.stopPropagation();
+    setTxState("BEGIN");
     const csrf = await getCsrfToken();
     console.log(!publicKey, !csrf, !signMessage, !signTransaction, !paymentOption);
     if (!publicKey || !csrf || !signMessage || !signTransaction || !paymentOption) return;
@@ -104,8 +125,11 @@ const UpgradeNFT: React.FC<BuyProperties> = ({ title, upgradeOption, sourceImage
             ? (upgradeOption.key as GolemUpgrades)
             : (upgradeOption.key as DemonUpgrades),
       });
+
+      setTxState("WAITING");
     } catch (error) {
       showErrorToast("Error generating Preview, try again or contact support!");
+      setTxState("ERROR");
       console.error(error);
     }
   };
@@ -127,13 +151,17 @@ const UpgradeNFT: React.FC<BuyProperties> = ({ title, upgradeOption, sourceImage
           </div>
           <div className="flex w-full flex-wrap items-center lg:w-2/6">
             <div className="mx-auto flex w-full flex-wrap">
-              <motion.button
-                className="btn-rude btn mx-auto"
-                onClick={initiatePreview}
-                disabled={isLoading}
-              >
-                PREVIEW NFT
-              </motion.button>
+              {!(isSuccess || isSuccessPreview) ? (
+                <motion.button
+                  className="btn-rude btn mx-auto"
+                  onClick={initiatePreview}
+                  disabled={isPreviewLoading}
+                >
+                  PREVIEW NFT
+                </motion.button>
+              ) : (
+                <div className="text-stroke mx-auto text-2xl text-yellow-400">Congrats!!</div>
+              )}
             </div>
             <div>
               <Image
@@ -143,17 +171,26 @@ const UpgradeNFT: React.FC<BuyProperties> = ({ title, upgradeOption, sourceImage
               ></Image>
             </div>
             <div className="mx-auto flex w-full flex-wrap">
-              <motion.button
-                className="btn-rude btn mx-auto"
-                onClick={upgradeGolem}
-                disabled={isLoading}
-              >
-                UPGRADE NFT
-              </motion.button>
+              {!(isSuccess || isSuccessPreview) ? (
+                <motion.button
+                  className="btn-rude btn mx-auto"
+                  onClick={upgradeGolem}
+                  disabled={isLoading}
+                >
+                  UPGRADE NFT
+                </motion.button>
+              ) : (
+                <div className="text-stroke mx-auto text-2xl text-yellow-400">NFT Upgraded!!</div>
+              )}
             </div>
           </div>
           <div className="w-full lg:w-2/6">
-            <FrameBox className="w-full">
+            <FrameBox className="relative">
+              {(isLoading || isPreviewLoading) && (
+                <div className="absolute top-1/2 z-50 w-full">
+                  <Loader></Loader>
+                </div>
+              )}
               <Image
                 className="panel w-full items-center rounded-3xl"
                 src={upgradeResult?.image ?? prevResult ?? NftHidden}
@@ -167,20 +204,23 @@ const UpgradeNFT: React.FC<BuyProperties> = ({ title, upgradeOption, sourceImage
           </div>
         </div>
       </div>
-      <div className="mb-5 w-1/2 p-5 sm:p-0">
-        <div className="w-full text-center sm:w-auto">
-          <Balance className="mx-auto mb-2 w-fit"></Balance>
-          <p className="titles-color textStroke mb-4 text-2xl">Current Upgrade Costs:</p>
-          {paymentOptions && (
-            <PaymentMethodSelector
-              paymentOptions={paymentOptions}
-              onChange={(opt) => {
-                setpaymentOption(opt);
-              }}
-            ></PaymentMethodSelector>
-          )}
+      {txState != "SUCCESS" && (
+        <div className="mb-5 w-1/2 p-5 sm:p-0">
+          <div className="w-full text-center sm:w-auto">
+            <Balance className="mx-auto mb-2 w-fit"></Balance>
+            <p className="titles-color textStroke mb-4 text-2xl">Current Upgrade Costs:</p>
+            {paymentOptions && (
+              <PaymentMethodSelector
+                paymentOptions={paymentOptions}
+                onChange={(opt) => {
+                  setpaymentOption(opt);
+                }}
+              ></PaymentMethodSelector>
+            )}
+          </div>
         </div>
-      </div>
+      )}
+
       <div className="z-10 w-full xl:pt-3">
         <div className="text-center"></div>
       </div>

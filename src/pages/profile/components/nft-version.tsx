@@ -8,7 +8,7 @@ import { motion } from "framer-motion";
 import type { DemonUpgrades, UserNFT } from "server/database/models/user-nfts.model";
 import UpgradeNFT from "components/common/UpgradeNFT";
 import type { ProductOption } from "types/catalog";
-import { GolemUpgrades } from "server/database/models/user-nfts.model";
+import type { GolemUpgrades } from "server/database/models/user-nfts.model";
 import { NFTType } from "server/database/models/nft.model";
 import type { RudeNFT } from "server/database/models/nft.model";
 
@@ -105,7 +105,7 @@ const NftVersion: React.FC<{
             backdropDismiss={true}
             handleClose={() => setOpen(false)}
           >
-            {upgrade.isAvailable ? (
+            {upgrade.isAvailable && !userNft?.images.has(upgrade.key) ? (
               <UpgradeNFT
                 nft={nft}
                 title={upgrade.name}
@@ -115,7 +115,7 @@ const NftVersion: React.FC<{
             ) : (
               <Image
                 className="items-center rounded-3xl border-solid bg-gray-600 object-cover"
-                src={userNft?.images.get(GolemUpgrades.ORIGINAL) ?? NftHidden}
+                src={userNft?.images.get(upgrade.key) ?? NftHidden}
                 alt={"Golem Image"}
                 width={800}
                 height={800}

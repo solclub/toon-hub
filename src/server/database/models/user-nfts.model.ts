@@ -16,7 +16,7 @@ export interface UserNFT {
   mint: string;
   wallet: string;
   current: DemonUpgrades | GolemUpgrades;
-  images: Map<DemonUpgrades | GolemUpgrades, string>;
+  images: Map<DemonUpgrades | GolemUpgrades | string, string>;
   type: NFTType;
   active: boolean;
 }

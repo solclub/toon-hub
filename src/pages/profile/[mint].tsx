@@ -27,6 +27,7 @@ import gem1 from "assets/weapons/SLOT2/EPIC/Flamestreak-Bow.png";
 import gem2 from "assets/weapons/SLOT3/LEGENDARY/Ancient-Hammer.png";
 import gem3 from "assets/weapons/SLOT4/MYTHIC/Life-taker.png";
 import WeaponChest from "assets/weapons/weapon-chest.png";
+import { useNFTManager } from "contexts/NFTManagerContext";
 
 type Weapon = {
   image: string | StaticImageData;
@@ -90,6 +91,8 @@ const Profile: NextPage = () => {
   const { data: profileNFT, isLoading: isProfileLoading } = trpc.nfts.getUserNFTbyMint.useQuery({
     mint: (mint ?? "") as string,
   });
+  const { txState } = useNFTManager();
+  const utils = trpc.useContext();
 
   const { data: userMints, isLoading } = trpc.nfts.getUserMints.useQuery();
   const powerRating = "8542";
@@ -97,6 +100,12 @@ const Profile: NextPage = () => {
   const totalNFTPower = "56412";
   const weaponsEquiped = "0";
   const collection = "golems";
+
+  useEffect(() => {
+    if (txState == "SUCCESS") {
+      utils.nfts.getUserNFTbyMint.invalidate();
+    }
+  }, [txState, utils.nfts.getUserNFTbyMint]);
 
   useEffect(() => {
     setWeapons(sampleWeapons);
@@ -178,7 +187,10 @@ const Profile: NextPage = () => {
                 {profileNFT?.image ? (
                   <Image
                     className="absolute max-h-[500px] rounded-2xl object-cover"
-                    src={profileNFT?.image}
+                    src={
+                      profileNFT?.upgrades?.images.get(profileNFT?.upgrades?.current) ??
+                      profileNFT?.image
+                    }
                     alt={profileNFT?.name}
                     fill
                   />
@@ -198,9 +210,7 @@ const Profile: NextPage = () => {
                     <div className=" text-3xl text-amber-100">{totalNFTPower || "Unknow"}</div>
                   </div>
                   <div className="absolute bottom-9 right-10">
-                    <button className="btn-rude btn w-[230px] text-xs font-thin">
-                      Feature your warrior
-                    </button>
+                    <button className="btn-rude btn text-xs font-thin">Feature your warrior</button>
                   </div>
                 </div>
               </div>

@@ -74,6 +74,22 @@ export const syncUserNFTs = async (wallet: string, nfts: RudeNFT[]) => {
   }
 };
 
+export const addUpgradedImage = async (
+  mint: string,
+  upgradeType: string,
+  imageUrl: string,
+  isCurrent = true
+) => {
+  const update = { $set: { [`images.${upgradeType}`]: imageUrl } };
+  if (isCurrent) {
+    update.$set = { current: upgradeType, ...update.$set };
+  }
+  const filter = { mint: mint };
+
+  const options = { new: true };
+  return await usernfts.UserNFTsModel().findOneAndUpdate(filter, update, options);
+};
+
 export const getSyncedNfts = async (wallet: string) => {
   let nfts: string[] = [];
   if (wallet) {
@@ -180,7 +196,7 @@ const getCollectionType = (name: string): string => {
   if (demonGods.includes(name)) {
     return NFTType.DEMON;
   }
-  return NFTType.OTHER;
+  return "Unknow";
 };
 
 const golemGods = [

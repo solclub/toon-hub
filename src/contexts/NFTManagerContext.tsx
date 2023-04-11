@@ -8,10 +8,17 @@ import type { TransactionInstruction, VersionedTransaction } from "@solana/web3.
 import { SystemProgram } from "@solana/web3.js";
 import { LAMPORTS_PER_SOL, PublicKey, Transaction } from "@solana/web3.js";
 import { env } from "env/client.mjs";
-import { createContext, useContext } from "react";
-import { connection, getButterflies } from "server/services/onchain-service";
+import type { Dispatch, SetStateAction } from "react";
+import { createContext, useContext, useState } from "react";
+import { connection } from "server/services/connections/web3-public";
+import { getButterflies } from "server/services/onchain-service";
 import type { Amount, PaymentOption } from "types/catalog";
 import { PaymentToken } from "types/catalog";
+
+const LAMPORTS_PER_RUDE = LAMPORTS_PER_SOL;
+const RUDE_SINK_KEY = new PublicKey(env.NEXT_PUBLIC_RUDE_SINK_KEY);
+const RUDE_TOKEN_KEY = new PublicKey(env.NEXT_PUBLIC_RUDE_TOKEN_KEY);
+const SOLANA_SINK_KEY = new PublicKey(env.NEXT_PUBLIC_SOLANA_SINK_KEY);
 
 interface NFTManagerContextType {
   prepTransaction: (
@@ -19,30 +26,32 @@ interface NFTManagerContextType {
     payment: PaymentOption,
     txSigner: <T extends Transaction | VersionedTransaction>(transaction: T) => Promise<T>
   ) => Promise<string>;
+  txState: TxStatus;
+  setTxState: Dispatch<SetStateAction<TxStatus>>;
 }
 
-const LAMPORTS_PER_RUDE = LAMPORTS_PER_SOL;
-const RUDE_SINK_KEY = new PublicKey(env.NEXT_PUBLIC_RUDE_SINK_KEY);
-const RUDE_TOKEN_KEY = new PublicKey(env.NEXT_PUBLIC_RUDE_TOKEN_KEY);
-const SOLANA_SINK_KEY = new PublicKey(env.NEXT_PUBLIC_SOLANA_SINK_KEY);
+type TxStatus = "BEGIN" | "WAITING" | "SUCCESS" | "ERROR" | "NONE";
 
 const NFTManagerContext = createContext<NFTManagerContextType | null>(null);
 
-export function useNFTManager(): NFTManagerContextType {
+export const useNFTManager = (): NFTManagerContextType => {
   const context = useContext(NFTManagerContext);
   if (!context) {
     throw new Error("useNFTManager must be inside of NFTManagerProvider");
   }
   return context;
-}
+};
 
-export function NFTManagerProvider(props: { children: React.ReactNode }) {
+export const NFTManagerProvider = (props: { children: React.ReactNode }) => {
+  const [txState, setTxState] = useState<TxStatus>("NONE");
   const value: NFTManagerContextType = {
     prepTransaction,
+    txState,
+    setTxState,
   };
 
   return <NFTManagerContext.Provider value={value} {...props} />;
-}
+};
 
 const prepTransaction = async (
   owner: PublicKey,

@@ -2,7 +2,8 @@ import type { NFTAttribute } from "server/database/models/nft.model";
 import { NFTType } from "server/database/models/nft.model";
 import { collectionsSchemas } from "../data/collections";
 import mergeImages from "./sharp-service";
-import { saveFileToCloud, getUrlFile } from "./cloudinary-service";
+import { addUpgradedImage } from "./nfts-service";
+import { getUrlFile } from "./cloudinary-service";
 import { DemonUpgrades, GolemUpgrades } from "server/database/models/user-nfts.model";
 import { SigninMessage } from "utils/SigninMessage";
 import { PublicKey } from "@solana/web3.js";
@@ -63,6 +64,10 @@ const upgradeMetadata = async (req: UpdateMetadataRequest) => {
   if (metadataUpdater && imageBuffer) {
     const result = await metadataUpdater(req.mintAddress, imageBuffer);
 
+    if ((result?.image ?? "").length <= 0) {
+      throw new Error("Error creating metaplex image url");
+    }
+
     const signature = await connection.sendEncodedTransaction(req.serializedTx, {
       skipPreflight: true,
       preflightCommitment: "confirmed",
@@ -77,6 +82,9 @@ const upgradeMetadata = async (req: UpdateMetadataRequest) => {
       signature: signature,
     });
     console.log(`[${Date.now()}]`, "upgradeMetadata: transaction confirmed");
+
+    await addUpgradedImage(req.mintAddress, req.upgradeType, result?.image ?? "");
+    console.log(`[${Date.now()}]`, "upgradeMetadata: upgraded web2");
 
     return result;
   }
@@ -188,7 +196,6 @@ const updateMetadataGolem = async (mintAddress: string, imageBuffer: Buffer) => 
   });
 
   console.log(`[${Date.now()}]`, "updateMetadataGolem: nft updated", metadata.image);
-
   return { sig: updatedNft.response.signature, image: metadata.image };
 };
 

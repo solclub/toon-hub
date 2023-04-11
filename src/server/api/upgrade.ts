@@ -4,7 +4,7 @@ import { router, protectedProcedure } from "./trpc";
 import { NFTType } from "server/database/models/nft.model";
 import upgradeService, { UpdateMetadataRequest } from "server/services/upgrade-service";
 import { DemonUpgrades, GolemUpgrades } from "server/database/models/user-nfts.model";
-import { getUserNFTbyMint } from "server/services/nfts-service";
+import { addUpgradedImage, getUserNFTbyMint } from "server/services/nfts-service";
 
 export const upgradeRouter = router({
   buildImagePreview: protectedProcedure
@@ -27,7 +27,10 @@ export const upgradeRouter = router({
         );
 
         const base64 = upgradeUrlImage.toString("base64");
-        const base = `data:image/png"};base64,${base64}`;
+        const base = `data:image/png";base64,${base64}`;
+
+        await addUpgradedImage(mint, upgradeType, base ?? "");
+
         return base;
       }
       return "";
