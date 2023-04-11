@@ -29,13 +29,13 @@ interface BuyProperties {
 }
 
 const UpgradeNFT: React.FC<BuyProperties> = ({ title, upgradeOption, sourceImageUrl, nft }) => {
-  const [paymentOption, setpaymentOption] = useState<PaymentOption>();
   const { publicKey, signMessage, signTransaction } = useWallet();
   const { prepTransaction, setTxState, txState } = useNFTManager();
   const toastRef = useRef("");
   const upgradeMetadata = trpc.upgradeNft.upgradeMetadata.useMutation();
   const { data: upgradeResult, isLoading, error, isError, isSuccess } = upgradeMetadata;
   const { paymentOptions } = upgradeOption;
+  const [paymentOption, setpaymentOption] = useState<PaymentOption>();
 
   const buildImagePreview = trpc.upgradeNft.buildImagePreview.useMutation();
   const {
@@ -47,6 +47,10 @@ const UpgradeNFT: React.FC<BuyProperties> = ({ title, upgradeOption, sourceImage
 
   useEffect(() => {
     setTxState("NONE");
+    if (paymentOptions) {
+      const [paymentOption] = paymentOptions;
+      setpaymentOption(paymentOption);
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -55,7 +59,13 @@ const UpgradeNFT: React.FC<BuyProperties> = ({ title, upgradeOption, sourceImage
       showSuccessToast("Success Preview", 1000);
       setTxState("SUCCESS");
     }
-  }, [status, setTxState]);
+
+    if (status == "error") {
+      showErrorToast(error?.message || "unexpected error");
+      setTxState("ERROR");
+      console.error(error?.message);
+    }
+  }, [status, setTxState, error?.message]);
 
   useEffect(() => {
     if (isError) {
@@ -212,6 +222,7 @@ const UpgradeNFT: React.FC<BuyProperties> = ({ title, upgradeOption, sourceImage
             {paymentOptions && (
               <PaymentMethodSelector
                 paymentOptions={paymentOptions}
+                selected={paymentOption}
                 onChange={(opt) => {
                   setpaymentOption(opt);
                 }}

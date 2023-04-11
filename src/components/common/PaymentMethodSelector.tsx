@@ -17,17 +17,18 @@ const balanceIcons = {
 
 const PaymentMethodSelector: React.FC<{
   paymentOptions: PaymentOption[];
+  selected?: PaymentOption;
   onChange: (otp: PaymentOption) => void;
-}> = ({ paymentOptions, onChange }) => {
-  const [selectedMethod, setselectedMethod] = useState("");
+}> = ({ paymentOptions, selected, onChange }) => {
+  // const [selectedMethod, setselectedMethod] = useState(paymentOptions[0]?.type);
 
-  useEffect(() => {
-    const type = paymentOptions[0]?.type;
-    if (type) setselectedMethod(type);
-  }, [paymentOptions]);
+  // useEffect(() => {
+  //   const type = paymentOptions[0]?.type;
+  //   if (type) setselectedMethod(type);
+  // }, [paymentOptions]);
 
   const onButtonClick = (otp: PaymentOption) => {
-    setselectedMethod(otp.type);
+    //setselectedMethod(otp.type);
     onChange(otp);
   };
 
@@ -42,7 +43,7 @@ const PaymentMethodSelector: React.FC<{
                 onClick={() => onButtonClick(opt)}
                 className={classNames(
                   "flex w-full items-center rounded-xl border-4 border-[#605031] bg-slate-900 p-3 text-2xl lg:w-1/4",
-                  { "bg-amber-600": selectedMethod == opt.type }
+                  { "bg-amber-600": selected?.type == opt.type }
                 )}
                 whileHover={{ scale: 1.1 }}
                 whileTap={{ scale: 0.9 }}
