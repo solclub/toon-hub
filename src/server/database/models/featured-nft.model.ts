@@ -23,7 +23,7 @@ const featuredNFTSchema = new Schema({
 
 const featuredModel = () => {
   return (
-    (mongoose.models?.Transactions as mongoose.Model<FeaturedNFT>) ||
+    (mongoose.models?.FeaturedNFT as mongoose.Model<FeaturedNFT>) ||
     model<FeaturedNFT>("FeaturedNFT", featuredNFTSchema, "featured-nfts")
   );
 };

@@ -99,7 +99,7 @@ const Profile: NextPage = () => {
     type: ProductType.NFT_FEATURE,
   });
 
-  const { txState } = useNFTManager();
+  const { txState, setTxState } = useNFTManager();
   const utils = trpc.useContext();
 
   const { data: userMints, isLoading } = trpc.nfts.getUserMints.useQuery();
@@ -112,8 +112,9 @@ const Profile: NextPage = () => {
   useEffect(() => {
     if (txState == "SUCCESS") {
       utils.nfts.getUserNFTbyMint.invalidate();
+      setTxState("NONE");
     }
-  }, [txState, utils.nfts.getUserNFTbyMint]);
+  }, [txState, utils.nfts.getUserNFTbyMint, setTxState]);
 
   useEffect(() => {
     setWeapons(sampleWeapons);
