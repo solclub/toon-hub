@@ -6,7 +6,7 @@ import classNames from "classnames";
 import { getCsrfToken, signIn, signOut, useSession } from "next-auth/react";
 import { trpc } from "../../utils/trpc";
 import bs58 from "bs58";
-import { SigninMessage } from "../../utils/SigninMessage";
+import { SigninMessage } from "../../utils/signin-message";
 
 const WalletMultiButtonDynamic = dynamic(
   async () => (await import("@solana/wallet-adapter-react-ui")).WalletMultiButton,
@@ -86,7 +86,7 @@ export const Connect = () => {
               </div>
             </div>
             <div>
-              <label className="swap-rotate swap ">
+              <label className="swap swap-rotate ">
                 <input type="checkbox" />
                 <svg
                   className="swap-on"

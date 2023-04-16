@@ -1,8 +1,8 @@
 import { z } from "zod";
-import { router, protectedProcedure } from "./trpc";
-import { getUserNFTbyMint } from "server/services/nfts-service";
+import { router, protectedProcedure } from "./trpc/trpc-context";
 import type { FeatureNFTRequest } from "server/services/feature-service";
 import featureService from "server/services/feature-service";
+import { TRPCError } from "@trpc/server";
 
 export const featureRouter = router({
   featureNFT: protectedProcedure
@@ -17,19 +17,22 @@ export const featureRouter = router({
     )
     .mutation(async ({ input, ctx }) => {
       const { mint, nonce, serializedTx, signedMessage, stringMessage } = input;
+      ctx.validateSignedMessage(signedMessage, stringMessage, nonce);
 
       const wallet = ctx.session.walletId;
       const request: FeatureNFTRequest = {
         wallet: wallet,
         mintAddress: mint,
-        nonce,
         serializedTx,
-        signedMessage,
-        stringMessage,
       };
-      await featureService.confirmFeatureTx(request);
-      return {
-        featured: true,
-      };
+      const result = await featureService.confirmAndSave(request);
+
+      if (result.status == "FAILED") {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: result.message,
+          cause: result.data,
+        });
+      }
     }),
 });

@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-import { router, protectedProcedure } from "./trpc";
+import { router, protectedProcedure } from "./trpc/trpc-context";
 import { ProductType } from "types/catalog";
 import type { Product } from "types/catalog";
 import catalog from "server/data/catalog.json";

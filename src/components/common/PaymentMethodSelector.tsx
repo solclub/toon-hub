@@ -1,7 +1,7 @@
 import RudeToken from "assets/images/rudetoken.png";
 import SVGIcon from "assets/svg/SVGIcon";
 import { motion } from "framer-motion";
-import React, { useEffect, useState } from "react";
+import React from "react";
 import Image from "next/image";
 import type { PaymentOption } from "types/catalog";
 import { PaymentToken } from "types/catalog";

@@ -1,8 +1,8 @@
 import { z } from "zod";
 
-import { router, protectedProcedure } from "./trpc";
-import { NFTType } from "server/database/models/nft.model";
-import upgradeService, { UpdateMetadataRequest } from "server/services/upgrade-service";
+import { router, protectedProcedure } from "./trpc/trpc-context";
+import type { UpdateMetadataRequest } from "server/services/upgrade-service";
+import upgradeService from "server/services/upgrade-service";
 import { DemonUpgrades, GolemUpgrades } from "server/database/models/user-nfts.model";
 import { addUpgradedImage, getUserNFTbyMint } from "server/services/nfts-service";
 

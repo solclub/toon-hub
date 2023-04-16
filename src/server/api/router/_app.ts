@@ -1,4 +1,4 @@
-import { router } from "../trpc";
+import { router } from "../trpc/trpc-context";
 import { authRouter } from "../auth";
 import { nftsRouter } from "../nfts";
 import { usersRouter } from "../user";

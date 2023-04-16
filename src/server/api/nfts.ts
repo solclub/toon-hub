@@ -5,7 +5,7 @@ import {
   getUserNFTs,
   getWalletBalanceTokens,
 } from "server/services/nfts-service";
-import { router, protectedProcedure } from "./trpc";
+import { router, protectedProcedure } from "./trpc/trpc-context";
 
 export const nftsRouter = router({
   getUserNFTs: protectedProcedure.query(async ({ ctx }) => {

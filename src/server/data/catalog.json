@@ -140,7 +140,7 @@
             "amounts": [
               {
                 "token": "RUDE",
-                "amount": 2888
+                "amount": 10
               }
             ]
           },
@@ -151,7 +151,7 @@
             "amounts": [
               {
                 "token": "SOL",
-                "amount": 1.75
+                "amount": 0.05
               }
             ]
           }

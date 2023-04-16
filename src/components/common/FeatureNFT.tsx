@@ -4,20 +4,16 @@ import React, { useEffect, useRef, useState } from "react";
 import type { PaymentOption, ProductOption } from "types/catalog";
 import PaymentMethodSelector from "./PaymentMethodSelector";
 import NftHidden from "assets/images/skin.png";
-import Divider from "assets/images/divider.png";
 import FrameBox from "./FrameBox";
-import type { DemonUpgrades, GolemUpgrades, UserNFT } from "server/database/models/user-nfts.model";
-import { showSuccessToast, showErrorToast, showPromisedToast } from "utils/toastUtils";
+import type { UserNFT } from "server/database/models/user-nfts.model";
+import { showPromisedToast } from "utils/toast-utils";
 import { trpc } from "utils/trpc";
 import type { RudeNFT } from "server/database/models/nft.model";
-import { NFTType } from "server/database/models/nft.model";
-import Balance from "components/topbar/Balance";
 import { useWallet } from "@solana/wallet-adapter-react";
 import { useNFTManager } from "contexts/NFTManagerContext";
-import { SigninMessage } from "utils/SigninMessage";
+import { SigninMessage } from "utils/signin-message";
 import { getCsrfToken } from "next-auth/react";
 import bs58 from "bs58";
-import Loader from "./Loader";
 
 interface BuyProperties {
   title: string;
@@ -32,8 +28,8 @@ const FeatureNFT: React.FC<BuyProperties> = ({ title, featureOption, sourceImage
   const { publicKey, signMessage, signTransaction } = useWallet();
   const { prepTransaction, setTxState, txState } = useNFTManager();
   const toastRef = useRef("");
-  const upgradeMetadata = trpc.featureNft.featureNFT.useMutation();
-  const { data: featureResult, isLoading, error, isError, isSuccess } = upgradeMetadata;
+  const featureNft = trpc.featureNft.featureNFT.useMutation();
+  const { isLoading, error, isError, isSuccess } = featureNft;
   const { paymentOptions } = featureOption;
   const [paymentOption, setpaymentOption] = useState<PaymentOption>();
 
@@ -48,13 +44,13 @@ const FeatureNFT: React.FC<BuyProperties> = ({ title, featureOption, sourceImage
 
   useEffect(() => {
     if (isError) {
-      showErrorToast(error?.message || "unexpected error");
+      showPromisedToast(toastRef, error?.message || "unexpected error", true, "ERROR");
       setTxState("ERROR");
       console.error(error?.message);
     }
 
     if (isSuccess) {
-      showSuccessToast("NFT Featured", 1000);
+      showPromisedToast(toastRef, "NFT Featured", true, "SUCCESS");
       setTxState("SUCCESS");
     }
   }, [error?.message, isError, isSuccess, setTxState]);
@@ -63,7 +59,6 @@ const FeatureNFT: React.FC<BuyProperties> = ({ title, featureOption, sourceImage
     e.stopPropagation();
     setTxState("BEGIN");
     const csrf = await getCsrfToken();
-    console.log(!publicKey, !csrf, !signMessage, !signTransaction, !paymentOption);
     if (!publicKey || !csrf || !signMessage || !signTransaction || !paymentOption) return;
     try {
       showPromisedToast(toastRef, "Initating Feature: Sign message...", false);
@@ -91,7 +86,7 @@ const FeatureNFT: React.FC<BuyProperties> = ({ title, featureOption, sourceImage
         true
       );
 
-      upgradeMetadata.mutate({
+      featureNft.mutate({
         nonce: csrf,
         serializedTx: serializedtx,
         signedMessage: signedMessage,
@@ -101,7 +96,12 @@ const FeatureNFT: React.FC<BuyProperties> = ({ title, featureOption, sourceImage
 
       setTxState("WAITING");
     } catch (error) {
-      showErrorToast("Error featuring the NFT, try again or contact support!");
+      showPromisedToast(
+        toastRef,
+        "Error featuring the NFT, try again or contact support!",
+        true,
+        "ERROR"
+      );
       setTxState("ERROR");
       console.error(error);
     }

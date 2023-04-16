@@ -5,7 +5,7 @@ import mergeImages from "./sharp-service";
 import { addUpgradedImage } from "./nfts-service";
 import { getUrlFile } from "./cloudinary-service";
 import { DemonUpgrades, GolemUpgrades } from "server/database/models/user-nfts.model";
-import { SigninMessage } from "utils/SigninMessage";
+import { SigninMessage } from "utils/signin-message";
 import { PublicKey } from "@solana/web3.js";
 import { getUserPDAKey } from "./war-service";
 import { toMetaplexFile } from "@metaplex-foundation/js";
@@ -201,11 +201,11 @@ const updateMetadataGolem = async (mintAddress: string, imageBuffer: Buffer) => 
 
 const validateSignedMessage = (
   signedMessage: string,
-  stringMessage: string | undefined,
+  stringMessage: string,
   nonce: string
 ): boolean => {
-  const message = new SigninMessage(signedMessage);
-  const isValid = message.validate(stringMessage || "");
+  const message = new SigninMessage(stringMessage);
+  const isValid = message.validate(signedMessage);
 
   return message.nonce === nonce && isValid;
 };
