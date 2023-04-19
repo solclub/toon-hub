@@ -20,7 +20,7 @@ type TransactionStatus = "PENDING" | "SUCCESS" | "FAILED";
 
 const proccessPayment = async <T>(
   request: PaymentRequestInfo,
-  proccessService: () => Promise<T>
+  proccessService: (txId: string) => Promise<T>
 ): Promise<PaymentResponseInfo<T>> => {
   const { serializedTx: txEncoded, wallet, mint } = request;
   let signature = "";
@@ -64,7 +64,7 @@ const proccessPayment = async <T>(
     return {
       status: "SUCCESS",
       txSig: signature,
-      data: await proccessService(),
+      data: await proccessService(signature),
     };
   } catch (error) {
     let message;
@@ -75,7 +75,6 @@ const proccessPayment = async <T>(
       message: message,
       status: "FAILED",
       txSig: signature,
-      data: await proccessService(),
     };
   }
 };

@@ -1,6 +1,7 @@
 import type { UploadApiResponse } from "cloudinary";
 import { v2 as cloudinary } from "cloudinary";
 import { env } from "env/server.mjs";
+import { Readable } from "stream";
 
 cloudinary.config({
   cloud_name: env.CLOUDINARY_CLOUD_NAME,
@@ -30,19 +31,14 @@ type NewGolemImage = {
   y: string;
 };
 
-export const saveFileToCloud = async (
-  imageData: string,
+export const uploadImageBuffer = async (
+  imageData: Buffer,
   imageName: string,
   folderName: string
 ): Promise<string | null> => {
   try {
     console.log("cloudinary folder");
-    const result: UploadApiResponse = await cloudinary.uploader.upload(imageData, {
-      resource_type: "image",
-      public_id: imageName,
-      folder: folderName,
-      overwrite: false,
-    });
+    const result = await uploadStream(imageData, imageName, folderName);
     return result.secure_url;
   } catch (err) {
     console.error(err);
@@ -59,6 +55,13 @@ export const getUrlFile = (
   return `https://res.cloudinary.com/${env.CLOUDINARY_CLOUD_NAME}/image/upload/collections/${colletionName}/art/${upgradeType}/${trait}/${traitName}.png`;
 };
 
+const service = {
+  uploadImageBuffer,
+  getUrlFile,
+};
+
+export default service;
+
 export const generateTwitterPostImage = (golem: string, wallet: string, mint: string) => {
   const golemTitle = getGolemTitle(golem);
   const subtitle = getsubTitle();
@@ -70,6 +73,30 @@ export const generateTwitterPostImage = (golem: string, wallet: string, mint: st
 
   return url;
 };
+
+const uploadStream = async (
+  buffer: Buffer,
+  imageName: string,
+  folderName: string
+): Promise<UploadApiResponse> =>
+  new Promise<UploadApiResponse>((res, rej) => {
+    const theTransformStream = cloudinary.uploader.upload_stream(
+      {
+        resource_type: "image",
+        public_id: imageName,
+        folder: folderName,
+        overwrite: false,
+      },
+      (err, result) => {
+        if (err) return rej(err);
+        if (!result) return rej("empty response");
+
+        res(result);
+      }
+    );
+    const str = Readable.from(buffer);
+    str.pipe(theTransformStream);
+  });
 
 const getGolemTitle = (golem: string): GolemTitle => {
   return {

@@ -203,7 +203,7 @@ const UpgradeNFT: React.FC<BuyProperties> = ({ title, upgradeOption, sourceImage
               )}
               <Image
                 className="panel w-full items-center rounded-3xl"
-                src={upgradeResult?.image ?? prevResult ?? NftHidden}
+                src={upgradeResult ?? prevResult ?? NftHidden}
                 alt={title}
                 width={500}
                 height={500}

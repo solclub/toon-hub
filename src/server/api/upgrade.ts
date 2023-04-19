@@ -5,6 +5,7 @@ import type { UpdateMetadataRequest } from "server/services/upgrade-service";
 import upgradeService from "server/services/upgrade-service";
 import { DemonUpgrades, GolemUpgrades } from "server/database/models/user-nfts.model";
 import { addUpgradedImage, getUserNFTbyMint } from "server/services/nfts-service";
+import { TRPCError } from "@trpc/server";
 
 export const upgradeRouter = router({
   buildImagePreview: protectedProcedure
@@ -48,25 +49,37 @@ export const upgradeRouter = router({
     )
     .mutation(async ({ input, ctx }) => {
       const { mint, upgradeType, nonce, serializedTx, signedMessage, stringMessage } = input;
+      ctx.validateSignedMessage(signedMessage, stringMessage, nonce);
 
       const wallet = ctx.session.walletId;
       const nft = await getUserNFTbyMint(wallet, mint);
-      let upgradeUrlImage;
-      if (nft && nft.type) {
-        const request: UpdateMetadataRequest = {
-          wallet: wallet,
-          attributes: nft.attributes,
-          collection: nft.type,
-          mintAddress: mint,
-          nonce,
-          serializedTx,
-          signedMessage,
-          stringMessage,
-          upgradeType: upgradeType,
-        };
-        upgradeUrlImage = await upgradeService.upgradeMetadata(request);
+
+      if (!nft || !nft.type) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "NFT not found or has no type",
+        });
       }
 
-      return upgradeUrlImage;
+      const request: UpdateMetadataRequest = {
+        serializedTx,
+        wallet,
+        attributes: nft.attributes,
+        collection: nft.type,
+        mintAddress: mint,
+        upgradeType,
+      };
+
+      const result = await upgradeService.confirmAndUpgradeMetadata(request);
+
+      if (result.status === "FAILED") {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: result.message,
+          cause: result.data,
+        });
+      }
+
+      return result.data?.image;
     }),
 });

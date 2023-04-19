@@ -3,7 +3,7 @@ import { NFTType } from "server/database/models/nft.model";
 import { collectionsSchemas } from "../data/collections";
 import mergeImages from "./sharp-service";
 import { addUpgradedImage } from "./nfts-service";
-import { getUrlFile } from "./cloudinary-service";
+import cloudinaryService from "./cloudinary-service";
 import { DemonUpgrades, GolemUpgrades } from "server/database/models/user-nfts.model";
 import { SigninMessage } from "utils/signin-message";
 import { PublicKey } from "@solana/web3.js";
@@ -11,6 +11,11 @@ import { getUserPDAKey } from "./war-service";
 import { toMetaplexFile } from "@metaplex-foundation/js";
 import axios from "axios";
 import { metaplexWithAuthority, connection } from "./connections/web3-private";
+import { env } from "env/server.mjs";
+import paymentService from "./payment-service";
+
+const UpgradeServerUrl = env.METADATA_UPGRADE_SERVER_URL;
+const UpgradeServerToken = env.METADATA_UPGRADE_ACCESS_TOKEN;
 
 const rebelUrl: Record<string, string> = {
   "2RvZ76hT5uSe7URDnWDwjnGJhisSPHxJyEi9rdrCAYEh":
@@ -33,65 +38,72 @@ export interface UpdateMetadataRequest {
   mintAddress: string;
   wallet: string;
   serializedTx: string;
-  signedMessage: string;
-  stringMessage: string;
-  nonce: string;
   upgradeType: string;
   collection: NFTType;
   attributes: NFTAttribute[];
 }
 
-const upgradeMetadata = async (req: UpdateMetadataRequest) => {
-  const isValid = validateSignedMessage(req.signedMessage, req.stringMessage, req.nonce);
-  const isOwner = await verifyNftOwner(req.wallet, req.mintAddress);
-  const upgradeImagePromise = buildUpgradeImage(
+export const confirmAndUpgradeMetadata = async (req: UpdateMetadataRequest) => {
+  const result = paymentService.proccessPayment<{ signature: string; image: string }>(
+    {
+      mint: req.mintAddress,
+      serializedTx: req.serializedTx,
+      wallet: req.wallet,
+    },
+    async (txId: string) => {
+      return await upgradeMetadata(req, txId);
+    }
+  );
+
+  return result;
+};
+
+export const upgradeMetadata = async (req: UpdateMetadataRequest, txId: string) => {
+  const collection =
+    collectionsSchemas[req.collection.toString() as keyof typeof collectionsSchemas];
+
+  const newArt = await buildUpgradeImage(
     req.mintAddress,
     req.collection,
     req.upgradeType,
     req.attributes
   );
+  const folder = `${collection.path.toLowerCase()}/${req.upgradeType}/`;
 
-  if (!isValid) {
-    throw new Error("Could not validate the signed message");
+  const tempImgUrl = await cloudinaryService.uploadImageBuffer(newArt, req.mintAddress, folder);
+  const upgradeEndpoint = getMetadataUpdater(req.upgradeType, req.collection);
+  const headers = {
+    "access-token": UpgradeServerToken,
+  };
+  const reqBody = {
+    mintAddress: req.mintAddress,
+    upgradeType: req.upgradeType,
+    owner: req.wallet,
+    image: tempImgUrl,
+  };
+
+  if (!tempImgUrl) {
+    throw "Unable to upload to file server";
   }
-  if (!isOwner) {
-    throw new Error("You are not the owner of the NFT!");
+
+  if (!upgradeEndpoint) {
+    throw "There is not an updater for a collection provided";
   }
 
-  const metadataUpdater = getMetadataUpdater(req.upgradeType, req.collection);
-  const imageBuffer = await upgradeImagePromise;
+  console.log("upgrading... ", upgradeEndpoint, JSON.stringify(reqBody, null, 2));
+  const upgradeResult = await axios.post<{ signature: string; image: string }>(
+    upgradeEndpoint,
+    reqBody,
+    { headers }
+  );
 
-  if (metadataUpdater && imageBuffer) {
-    const result = await metadataUpdater(req.mintAddress, imageBuffer);
-
-    if ((result?.image ?? "").length <= 0) {
-      throw new Error("Error creating metaplex image url");
-    }
-
-    const signature = await connection.sendEncodedTransaction(req.serializedTx, {
-      skipPreflight: true,
-      preflightCommitment: "confirmed",
-    });
-    console.log(`[${Date.now()}]`, "upgradeMetadata: metadata signed", signature);
-
-    const latestBlockHash = await connection.getLatestBlockhash();
-
-    await connection.confirmTransaction({
-      blockhash: latestBlockHash.blockhash,
-      lastValidBlockHeight: latestBlockHash.lastValidBlockHeight,
-      signature: signature,
-    });
-    console.log(`[${Date.now()}]`, "upgradeMetadata: transaction confirmed");
-
-    await addUpgradedImage(req.mintAddress, req.upgradeType, result?.image ?? "");
-    console.log(`[${Date.now()}]`, "upgradeMetadata: upgraded web2");
-
-    return result;
-  }
-  return null;
+  console.log("Updating db", upgradeResult.data);
+  await addUpgradedImage(req.mintAddress, req.upgradeType, upgradeResult.data.image);
+  console.log("done");
+  return upgradeResult.data;
 };
 
-const buildUpgradeImage = async (
+export const buildUpgradeImage = async (
   mint: string,
   collectionType: NFTType,
   upgradeType: string,
@@ -132,11 +144,14 @@ const buildUpgradeImage = async (
   return resultBuffer;
 };
 
+const service = { upgradeMetadata, buildUpgradeImage, confirmAndUpgradeMetadata };
+export default service;
+
 const getMetadataUpdater = (upgradeType: string, collection: NFTType) => {
   const updaters = {
     [NFTType.GOLEM]: {
       [GolemUpgrades.ORIGINAL.toString()]: null,
-      [GolemUpgrades.REWORK.toString()]: updateMetadataGolem,
+      [GolemUpgrades.REWORK.toString()]: `${UpgradeServerUrl}/golem-upgrade-forced`,
       [GolemUpgrades.CARTOON.toString()]: null,
     },
     [NFTType.DEMON]: {
@@ -145,84 +160,6 @@ const getMetadataUpdater = (upgradeType: string, collection: NFTType) => {
     },
   };
   return updaters[collection][upgradeType];
-};
-
-const updateMetadataGolem = async (mintAddress: string, imageBuffer: Buffer) => {
-  console.log(`[${Date.now()}]`, "updateMetadataGolem: start");
-  const mint = new PublicKey(mintAddress);
-  console.log(`[${Date.now()}]`, "updateMetadataGolem: mint", mintAddress);
-
-  const nft = await metaplexWithAuthority.nfts().findByMint({ mintAddress: mint });
-  console.log(`[${Date.now()}]`, "updateMetadataGolem: nft", !nft.json?.attributes);
-
-  if (!nft.json?.attributes) {
-    throw new Error(`Error getting nft metadata ${mintAddress}`);
-  }
-
-  const traitIndex = nft.json.attributes.findIndex((x) => x.trait_type === "Butterfly Effect");
-  const updatedAttributes = [...nft.json.attributes];
-  console.log(`[${Date.now()}]`, "updateMetadataGolem: traitIndex", traitIndex);
-  if (traitIndex > -1 && updatedAttributes[traitIndex]?.value == "true") {
-    return { sig: "no update", image: nft.json.image };
-  }
-
-  if (traitIndex == -1) {
-    updatedAttributes.push({
-      trait_type: "Butterfly Effect",
-      value: "true",
-    });
-  }
-  console.log(`[${Date.now()}]`, "updateMetadataGolem: uploadMetadata");
-  const { uri, metadata } = await metaplexWithAuthority.nfts().uploadMetadata({
-    ...nft.json,
-    image: toMetaplexFile(imageBuffer, `${mintAddress}.png`),
-    attributes: updatedAttributes,
-    properties: {
-      ...nft.json.properties,
-      files: [
-        {
-          type: "image/png",
-          uri: toMetaplexFile(imageBuffer, `${mintAddress}.png`),
-        },
-      ],
-    },
-  });
-
-  console.log(`[${Date.now()}]`, "updateMetadataGolem: Metadata.json updated");
-
-  const updatedNft = await metaplexWithAuthority.nfts().update({
-    nftOrSft: nft,
-    uri: uri,
-  });
-
-  console.log(`[${Date.now()}]`, "updateMetadataGolem: nft updated", metadata.image);
-  return { sig: updatedNft.response.signature, image: metadata.image };
-};
-
-const validateSignedMessage = (
-  signedMessage: string,
-  stringMessage: string,
-  nonce: string
-): boolean => {
-  const message = new SigninMessage(stringMessage);
-  const isValid = message.validate(signedMessage);
-
-  return message.nonce === nonce && isValid;
-};
-
-const verifyNftOwner = async (owner: string, mint: string): Promise<boolean> => {
-  const largestAccounts = await connection.getTokenLargestAccounts(new PublicKey(mint));
-  const largestAccount = largestAccounts?.value[0];
-  const largestAccountInfo = largestAccount
-    ? await connection.getParsedAccountInfo(largestAccount.address)
-    : null;
-  const accountData = largestAccountInfo?.value?.data;
-  const parsedOwner = accountData instanceof Buffer ? null : accountData?.parsed?.info?.owner;
-  const pdaKey = await getUserPDAKey(owner);
-  if (!parsedOwner || !pdaKey) {
-    return false;
-  }
-  return parsedOwner === pdaKey || parsedOwner === owner;
 };
 
 const normalizeTrait = (str: string) => {
@@ -238,7 +175,7 @@ const getTraitFile = (
   trait: string,
   formattedTraits: Record<string, string>
 ) => {
-  const url = getUrlFile(
+  const url = cloudinaryService.getUrlFile(
     collectionName,
     upgradeName,
     trait.toLowerCase(),
@@ -247,6 +184,3 @@ const getTraitFile = (
 
   return url;
 };
-
-const service = { upgradeMetadata, buildUpgradeImage };
-export default service;
