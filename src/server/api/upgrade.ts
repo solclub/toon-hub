@@ -1,7 +1,10 @@
 import { z } from "zod";
 
 import { router, protectedProcedure } from "./trpc/trpc-context";
-import type { UpdateMetadataRequest } from "server/services/upgrade-service";
+import type {
+  SwapArtMetadataRequest,
+  UpdateMetadataRequest,
+} from "server/services/upgrade-service";
 import upgradeService from "server/services/upgrade-service";
 import { DemonUpgrades, GolemUpgrades } from "server/database/models/user-nfts.model";
 import { addUpgradedImage, getUserNFTbyMint } from "server/services/nfts-service";
@@ -30,7 +33,7 @@ export const upgradeRouter = router({
         const base64 = upgradeUrlImage.toString("base64");
         const base = `data:image/png";base64,${base64}`;
 
-        await addUpgradedImage(mint, upgradeType, base ?? "");
+        await addUpgradedImage(mint, ctx.session.walletId, upgradeType, base ?? "");
 
         return base;
       }
@@ -71,6 +74,41 @@ export const upgradeRouter = router({
       };
 
       const result = await upgradeService.confirmAndUpgradeMetadata(request);
+
+      if (result.status === "FAILED") {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: result.message,
+          cause: result.data,
+        });
+      }
+
+      return result.data?.image;
+    }),
+  swapArtMetadata: protectedProcedure
+    .input(
+      z.object({
+        mint: z.string(),
+        upgradeType: z.nativeEnum(DemonUpgrades).or(z.nativeEnum(GolemUpgrades)),
+        nonce: z.string(),
+        serializedTx: z.string(),
+        signedMessage: z.string(),
+        stringMessage: z.string(),
+      })
+    )
+    .mutation(async ({ input, ctx }) => {
+      const { mint, upgradeType, nonce, serializedTx, signedMessage, stringMessage } = input;
+      ctx.validateSignedMessage(signedMessage, stringMessage, nonce);
+      const wallet = ctx.session.walletId;
+
+      const request: SwapArtMetadataRequest = {
+        serializedTx,
+        wallet,
+        mintAddress: mint,
+        upgradeType,
+      };
+
+      const result = await upgradeService.confirmAndSwapMetadata(request);
 
       if (result.status === "FAILED") {
         throw new TRPCError({

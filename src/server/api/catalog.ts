@@ -7,7 +7,7 @@ import catalog from "server/data/catalog.json";
 import { NFTType } from "server/database/models/nft.model";
 
 export const catalogRouter = router({
-  getProduct: protectedProcedure
+  getProductAF: protectedProcedure
     .input(
       z.object({
         type: z.nativeEnum(ProductType),
@@ -25,4 +25,7 @@ export const catalogRouter = router({
       }
       return {} as Product;
     }),
+  getAll: protectedProcedure.query(({}) => {
+    return catalog as Product[];
+  }),
 });

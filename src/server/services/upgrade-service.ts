@@ -2,15 +2,10 @@ import type { NFTAttribute } from "server/database/models/nft.model";
 import { NFTType } from "server/database/models/nft.model";
 import { collectionsSchemas } from "../data/collections";
 import mergeImages from "./sharp-service";
-import { addUpgradedImage } from "./nfts-service";
+import { addUpgradedImage, getUserNFTbyMint } from "./nfts-service";
 import cloudinaryService from "./cloudinary-service";
 import { DemonUpgrades, GolemUpgrades } from "server/database/models/user-nfts.model";
-import { SigninMessage } from "utils/signin-message";
-import { PublicKey } from "@solana/web3.js";
-import { getUserPDAKey } from "./war-service";
-import { toMetaplexFile } from "@metaplex-foundation/js";
 import axios from "axios";
-import { metaplexWithAuthority, connection } from "./connections/web3-private";
 import { env } from "env/server.mjs";
 import paymentService from "./payment-service";
 
@@ -43,6 +38,13 @@ export interface UpdateMetadataRequest {
   attributes: NFTAttribute[];
 }
 
+export interface SwapArtMetadataRequest {
+  mintAddress: string;
+  wallet: string;
+  serializedTx: string;
+  upgradeType: string;
+}
+
 export const confirmAndUpgradeMetadata = async (req: UpdateMetadataRequest) => {
   const result = paymentService.proccessPayment<{ signature: string; image: string }>(
     {
@@ -52,6 +54,21 @@ export const confirmAndUpgradeMetadata = async (req: UpdateMetadataRequest) => {
     },
     async (txId: string) => {
       return await upgradeMetadata(req, txId);
+    }
+  );
+
+  return result;
+};
+
+export const confirmAndSwapMetadata = async (req: SwapArtMetadataRequest) => {
+  const result = paymentService.proccessPayment<{ signature: string; image: string }>(
+    {
+      mint: req.mintAddress,
+      serializedTx: req.serializedTx,
+      wallet: req.wallet,
+    },
+    async (txId: string) => {
+      return await swapArtMetadata(req, txId);
     }
   );
 
@@ -98,7 +115,48 @@ export const upgradeMetadata = async (req: UpdateMetadataRequest, txId: string) 
   );
 
   console.log("Updating db", upgradeResult.data);
-  await addUpgradedImage(req.mintAddress, req.upgradeType, upgradeResult.data.image);
+  await addUpgradedImage(req.mintAddress, req.wallet, req.upgradeType, upgradeResult.data.image);
+  console.log("done");
+  return upgradeResult.data;
+};
+
+export const swapArtMetadata = async (req: SwapArtMetadataRequest, txId: string) => {
+  const nft = await getUserNFTbyMint(req.wallet, req.mintAddress);
+
+  if (!nft || !nft.type) {
+    throw "NFT not found or has no type";
+  }
+
+  const tempImgUrl = nft.upgrades?.images?.get(req?.upgradeType);
+  const upgradeEndpoint = getMetadataUpdater(req.upgradeType, nft?.type);
+  const headers = {
+    "access-token": UpgradeServerToken,
+  };
+
+  const reqBody = {
+    mintAddress: req.mintAddress,
+    upgradeType: req.upgradeType,
+    owner: req.wallet,
+    image: tempImgUrl,
+  };
+
+  if (!tempImgUrl) {
+    throw "Unable to upload to file server";
+  }
+
+  if (!upgradeEndpoint) {
+    throw "There is not an updater for a collection provided";
+  }
+
+  console.log("swapping... ", upgradeEndpoint, JSON.stringify(reqBody, null, 2));
+  const upgradeResult = await axios.post<{ signature: string; image: string }>(
+    upgradeEndpoint,
+    reqBody,
+    { headers }
+  );
+
+  console.log("swapping db", upgradeResult.data);
+  await addUpgradedImage(req.mintAddress, req.wallet, req.upgradeType, upgradeResult.data.image);
   console.log("done");
   return upgradeResult.data;
 };
@@ -144,14 +202,22 @@ export const buildUpgradeImage = async (
   return resultBuffer;
 };
 
-const service = { upgradeMetadata, buildUpgradeImage, confirmAndUpgradeMetadata };
+const service = {
+  upgradeMetadata,
+  buildUpgradeImage,
+  confirmAndUpgradeMetadata,
+  confirmAndSwapMetadata,
+};
 export default service;
 
-const getMetadataUpdater = (upgradeType: string, collection: NFTType) => {
+const getMetadataUpdater = (
+  upgradeType: string,
+  collection: NFTType
+): string | null | undefined => {
   const updaters = {
     [NFTType.GOLEM]: {
-      [GolemUpgrades.ORIGINAL.toString()]: null,
-      [GolemUpgrades.REWORK.toString()]: `${UpgradeServerUrl}/golem-upgrade-forced`,
+      [GolemUpgrades.ORIGINAL.toString()]: `${UpgradeServerUrl}/update-golem-metadata`,
+      [GolemUpgrades.REWORK.toString()]: `${UpgradeServerUrl}/update-golem-metadata`,
       [GolemUpgrades.CARTOON.toString()]: null,
     },
     [NFTType.DEMON]: {

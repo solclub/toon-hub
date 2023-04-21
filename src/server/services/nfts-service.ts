@@ -76,6 +76,7 @@ export const syncUserNFTs = async (wallet: string, nfts: RudeNFT[]) => {
 
 export const addUpgradedImage = async (
   mint: string,
+  wallet: string,
   upgradeType: string,
   imageUrl: string,
   isCurrent = true
@@ -84,7 +85,7 @@ export const addUpgradedImage = async (
   if (isCurrent) {
     update.$set = { current: upgradeType, ...update.$set };
   }
-  const filter = { mint: mint };
+  const filter = { mint: mint, wallet };
 
   const options = { new: true };
   return await usernfts.UserNFTsModel().findOneAndUpdate(filter, update, options);

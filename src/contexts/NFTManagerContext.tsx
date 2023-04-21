@@ -8,12 +8,13 @@ import type { TransactionInstruction, VersionedTransaction } from "@solana/web3.
 import { SystemProgram } from "@solana/web3.js";
 import { LAMPORTS_PER_SOL, PublicKey, Transaction } from "@solana/web3.js";
 import { env } from "env/client.mjs";
-import type { Dispatch, SetStateAction } from "react";
+import { Dispatch, SetStateAction, useEffect } from "react";
 import { createContext, useContext, useState } from "react";
 import { connection } from "server/services/connections/web3-public";
 import { getButterflies } from "server/services/onchain-service";
-import type { Amount, PaymentOption } from "types/catalog";
+import type { Amount, PaymentOption, Product, ProductType } from "types/catalog";
 import { PaymentToken } from "types/catalog";
+import { trpc } from "utils/trpc";
 
 const LAMPORTS_PER_RUDE = LAMPORTS_PER_SOL;
 const RUDE_SINK_KEY = new PublicKey(env.NEXT_PUBLIC_RUDE_SINK_KEY);
@@ -28,6 +29,8 @@ interface NFTManagerContextType {
   ) => Promise<string>;
   txState: TxStatus;
   setTxState: Dispatch<SetStateAction<TxStatus>>;
+  catalog: Product[] | undefined;
+  getProduct: (prodType: ProductType, collection?: string) => Product[] | undefined;
 }
 
 type TxStatus = "BEGIN" | "WAITING" | "SUCCESS" | "ERROR" | "NONE";
@@ -44,10 +47,24 @@ export const useNFTManager = (): NFTManagerContextType => {
 
 export const NFTManagerProvider = (props: { children: React.ReactNode }) => {
   const [txState, setTxState] = useState<TxStatus>("NONE");
+  const [catalog, setCatalog] = useState<Product[]>();
+  const { data: products, isSuccess: isCatalogSuccess } = trpc.catalog.getAll.useQuery();
+
+  useEffect(() => {
+    if (isCatalogSuccess) setCatalog(products);
+  }, [isCatalogSuccess, products]);
+
+  const getProduct = (prodType: ProductType, collection?: string) => {
+    const result = catalog?.filter((x) => x.type == prodType && x.collection == collection);
+    return result;
+  };
+
   const value: NFTManagerContextType = {
     prepTransaction,
     txState,
     setTxState,
+    catalog,
+    getProduct,
   };
 
   return <NFTManagerContext.Provider value={value} {...props} />;

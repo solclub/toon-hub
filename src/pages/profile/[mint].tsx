@@ -9,8 +9,9 @@ import Equipment, { EquipmentRarityLabels } from "components/common/Equipment";
 import { CountDown } from "components/common/CountDown";
 import Panel from "components/common/Panel";
 import Loader from "components/common/Loader";
-import NftVersion from "./components/nft-version";
+import NftVersion from "./components/NFTVersion";
 import type { UserNFT } from "server/database/models/user-nfts.model";
+import type { Product } from "types/catalog";
 import { ProductType } from "types/catalog";
 import type { NFTType, RudeNFT } from "server/database/models/nft.model";
 import { trpc } from "utils/trpc";
@@ -23,14 +24,12 @@ import PowerRatingIcon from "assets/images/power_rating_icon.png";
 import TierIcon from "assets/images/tier_icon.png";
 import WeaponsIcon from "assets/images/weapons_icon.png";
 import gem from "assets/weapons/SLOT1/COMMON/Stoneheart.png";
-//import gem1 from "assets/weapons/SLOT2/EPIC/Flamestreak-Bow.png";
 import gem2 from "assets/weapons/SLOT3/LEGENDARY/Ancient-Hammer.png";
 import gem3 from "assets/weapons/SLOT4/MYTHIC/Life-taker.png";
 import WeaponChest from "assets/weapons/weapon-chest.png";
 import { useNFTManager } from "contexts/NFTManagerContext";
 import { Modal } from "components/common/Modal";
-import FeatureNFT from "components/common/FeatureNFT";
-import { userInfo } from "os";
+import FeatureNFT from "pages/profile/components/FeatureNFT";
 
 type Weapon = {
   image: string | StaticImageData;
@@ -95,9 +94,8 @@ const Profile: NextPage = () => {
     mint: (mint ?? "") as string,
   });
   const [isOpen, setOpen] = useState(false);
-  const { data: product } = trpc.catalog.getProduct.useQuery({
-    type: ProductType.NFT_FEATURE,
-  });
+  const { getProduct } = useNFTManager();
+  const [featureProduct] = getProduct(ProductType.NFT_FEATURE) ?? [{ options: [] }];
 
   const { txState, setTxState } = useNFTManager();
   const utils = trpc.useContext();
@@ -219,7 +217,7 @@ const Profile: NextPage = () => {
                     <div className=" text-3xl text-amber-100">{totalNFTPower || "Unknow"}</div>
                   </div>
                   <div className="absolute bottom-9 right-10">
-                    {product?.options[0] && profileNFT && (
+                    {featureProduct?.options[0] && profileNFT && (
                       <>
                         <button
                           className="btn-rude btn text-xs font-thin"
@@ -237,8 +235,8 @@ const Profile: NextPage = () => {
                         >
                           <FeatureNFT
                             nft={profileNFT}
-                            title={product?.options[0]?.name ?? " Feature NFT"}
-                            featureOption={product.options[0]}
+                            title={featureProduct?.options[0]?.name ?? " Feature NFT"}
+                            featureOption={featureProduct.options[0]}
                             sourceImageUrl={profileNFT?.upgrades?.images?.get(
                               profileNFT?.upgrades?.current
                             )}
@@ -337,9 +335,10 @@ const Profile: NextPage = () => {
         <Panel className="panel flex w-full max-w-[65%] flex-wrap rounded-md p-8">
           {profileNFT && profileNFT?.type && (
             <CustomizePanel
-              collection={profileNFT?.type}
               weapons={weapons}
               nft={profileNFT}
+              upgradeProducts={getProduct(ProductType.NFT_UPGRADE, profileNFT?.type)?.[0]}
+              swapProducts={getProduct(ProductType.NFT_ART_SWAP, profileNFT?.type)?.[0]}
             ></CustomizePanel>
           )}
         </Panel>
@@ -349,18 +348,15 @@ const Profile: NextPage = () => {
 };
 
 type ArmoryProps = {
-  collection: NFTType;
   nft?: NFTInfo;
   weapons: Weapon[];
+  upgradeProducts: Product | undefined;
+  swapProducts: Product | undefined;
 };
 
-const CustomizePanel = ({ collection, weapons, nft }: ArmoryProps) => {
-  const { data: product } = trpc.catalog.getProduct.useQuery({
-    type: ProductType.NFT_UPGRADE,
-    collection: collection,
-  });
-
-  const options = product?.options;
+const CustomizePanel = ({ weapons, nft, upgradeProducts, swapProducts }: ArmoryProps) => {
+  const upgradeOpts = upgradeProducts?.options;
+  const swapArtOpts = swapProducts?.options;
 
   const onBuyEquipment = (x: Weapon) => {
     //check status
@@ -371,15 +367,17 @@ const CustomizePanel = ({ collection, weapons, nft }: ArmoryProps) => {
     <>
       <div className="flex flex-wrap justify-center gap-x-5 gap-y-3 text-center">
         <h2 className="block w-full text-xl">Select your alternative version</h2>
-        {options &&
-          options.map((opt) => (
-            <NftVersion
-              key={opt.name}
-              upgrade={opt}
-              nft={nft}
-              isOriginal={opt.key === "ORIGINAL"}
-            ></NftVersion>
-          ))}
+        {upgradeOpts &&
+          upgradeOpts
+            .filter((x) => x.isAvailable)
+            .map((opt) => (
+              <NftVersion
+                key={opt.name}
+                upgradeOpt={opt}
+                swapArtOpt={swapArtOpts?.filter((x) => x.key == opt.key)?.[0]}
+                nft={nft}
+              ></NftVersion>
+            ))}
       </div>
 
       <div className="flex w-full flex-wrap justify-center text-center">

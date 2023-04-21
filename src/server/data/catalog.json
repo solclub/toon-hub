@@ -7,7 +7,7 @@
       {
         "key": "ORIGINAL",
         "name": "Original",
-        "isAvailable": false
+        "isAvailable": true
       },
       {
         "key": "REWORK",
@@ -56,7 +56,7 @@
       {
         "key": "CARTOON",
         "name": "Cartoon",
-        "isAvailable": true,
+        "isAvailable": false,
         "paymentOptions": [
           {
             "type": "RUDE",
@@ -77,6 +77,49 @@
               {
                 "token": "SOL",
                 "amount": 1.75
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "collection": "GOLEM",
+    "type": "NFT_ART_SWAP",
+    "enabled": true,
+    "options": [
+      {
+        "key": "ORIGINAL",
+        "name": "Original",
+        "isAvailable": true,
+        "paymentOptions": [
+          {
+            "type": "SOL",
+            "order": 0,
+            "enabled": true,
+            "amounts": [
+              {
+                "token": "SOL",
+                "amount": 0.05
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "key": "REWORK",
+        "name": "Rework",
+        "isAvailable": true,
+        "paymentOptions": [
+          {
+            "type": "SOL",
+            "order": 0,
+            "enabled": true,
+            "amounts": [
+              {
+                "token": "SOL",
+                "amount": 0.05
               }
             ]
           }

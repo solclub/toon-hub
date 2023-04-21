@@ -16,6 +16,7 @@ export enum PaymentToken {
 export enum ProductType {
   NFT_UPGRADE = "NFT_UPGRADE",
   NFT_FEATURE = "NFT_FEATURE",
+  NFT_ART_SWAP = "NFT_ART_SWAP",
 }
 
 export interface PaymentOption {
