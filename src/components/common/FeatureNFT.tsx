@@ -92,6 +92,7 @@ const FeatureNFT: React.FC<BuyProperties> = ({ title, featureOption, sourceImage
         signedMessage: signedMessage,
         stringMessage: stringMessage,
         mint: nft.mint,
+        nftType: nft.type?.toString() ?? "",
       });
 
       setTxState("WAITING");

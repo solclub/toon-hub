@@ -1,8 +1,10 @@
 import { z } from "zod";
-import { router, protectedProcedure } from "./trpc/trpc-context";
+import { router, protectedProcedure, publicProcedure } from "./trpc/trpc-context";
 import type { FeatureNFTRequest } from "server/services/feature-service";
 import featureService from "server/services/feature-service";
 import { TRPCError } from "@trpc/server";
+import { getUserNFTbyMint } from "server/services/nfts-service";
+import userModel from "server/database/models/user.model";
 
 export const featureRouter = router({
   featureNFT: protectedProcedure
@@ -13,14 +15,16 @@ export const featureRouter = router({
         serializedTx: z.string(),
         signedMessage: z.string(),
         stringMessage: z.string(),
+        nftType: z.string(),
       })
     )
     .mutation(async ({ input, ctx }) => {
-      const { mint, nonce, serializedTx, signedMessage, stringMessage } = input;
+      const { mint, nonce, serializedTx, signedMessage, stringMessage, nftType } = input;
       ctx.validateSignedMessage(signedMessage, stringMessage, nonce);
 
       const wallet = ctx.session.walletId;
       const request: FeatureNFTRequest = {
+        nftType: nftType,
         wallet: wallet,
         mintAddress: mint,
         serializedTx,
@@ -35,4 +39,16 @@ export const featureRouter = router({
         });
       }
     }),
+  latest: publicProcedure.query(async () => {
+    const result = await featureService.getLastFeaturedNFT();
+
+    if (!result) return { nft: null, user: null };
+
+    const nft = await getUserNFTbyMint(result.wallet, result.mint);
+    const user = await userModel().findOne({
+      walletId: result.wallet,
+    });
+
+    return { nft, user };
+  }),
 });

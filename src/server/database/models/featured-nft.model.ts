@@ -3,7 +3,10 @@ import mongoose, { Schema, model } from "mongoose";
 export interface FeaturedNFT {
   wallet: string;
   mint: string;
-  lastFeatured: Date;
+  createdAt: Date;
+  featured: boolean;
+  nftType: string;
+  featuredDate: Date;
 }
 
 const featuredNFTSchema = new Schema({
@@ -15,8 +18,20 @@ const featuredNFTSchema = new Schema({
     type: String,
     required: true,
   },
-  lastFeatured: {
+  createdAt: {
     type: Date,
+    required: true,
+  },
+  nftType: {
+    type: String,
+    required: true,
+  },
+  featuredDate: {
+    type: Date,
+    required: false,
+  },
+  featured: {
+    type: Boolean,
     required: true,
   },
 });

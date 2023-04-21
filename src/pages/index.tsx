@@ -22,6 +22,7 @@ import ImgTwitterBlue from "../assets/images/twitter_blue.png";
 import ImgPowerRating from "../assets/images/power_rating_icon.png";
 import ImgSolScan from "../assets/images/solscan.png";
 import Panel from "../components/common/Panel";
+import { trpc } from "utils/trpc";
 
 type RankItem = {
   id: string;
@@ -35,6 +36,7 @@ type RankItem = {
 
 const Home: NextPage = () => {
   const [rankingData, setRankingData] = useState<RankItem[]>([]);
+  const featured = trpc.featureNft.latest.useQuery();
 
   const [twitPhrase, setTwitPhrasePhrase] = useState("");
   useEffect(() => {
@@ -42,13 +44,10 @@ const Home: NextPage = () => {
     setTwitPhrasePhrase(`”${phrases[Math.floor(Math.random() * (phrases.length - 0 + 1)) + 0]}”`);
   }, []);
 
-  const featuredNFT = {
-    url: "https://arweave.net/0dVi8eroB4qtkWQ6_QiXHBw7lBUk1U-oKn-4IcF3EXY",
-    name: "Demon #23",
-    wallet: "2fAeFrv7iXDBpoHh2EUP6KfG9mm26Szqk9c4hA1oyRSP",
-    twitter: "@NudeDemon",
-    discord: "@NudeGolem",
-  };
+  const featuredNFT = featured.data;
+
+  console.log(featuredNFT);
+
   const equipment = [
     {
       id: "1",
@@ -99,14 +98,19 @@ const Home: NextPage = () => {
                 <div className=" relative h-[500px] w-full">
                   <Image
                     className="absolute max-h-[500px] rounded-2xl object-cover "
-                    src={featuredNFT.url}
+                    src={
+                      featuredNFT?.nft?.upgrades?.images.get(featuredNFT?.nft?.upgrades?.current) ??
+                      ""
+                    }
                     alt="Picture of the author"
                     fill
                   />
                   <div className="absolute bottom-0 h-[60%] w-full rounded-xl bg-gradient-to-t from-black to-transparent"></div>
                   <div className="absolute bottom-10 left-10  h-[60%] w-[50%] ">
                     <div className="absolute bottom-0">
-                      <div className=" text-2xl font-bold">{featuredNFT?.name || "Unknow"}</div>
+                      <div className=" text-2xl font-bold">
+                        {featuredNFT?.nft?.name || "Unknow"}
+                      </div>
                       <div className="mt-2 text-xl font-normal">
                         <Image
                           className="inline"
@@ -118,10 +122,15 @@ const Home: NextPage = () => {
                         {(
                           <Link
                             className="ml-2"
-                            href={"https://twitter.com/" + featuredNFT?.twitter.replace("@", "")}
+                            href={
+                              "https://twitter.com/" +
+                              featuredNFT?.user?.twitterDetails?.username.replace("@", "")
+                            }
                             target="_blank"
                           >
-                            {featuredNFT?.twitter.replace("@", "").toLowerCase()}
+                            {featuredNFT?.user?.twitterDetails?.username
+                              .replace("@", "")
+                              .toLowerCase()}
                           </Link>
                         ) || "Unknow"}
                       </div>
@@ -134,7 +143,14 @@ const Home: NextPage = () => {
                           height={15}
                         />
                         <span className="ml-2 inline-block w-20">
-                          {"..." + featuredNFT?.wallet.substring(5, 15) + "..." || "Unknow"}
+                          <Link
+                            className="ml-2"
+                            href={`https://solscan.io/token/${featuredNFT?.nft?.mint}`}
+                            target="_blank"
+                          >
+                            {"..." + featuredNFT?.user?.walletId.substring(5, 15) + "..." ||
+                              "Unknow"}
+                          </Link>
                         </span>
                       </div>
                     </div>
