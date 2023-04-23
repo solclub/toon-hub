@@ -8,6 +8,8 @@ import type { TransactionInstruction, VersionedTransaction } from "@solana/web3.
 import { SystemProgram } from "@solana/web3.js";
 import { LAMPORTS_PER_SOL, PublicKey, Transaction } from "@solana/web3.js";
 import { env } from "env/client.mjs";
+import { getSession, useSession } from "next-auth/react";
+import { GetServerSideProps } from "next/types";
 import { Dispatch, SetStateAction, useEffect } from "react";
 import { createContext, useContext, useState } from "react";
 import { connection } from "server/services/connections/web3-public";
@@ -46,9 +48,13 @@ export const useNFTManager = (): NFTManagerContextType => {
 };
 
 export const NFTManagerProvider = (props: { children: React.ReactNode }) => {
+  const { status } = useSession();
   const [txState, setTxState] = useState<TxStatus>("NONE");
   const [catalog, setCatalog] = useState<Product[]>();
-  const { data: products, isSuccess: isCatalogSuccess } = trpc.catalog.getAll.useQuery();
+
+  const { data: products, isSuccess: isCatalogSuccess } = trpc.catalog.getAll.useQuery(undefined, {
+    enabled: status === "authenticated",
+  });
 
   useEffect(() => {
     if (isCatalogSuccess) setCatalog(products);

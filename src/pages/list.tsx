@@ -29,7 +29,7 @@ const Profile = () => {
             <div className="flex items-center">My Collection</div>
             <div className="flex items-center">
               <div className="dropdown">
-                <label tabIndex={0} className="btn btn m-1">
+                <label tabIndex={0} className="btn m-1">
                   {selectedCollection === "ALL"
                     ? "All collections"
                     : `Rude ${toPascalCase(selectedCollection)}s`}
