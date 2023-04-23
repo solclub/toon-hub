@@ -6,13 +6,17 @@ import {
   getWalletBalanceTokens,
 } from "server/services/nfts-service";
 import { router, protectedProcedure } from "./trpc/trpc-context";
+import { NFTType } from "server/database/models/nft.model";
 
 export const nftsRouter = router({
-  getUserNFTs: protectedProcedure.query(async ({ ctx }) => {
-    const wallet = ctx.session.walletId;
-    const userNFTs = await getUserNFTs(wallet);
-    return userNFTs;
-  }),
+  getUserNFTs: protectedProcedure
+    .input(z.object({ collection: z.enum(["GOLEM", "DEMON", "ALL"]) }))
+    .query(async ({ ctx, input }) => {
+      const { collection } = input;
+      const wallet = ctx.session.walletId;
+      const userNFTs = await getUserNFTs(wallet);
+      return collection == "ALL" ? userNFTs : userNFTs.filter((x) => x.type == collection);
+    }),
   getUserNFTbyMint: protectedProcedure
     .input(z.object({ mint: z.string() }))
     .query(async ({ ctx, input }) => {

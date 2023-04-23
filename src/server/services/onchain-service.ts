@@ -23,13 +23,18 @@ export const getSolBalance = async (wallet: string): Promise<number> => {
 };
 
 export const getButterflies = async (wallet: string): Promise<(Metadata | Nft | Sft)[]> => {
-  const walletPubKey = new PublicKey(wallet);
-  const walletNfts = await metaplex.nfts().findAllByOwner({ owner: walletPubKey });
-  const filteredNfts = walletNfts.filter(
-    (nft) =>
-      nft.updateAuthorityAddress.toBase58() === "9dASnA6jbwLc7xjhCm7JYasTwAiyhypvC7PfDw7nfLBN" &&
-      nft.name.includes("Butterfly")
-  );
+  let filteredNfts: (Metadata | Nft | Sft)[];
+  try {
+    const walletPubKey = new PublicKey(wallet);
+    const walletNfts = await metaplex.nfts().findAllByOwner({ owner: walletPubKey });
+    filteredNfts = walletNfts.filter(
+      (nft) =>
+        nft.updateAuthorityAddress.toBase58() === "9dASnA6jbwLc7xjhCm7JYasTwAiyhypvC7PfDw7nfLBN" &&
+        nft.name.includes("Butterfly")
+    );
+  } catch (error) {
+    console.log("error", JSON.stringify(error, null, 2));
+  }
   return filteredNfts;
 };
 

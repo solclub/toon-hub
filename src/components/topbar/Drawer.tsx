@@ -57,7 +57,7 @@ export const Drawer = ({ children }: Props) => {
             <Connect></Connect>
           </div>
         </div>
-        <div className="container m-auto">{children}</div>
+        <div className="container m-auto px-8">{children}</div>
       </div>
 
       <div className="drawer-side">
