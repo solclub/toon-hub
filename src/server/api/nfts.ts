@@ -6,7 +6,6 @@ import {
   getWalletBalanceTokens,
 } from "server/services/nfts-service";
 import { router, protectedProcedure } from "./trpc/trpc-context";
-import { NFTType } from "server/database/models/nft.model";
 
 export const nftsRouter = router({
   getUserNFTs: protectedProcedure

@@ -1,18 +1,14 @@
 /* eslint-disable @typescript-eslint/no-var-requires */
-const { config, uploader, v2 } = require("cloudinary");
+const { config, v2 } = require("cloudinary");
 const fs = require("fs").promises;
 const path = require("path");
 
 // Configura Cloudinary con tu Cloud Name, API Key y Secret
 config({
-  cloud_name: "dmxtw3cxj",
-  api_key: "443312235294469",
-  api_secret: "vsANvhlJ6hhMVNoIdyfsJuzZ4Tw",
+  cloud_name: "",
+  api_key: "",
+  api_secret: "",
 });
-
-// CLOUDINARY_CLOUD_NAME=dmxtw3cxj
-// CLOUDINARY_API_KEY=443312235294469
-// CLOUDINARY_API_SECRET=vsANvhlJ6hhMVNoIdyfsJuzZ4Tw
 
 const rootDir = "../assets/traits";
 

@@ -34,7 +34,7 @@ const UpgradeNFT: React.FC<BuyProperties> = ({ title, upgradeOption, sourceImage
   const toastRef = useRef("");
   const upgradeMetadata = trpc.upgradeNft.upgradeMetadata.useMutation();
   const { data: upgradeResult, isLoading, error, isError, isSuccess } = upgradeMetadata;
-  const { paymentOptions } = upgradeOption;
+  const { paymentOptions } = upgradeOption ?? {};
   const [paymentOption, setpaymentOption] = useState<PaymentOption>();
 
   const buildImagePreview = trpc.upgradeNft.buildImagePreview.useMutation();
@@ -115,8 +115,6 @@ const UpgradeNFT: React.FC<BuyProperties> = ({ title, upgradeOption, sourceImage
       const stringMessage = JSON.stringify(message);
 
       const serializedtx = await prepTransaction(publicKey, paymentOption, signTransaction);
-
-      console.log(serializedtx);
 
       showPromisedToast(
         toastRef,

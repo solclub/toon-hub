@@ -8,9 +8,9 @@ import type { TransactionInstruction, VersionedTransaction } from "@solana/web3.
 import { SystemProgram } from "@solana/web3.js";
 import { LAMPORTS_PER_SOL, PublicKey, Transaction } from "@solana/web3.js";
 import { env } from "env/client.mjs";
-import { getSession, useSession } from "next-auth/react";
-import { GetServerSideProps } from "next/types";
-import { Dispatch, SetStateAction, useEffect } from "react";
+import { useSession } from "next-auth/react";
+import type { Dispatch, SetStateAction } from "react";
+import { useEffect } from "react";
 import { createContext, useContext, useState } from "react";
 import { connection } from "server/services/connections/web3-public";
 import { getButterflies } from "server/services/onchain-service";

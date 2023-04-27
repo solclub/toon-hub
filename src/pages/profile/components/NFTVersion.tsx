@@ -28,6 +28,13 @@ const NftVersion: React.FC<{
       ? (upgradeOpt?.key as GolemUpgrades)
       : (upgradeOpt?.key as DemonUpgrades);
 
+  const getPriceSingleText = (opt: ProductOption) => {
+    if (!opt.paymentOptions) return "Loading...";
+    const [po] = opt.paymentOptions;
+    const price = po?.amounts.map((x) => `${x.amount} ${x.token}`);
+    return price?.join(" + ");
+  };
+
   return (
     <div className=" w-[25%] text-center">
       {upgradeOpt && userNft && (
@@ -62,7 +69,9 @@ const NftVersion: React.FC<{
               ></Image>
 
               {userNft?.images?.get(upgradeType) == undefined && (
-                <div className="absolute top-4 w-full text-green-400">{0}</div>
+                <div className="absolute top-4 w-full font-medieval-sharp text-green-400">
+                  {getPriceSingleText(upgradeOpt)}
+                </div>
               )}
               <div className="absolute bottom-0 h-3/4 w-full bg-gradient-to-t from-black to-transparent "></div>
 

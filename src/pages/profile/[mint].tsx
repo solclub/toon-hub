@@ -13,9 +13,9 @@ import NftVersion from "./components/NFTVersion";
 import type { UserNFT } from "server/database/models/user-nfts.model";
 import type { Product } from "types/catalog";
 import { ProductType } from "types/catalog";
-import type { NFTType, RudeNFT } from "server/database/models/nft.model";
+import type { RudeNFT } from "server/database/models/nft.model";
 import { trpc } from "utils/trpc";
-import nftTierSelector from "utils/nfttier";
+import { getRudeNftName } from "utils/nfttier";
 import classNames from "classnames";
 
 import ComingSoonImg from "assets/images/coming_soon.png";
@@ -30,6 +30,7 @@ import WeaponChest from "assets/weapons/weapon-chest.png";
 import { useNFTManager } from "contexts/NFTManagerContext";
 import { Modal } from "components/common/Modal";
 import FeatureNFT from "pages/profile/components/FeatureNFT";
+import { toPascalCase } from "utils/string-utils";
 
 type Weapon = {
   image: string | StaticImageData;
@@ -93,6 +94,16 @@ const Profile: NextPage = () => {
   const { data: profileNFT, isLoading: isProfileLoading } = trpc.nfts.getUserNFTbyMint.useQuery({
     mint: (mint ?? "") as string,
   });
+
+  const { data: isFeaturedData, isLoading: isLoadingFeatured } =
+    trpc.featureNft.userFeaturedNftByMint.useQuery({
+      mint: (mint ?? "") as string,
+    });
+
+  const { data: mintPosition } = trpc.leaderboard.getItemPosition.useQuery({
+    mint: (mint ?? "") as string,
+  });
+
   const [isOpen, setOpen] = useState(false);
   const { getProduct } = useNFTManager();
   const [featureProduct] = getProduct(ProductType.NFT_FEATURE) ?? [{ options: [] }];
@@ -101,11 +112,7 @@ const Profile: NextPage = () => {
   const utils = trpc.useContext();
 
   const { data: userMints, isLoading } = trpc.nfts.getUserMints.useQuery();
-  const powerRating = "8542";
-  const leaderboardPosition = "560";
-  const totalNFTPower = "56412";
   const weaponsEquiped = "0";
-  const collection = "golems";
 
   useEffect(() => {
     if (txState == "SUCCESS") {
@@ -122,7 +129,6 @@ const Profile: NextPage = () => {
     const current = userMints?.indexOf(mint as string);
     const getNextOrBeforeProfile = (current: number, isNext: boolean) => {
       if (!userMints) {
-        console.log("null");
         return current;
       }
 
@@ -212,21 +218,31 @@ const Profile: NextPage = () => {
                 <div className="absolute bottom-0 h-[60%] w-full">
                   <div className="absolute bottom-10 left-10">
                     <div className="mt-2 w-20 overflow-hidden overflow-ellipsis text-sm font-thin">
-                      Power
+                      {toPascalCase(profileNFT?.type ?? "")}
                     </div>
-                    <div className=" text-3xl text-amber-100">{totalNFTPower || "Unknow"}</div>
+                    <div className=" font-medieval-sharp text-3xl text-amber-100">
+                      {getRudeNftName(profileNFT?.name) || "Unknow"}
+                    </div>
                   </div>
                   <div className="absolute bottom-9 right-10">
                     {featureProduct?.options[0] && profileNFT && (
                       <>
-                        <button
-                          className="btn-rude btn text-xs font-thin"
-                          onClick={() => {
-                            setOpen(true);
-                          }}
-                        >
-                          Feature your warrior
-                        </button>
+                        {isLoadingFeatured && <Loader></Loader>}
+                        {!isFeaturedData?.featuredNFT ? (
+                          <button
+                            className="btn-rude btn text-xs font-thin"
+                            onClick={() => {
+                              setOpen(true);
+                            }}
+                          >
+                            Feature your warrior
+                          </button>
+                        ) : (
+                          <button className="btn-rude disabled btn cursor-default font-thin  ">
+                            🚀 featured!{" "}
+                          </button>
+                        )}
+
                         <Modal
                           className={classNames({ "lg:w-2/3": true })}
                           isOpen={isOpen}
@@ -266,7 +282,9 @@ const Profile: NextPage = () => {
                       width={40}
                     ></Image>
                   </div>
-                  <div className="w-full text-3xl text-[#BEA97E]">{leaderboardPosition}</div>
+                  <div className="w-full text-3xl text-[#BEA97E]">
+                    {mintPosition?.item ?? "..."}
+                  </div>
                 </div>
               </div>
 
@@ -287,7 +305,7 @@ const Profile: NextPage = () => {
                       width={40}
                     ></Image>
                   </div>
-                  <div className="w-full text-3xl text-[#BEA97E]">{powerRating}</div>
+                  <div className="w-full text-3xl text-[#BEA97E]">{profileNFT?.power}</div>
                 </div>
               </div>
 
@@ -303,9 +321,7 @@ const Profile: NextPage = () => {
                   <div className="w-full grow">
                     <Image className="mx-auto" src={TierIcon} alt="Tier" width={40}></Image>
                   </div>
-                  <div className="w-full text-4xl text-[#BEA97E]">
-                    {nftTierSelector(profileNFT?.rudeRank ?? 100000, collection)}
-                  </div>
+                  <div className="w-full text-4xl text-[#BEA97E]">{profileNFT?.tier}</div>
                 </div>
               </div>
 

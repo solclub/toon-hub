@@ -22,7 +22,7 @@ const transactionSchema: Schema = new mongoose.Schema({
 const transactionModel = () => {
   return (
     (mongoose.models?.Transactions as mongoose.Model<RudeTransaction>) ||
-    model<RudeTransaction>("Transactions", transactionSchema, "transaction-logs")
+    model<RudeTransaction>("Transactions", transactionSchema, "transaction_logs")
   );
 };
 

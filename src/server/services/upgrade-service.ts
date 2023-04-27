@@ -76,6 +76,7 @@ export const confirmAndSwapMetadata = async (req: SwapArtMetadataRequest) => {
 };
 
 export const upgradeMetadata = async (req: UpdateMetadataRequest, txId: string) => {
+  console.log("Approved tx: ", txId);
   const collection =
     collectionsSchemas[req.collection.toString() as keyof typeof collectionsSchemas];
 
@@ -121,6 +122,8 @@ export const upgradeMetadata = async (req: UpdateMetadataRequest, txId: string) 
 };
 
 export const swapArtMetadata = async (req: SwapArtMetadataRequest, txId: string) => {
+  console.log("Approved tx: ", txId);
+
   const nft = await getUserNFTbyMint(req.wallet, req.mintAddress);
 
   if (!nft || !nft.type) {

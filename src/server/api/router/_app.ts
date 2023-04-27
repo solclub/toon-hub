@@ -5,6 +5,7 @@ import { usersRouter } from "../user";
 import { catalogRouter } from "../catalog";
 import { upgradeRouter } from "../upgrade";
 import { featureRouter } from "../feature";
+import { leaderboardRouter } from "../leaderboard";
 
 export const appRouter = router({
   auth: authRouter,
@@ -13,6 +14,7 @@ export const appRouter = router({
   catalog: catalogRouter,
   upgradeNft: upgradeRouter,
   featureNft: featureRouter,
+  leaderboard: leaderboardRouter,
 });
 
 // export type definition of API
