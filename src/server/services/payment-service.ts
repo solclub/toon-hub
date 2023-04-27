@@ -1,5 +1,5 @@
 import txLogService from "server/services/transactionlog-service";
-import { connection } from "./connections/web3-private";
+import { connection } from "./connections/web3-public";
 import { getUserPDAKey } from "./war-service";
 import { PublicKey } from "@solana/web3.js";
 
@@ -94,7 +94,6 @@ const verifyNftOwner = async (owner: string, mint: string): Promise<boolean> => 
   const accountData = largestAccountInfo?.value?.data;
   const parsedOwner = accountData instanceof Buffer ? null : accountData?.parsed?.info?.owner;
   const pdaKey = await getUserPDAKey(owner);
-  console.log(pdaKey, parsedOwner);
   if (!parsedOwner && !pdaKey) {
     return false;
   }

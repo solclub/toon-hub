@@ -51,4 +51,20 @@ export const featureRouter = router({
 
     return { nft, user };
   }),
+  userFeaturedNfts: protectedProcedure.query(async ({ ctx }) => {
+    const wallet = ctx.session.walletId;
+    const featuredNFTs = await featureService.getUserFeaturedNFTs(wallet);
+    return { featuredNFTs };
+  }),
+
+  userFeaturedNftByMint: protectedProcedure
+    .input(
+      z.object({
+        mint: z.string(),
+      })
+    )
+    .query(async ({ input }) => {
+      const featuredNFT = await featureService.getUserFeaturedNFTByMint(input.mint);
+      return { featuredNFT };
+    }),
 });

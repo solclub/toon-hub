@@ -34,7 +34,6 @@ export const serverSchema = z.object({
   WAR_PROGRAM_ID: z.string(),
   ANCHOR_WALLET_KEYPAIR: z.string(),
   UPDATE_AUTHORITY_ADDRESS: z.string(),
-  UPDATE_AUTHORITY_KEYPAIR: z.string(),
 
   METADATA_UPGRADE_SERVER_URL: z.string().url(),
   METADATA_UPGRADE_ACCESS_TOKEN: z.string(),

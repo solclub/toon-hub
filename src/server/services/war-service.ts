@@ -94,7 +94,6 @@ export const getInTrainingNfts = async (wallet: string): Promise<AccountSettings
   const { trainingAccount } = WarProgram?.account ?? {};
 
   if (!trainingAccount) {
-    console.log("TrainingAccount", WarProgram);
     return null;
   }
 

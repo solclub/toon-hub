@@ -87,5 +87,23 @@ export const getLastFeaturedNFT = async (): Promise<FeaturedNFT | null> => {
   }
 };
 
-const service = { confirmAndSave, saveFeaturedNFT, getRandomFeaturedNFT, getLastFeaturedNFT };
+export const getUserFeaturedNFTs = async (wallet: string): Promise<FeaturedNFT[]> => {
+  const featuredNFT = await featuredModel().find({ wallet, featured: false });
+  return featuredNFT;
+};
+
+export const getUserFeaturedNFTByMint = async (mint: string): Promise<FeaturedNFT | undefined> => {
+  const [featuredNFT] = await featuredModel().find({ mint, featured: false });
+  return featuredNFT;
+};
+
+const service = {
+  confirmAndSave,
+  saveFeaturedNFT,
+  getRandomFeaturedNFT,
+  getLastFeaturedNFT,
+  getUserFeaturedNFTs,
+  getUserFeaturedNFTByMint,
+};
+
 export default service;

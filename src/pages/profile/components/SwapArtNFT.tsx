@@ -39,8 +39,8 @@ const SwapArtNFT: React.FC<BuyProperties> = ({
   const { prepTransaction, setTxState, txState } = useNFTManager();
   const toastRef = useRef("");
   const swapArtMetadata = trpc.upgradeNft.swapArtMetadata.useMutation();
-  const { data: swapResult, isLoading, error, isError, isSuccess } = swapArtMetadata;
-  const { paymentOptions } = upgradeOption;
+  const { isLoading, error, isError, isSuccess } = swapArtMetadata;
+  const { paymentOptions } = upgradeOption ?? {};
   const [paymentOption, setpaymentOption] = useState<PaymentOption>();
 
   useEffect(() => {
@@ -88,8 +88,6 @@ const SwapArtNFT: React.FC<BuyProperties> = ({
       const stringMessage = JSON.stringify(message);
 
       const serializedtx = await prepTransaction(publicKey, paymentOption, signTransaction);
-
-      console.log(serializedtx);
 
       showPromisedToast(
         toastRef,

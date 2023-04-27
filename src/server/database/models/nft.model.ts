@@ -11,8 +11,10 @@ export interface RudeNFT {
   image: string;
   rudeScore: number;
   attributes: NFTAttribute[];
-  rudeRank: number;
   type?: NFTType;
+  rudeRank: number;
+  tier?: number;
+  power?: number;
 }
 
 export interface NFTAttribute extends Record<string, unknown> {
@@ -39,6 +41,8 @@ const RudeNFTSchema = new Schema<RudeNFT>({
     type: String,
     enum: Object.values(NFTType),
   },
+  tier: Number,
+  power: Number,
 });
 
 const rudeNFTModels = {

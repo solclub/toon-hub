@@ -73,3 +73,8 @@ const nftTierSelector = (rank: number, collection: string): string => {
   throw new Error("Invalid collection");
 };
 export default nftTierSelector;
+
+export const getRudeNftName = (fullName: string | undefined): string | undefined => {
+  if (!fullName || !fullName.includes("#")) return fullName;
+  return fullName.split("#")[1];
+};

@@ -36,7 +36,6 @@ export class SigninMessage {
   }
 
   validate(signature: string) {
-    console.log("3", signature);
     const msgUint8 = this.prepare();
     const signatureUint8 = bs58.decode(signature);
     const pubKeyUint8 = bs58.decode(this.publicKey);

@@ -30,7 +30,7 @@ const FeatureNFT: React.FC<BuyProperties> = ({ title, featureOption, sourceImage
   const toastRef = useRef("");
   const featureNft = trpc.featureNft.featureNFT.useMutation();
   const { isLoading, error, isError, isSuccess } = featureNft;
-  const { paymentOptions } = featureOption;
+  const { paymentOptions } = featureOption ?? {};
   const [paymentOption, setpaymentOption] = useState<PaymentOption>();
 
   useEffect(() => {
@@ -77,8 +77,6 @@ const FeatureNFT: React.FC<BuyProperties> = ({ title, featureOption, sourceImage
       const stringMessage = JSON.stringify(message);
 
       const serializedtx = await prepTransaction(publicKey, paymentOption, signTransaction);
-
-      console.log(serializedtx);
 
       showPromisedToast(
         toastRef,
