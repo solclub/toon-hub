@@ -20,15 +20,7 @@ const PaymentMethodSelector: React.FC<{
   selected?: PaymentOption;
   onChange: (otp: PaymentOption) => void;
 }> = ({ paymentOptions, selected, onChange }) => {
-  // const [selectedMethod, setselectedMethod] = useState(paymentOptions[0]?.type);
-
-  // useEffect(() => {
-  //   const type = paymentOptions[0]?.type;
-  //   if (type) setselectedMethod(type);
-  // }, [paymentOptions]);
-
   const onButtonClick = (otp: PaymentOption) => {
-    //setselectedMethod(otp.type);
     onChange(otp);
   };
 

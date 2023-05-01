@@ -17,6 +17,7 @@ import { getButterflies } from "server/services/onchain-service";
 import type { Amount, PaymentOption, Product, ProductType } from "types/catalog";
 import { PaymentToken } from "types/catalog";
 import { trpc } from "utils/trpc";
+import { EventEmitter } from "events";
 
 const LAMPORTS_PER_RUDE = LAMPORTS_PER_SOL;
 const RUDE_SINK_KEY = new PublicKey(env.NEXT_PUBLIC_RUDE_SINK_KEY);
@@ -29,13 +30,11 @@ interface NFTManagerContextType {
     payment: PaymentOption,
     txSigner: <T extends Transaction | VersionedTransaction>(transaction: T) => Promise<T>
   ) => Promise<string>;
-  txState: TxStatus;
-  setTxState: Dispatch<SetStateAction<TxStatus>>;
   catalog: Product[] | undefined;
   getProduct: (prodType: ProductType, collection?: string) => Product[] | undefined;
+  paymentChannel: EventEmitter;
+  notifyPayment: (type: ProductType) => void;
 }
-
-type TxStatus = "BEGIN" | "WAITING" | "SUCCESS" | "ERROR" | "NONE";
 
 const NFTManagerContext = createContext<NFTManagerContextType | null>(null);
 
@@ -47,9 +46,10 @@ export const useNFTManager = (): NFTManagerContextType => {
   return context;
 };
 
+const paymentChannel = new EventEmitter();
+
 export const NFTManagerProvider = (props: { children: React.ReactNode }) => {
   const { status } = useSession();
-  const [txState, setTxState] = useState<TxStatus>("NONE");
   const [catalog, setCatalog] = useState<Product[]>();
 
   const { data: products, isSuccess: isCatalogSuccess } = trpc.catalog.getAll.useQuery(undefined, {
@@ -65,12 +65,16 @@ export const NFTManagerProvider = (props: { children: React.ReactNode }) => {
     return result;
   };
 
+  const notifyPayment = (type: ProductType) => {
+    paymentChannel.emit(`payment_success`, type);
+  };
+
   const value: NFTManagerContextType = {
     prepTransaction,
-    txState,
-    setTxState,
     catalog,
     getProduct,
+    paymentChannel,
+    notifyPayment,
   };
 
   return <NFTManagerContext.Provider value={value} {...props} />;

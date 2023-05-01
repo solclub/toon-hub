@@ -28,9 +28,10 @@ const effect = {
 const Backdrop = ({ children, handleClose }: BackdropProps) => (
   <motion.div
     className="
-      bg-backdrop fixed inset-0
-      z-50 flex justify-center
-      overflow-y-auto backdrop-blur-md  backdrop-filter lg:items-center
+     bg-backdrop`
+      fixed inset-0 z-50
+      flex justify-center overflow-y-auto
+      bg-black bg-opacity-80 backdrop-blur-md  backdrop-filter lg:items-center
     "
     onClick={handleClose}
     initial={{ opacity: 0 }}

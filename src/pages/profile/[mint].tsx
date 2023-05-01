@@ -17,6 +17,7 @@ import type { RudeNFT } from "server/database/models/nft.model";
 import { trpc } from "utils/trpc";
 import { getRudeNftName } from "utils/nfttier";
 import classNames from "classnames";
+import NftHidden from "assets/images/skin.png";
 
 import ComingSoonImg from "assets/images/coming_soon.png";
 import LeaderBoardIcon from "assets/images/leaderboard_icon.png";
@@ -31,6 +32,7 @@ import { useNFTManager } from "contexts/NFTManagerContext";
 import { Modal } from "components/common/Modal";
 import FeatureNFT from "pages/profile/components/FeatureNFT";
 import { toPascalCase } from "utils/string-utils";
+import VideoView from "./components/VideoView";
 
 type Weapon = {
   image: string | StaticImageData;
@@ -86,11 +88,17 @@ const sampleWeapons: Weapon[] = [
 ];
 
 const Profile: NextPage = () => {
-  const router = useRouter();
   const [weapons, setWeapons] = useState<Weapon[]>([]);
-  const [provileNavState, setProvileNavState] = useState({ current: 0, before: -1, after: 1 });
-
+  const [isOnUpgradeVideoModalOpen, setOnUpgradeVideoModalOpen] = useState(false);
+  const [isOpen, setOpen] = useState(false);
+  const [profileNavState, setProfileNavState] = useState({ current: 0, before: -1, after: 1 });
+  const router = useRouter();
+  const { getProduct, paymentChannel } = useNFTManager();
   const { mint } = router.query;
+  const utils = trpc.useContext();
+
+  const [featureProduct] = getProduct(ProductType.NFT_FEATURE) ?? [{ options: [] }];
+
   const { data: profileNFT, isLoading: isProfileLoading } = trpc.nfts.getUserNFTbyMint.useQuery({
     mint: (mint ?? "") as string,
   });
@@ -101,57 +109,75 @@ const Profile: NextPage = () => {
     });
 
   const { data: mintPosition } = trpc.leaderboard.getItemPosition.useQuery({
-    mint: (mint ?? "") as string,
+    mint: mint as string,
   });
 
-  const [isOpen, setOpen] = useState(false);
-  const { getProduct } = useNFTManager();
-  const [featureProduct] = getProduct(ProductType.NFT_FEATURE) ?? [{ options: [] }];
-
-  const { txState, setTxState } = useNFTManager();
-  const utils = trpc.useContext();
-
-  const { data: userMints, isLoading } = trpc.nfts.getUserMints.useQuery();
+  const { data: userMints } = trpc.nfts.getUserMints.useQuery();
   const weaponsEquiped = "0";
 
   useEffect(() => {
-    if (txState == "SUCCESS") {
-      utils.nfts.getUserNFTbyMint.invalidate();
-      setTxState("NONE");
+    paymentChannel.on("payment_success", handlePaymentSuccess);
+    return () => {
+      paymentChannel.removeListener("payment_success", handlePaymentSuccess);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const handlePaymentSuccess = (type: ProductType) => {
+    console.log("emmiter: ", type);
+    switch (type) {
+      case ProductType.NFT_ART_SWAP:
+        break;
+      case ProductType.NFT_UPGRADE:
+        utils.nfts.getUserNFTbyMint.invalidate();
+        setOnUpgradeVideoModalOpen(true);
+
+        break;
+      case ProductType.NFT_FEATURE:
+        break;
+
+      default:
+        console.error(type);
+        break;
     }
-  }, [txState, utils.nfts.getUserNFTbyMint, setTxState]);
+  };
 
   useEffect(() => {
     setWeapons(sampleWeapons);
   }, [mint]);
 
   useEffect(() => {
-    const current = userMints?.indexOf(mint as string);
-    const getNextOrBeforeProfile = (current: number, isNext: boolean) => {
-      if (!userMints) {
-        return current;
+    if (mint && userMints) {
+      if ((userMints ?? []).length > 0) {
+        const current = userMints?.indexOf(mint as string);
+        function getNextOrBeforeProfile(
+          strings: string[],
+          isNext: boolean,
+          currentIndex: number
+        ): number {
+          if (isNext) {
+            const nextIndex = currentIndex + 1;
+            return nextIndex < strings.length ? nextIndex : 0;
+          } else {
+            const previousIndex = currentIndex - 1;
+            return previousIndex >= 0 ? previousIndex : strings.length - 1;
+          }
+        }
+        console.log(current, userMints);
+        setProfileNavState({
+          current,
+          before: getNextOrBeforeProfile(userMints, false, current),
+          after: getNextOrBeforeProfile(userMints, true, current),
+        });
       }
-
-      const tempIndex = isNext
-        ? (current + 1) % userMints.length
-        : (current - 1 + userMints.length) % userMints.length;
-      //console.log(current, tempIndex, isNext, userMints[current]);
-      return tempIndex;
-    };
-    if (current) {
-      setProvileNavState({
-        current,
-        before: getNextOrBeforeProfile(current, false),
-        after: getNextOrBeforeProfile(current, true),
-      });
     }
-  }, [userMints, mint, isLoading]);
+  }, [mint, userMints]);
 
   return (
     <div>
       <div className="mt-10 flex w-full justify-between">
         <span>
-          <Link href={"/profile/" + userMints?.[provileNavState.before]}>
+          <Link href={"/profile/" + userMints?.[profileNavState.before]}>
             <svg
               className="my-auto inline"
               width="12"
@@ -174,7 +200,7 @@ const Profile: NextPage = () => {
         </span>
 
         <span>
-          <Link href={"/profile/" + userMints?.[provileNavState.after]}>
+          <Link href={"/profile/" + userMints?.[profileNavState.after]}>
             <div className="inline w-5/12 justify-end pr-3">{"Next"}</div>
             <svg
               className="my-auto inline"
@@ -205,7 +231,8 @@ const Profile: NextPage = () => {
                       profileNFT?.image
                     }
                     alt={profileNFT?.name}
-                    fill
+                    height={500}
+                    width={500}
                   />
                 ) : (
                   <div className="flex h-full items-center justify-center">
@@ -244,7 +271,7 @@ const Profile: NextPage = () => {
                         )}
 
                         <Modal
-                          className={classNames({ "lg:w-2/3": true })}
+                          className="lg:w-4/5"
                           isOpen={isOpen}
                           backdropDismiss={true}
                           handleClose={() => setOpen(false)}
@@ -359,6 +386,21 @@ const Profile: NextPage = () => {
           )}
         </Panel>
       </div>
+      <Modal
+        className="w-full "
+        isOpen={isOnUpgradeVideoModalOpen}
+        backdropDismiss={true}
+        handleClose={() => setOnUpgradeVideoModalOpen(false)}
+      >
+        <VideoView>
+          <Image
+            src={profileNFT?.upgrades?.images?.get(profileNFT.upgrades?.current) ?? NftHidden}
+            alt={"Golem Image"}
+            width={800}
+            height={800}
+          ></Image>
+        </VideoView>
+      </Modal>
     </div>
   );
 };

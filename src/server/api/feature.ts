@@ -20,7 +20,7 @@ export const featureRouter = router({
     )
     .mutation(async ({ input, ctx }) => {
       const { mint, nonce, serializedTx, signedMessage, stringMessage, nftType } = input;
-      ctx.validateSignedMessage(signedMessage, stringMessage, nonce);
+      ctx.validateSignedMessage(signedMessage, stringMessage, nonce, ctx.csrf);
 
       const wallet = ctx.session.walletId;
       const request: FeatureNFTRequest = {

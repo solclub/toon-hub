@@ -52,7 +52,7 @@ export const upgradeRouter = router({
     )
     .mutation(async ({ input, ctx }) => {
       const { mint, upgradeType, nonce, serializedTx, signedMessage, stringMessage } = input;
-      ctx.validateSignedMessage(signedMessage, stringMessage, nonce);
+      ctx.validateSignedMessage(signedMessage, stringMessage, nonce, ctx.csrf);
 
       const wallet = ctx.session.walletId;
       const nft = await getUserNFTbyMint(wallet, mint);
@@ -98,7 +98,7 @@ export const upgradeRouter = router({
     )
     .mutation(async ({ input, ctx }) => {
       const { mint, upgradeType, nonce, serializedTx, signedMessage, stringMessage } = input;
-      ctx.validateSignedMessage(signedMessage, stringMessage, nonce);
+      ctx.validateSignedMessage(signedMessage, stringMessage, nonce, ctx.csrf);
       const wallet = ctx.session.walletId;
 
       const request: SwapArtMetadataRequest = {

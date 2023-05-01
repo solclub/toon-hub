@@ -5,21 +5,31 @@ import { env } from "env/client.mjs";
 import { connection, metaplex } from "./connections/web3-public";
 
 export const getRudeTokenBalance = async (wallet: string): Promise<number> => {
-  const walletPubKey = new PublicKey(wallet);
-  const rudeMintKey = new PublicKey(env.NEXT_PUBLIC_RUDE_TOKEN_KEY);
-  const rudeAta = await getAssociatedTokenAddress(rudeMintKey, walletPubKey);
-  const balance = await connection.getTokenAccountBalance(rudeAta);
-  const balanceValue = balance.value.uiAmount?.toFixed(2);
+  try {
+    const walletPubKey = new PublicKey(wallet);
+    const rudeMintKey = new PublicKey(env.NEXT_PUBLIC_RUDE_TOKEN_KEY);
+    const rudeAta = await getAssociatedTokenAddress(rudeMintKey, walletPubKey);
+    const balance = await connection.getTokenAccountBalance(rudeAta);
+    const balanceValue = balance.value.uiAmount?.toFixed(2);
 
-  return Number(balanceValue || 0);
+    return Number(balanceValue || 0);
+  } catch (error) {
+    console.error(error);
+    return 0;
+  }
 };
 
 export const getSolBalance = async (wallet: string): Promise<number> => {
-  const walletPubKey = new PublicKey(wallet);
-  const solBal = await connection.getBalance(walletPubKey);
-  const balanceValue = (solBal / LAMPORTS_PER_SOL).toFixed(2);
+  try {
+    const walletPubKey = new PublicKey(wallet);
+    const solBal = await connection.getBalance(walletPubKey);
+    const balanceValue = (solBal / LAMPORTS_PER_SOL).toFixed(2);
 
-  return Number(balanceValue || 0);
+    return Number(balanceValue || 0);
+  } catch (error) {
+    console.error(error);
+    return 0;
+  }
 };
 
 export const getButterflies = async (wallet: string): Promise<(Metadata | Nft | Sft)[]> => {
@@ -34,6 +44,11 @@ export const getButterflies = async (wallet: string): Promise<(Metadata | Nft | 
 };
 
 export const getButterfliesBalance = async (wallet: string): Promise<number> => {
-  const filteredNfts = await getButterflies(wallet);
-  return filteredNfts.length;
+  try {
+    const filteredNfts = await getButterflies(wallet);
+    return filteredNfts.length;
+  } catch (error) {
+    console.error(error);
+    return 0;
+  }
 };

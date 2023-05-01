@@ -1,7 +1,7 @@
 import { motion } from "framer-motion";
 import Image from "next/image";
 import React, { useEffect, useRef, useState } from "react";
-import type { PaymentOption, ProductOption } from "types/catalog";
+import { PaymentOption, ProductOption, ProductType } from "types/catalog";
 import PaymentMethodSelector from "../../../components/common/PaymentMethodSelector";
 import NftHidden from "assets/images/skin.png";
 import FrameBox from "../../../components/common/FrameBox";
@@ -26,7 +26,7 @@ interface BuyProperties {
 
 const FeatureNFT: React.FC<BuyProperties> = ({ title, featureOption, sourceImageUrl, nft }) => {
   const { publicKey, signMessage, signTransaction } = useWallet();
-  const { prepTransaction, setTxState, txState } = useNFTManager();
+  const { prepTransaction, notifyPayment } = useNFTManager();
   const toastRef = useRef("");
   const featureNft = trpc.featureNft.featureNFT.useMutation();
   const { isLoading, error, isError, isSuccess } = featureNft;
@@ -34,7 +34,6 @@ const FeatureNFT: React.FC<BuyProperties> = ({ title, featureOption, sourceImage
   const [paymentOption, setpaymentOption] = useState<PaymentOption>();
 
   useEffect(() => {
-    setTxState("NONE");
     if (paymentOptions) {
       const [paymentOption] = paymentOptions;
       setpaymentOption(paymentOption);
@@ -45,19 +44,17 @@ const FeatureNFT: React.FC<BuyProperties> = ({ title, featureOption, sourceImage
   useEffect(() => {
     if (isError) {
       showPromisedToast(toastRef, error?.message || "unexpected error", true, "ERROR");
-      setTxState("ERROR");
       console.error(error?.message);
     }
 
     if (isSuccess) {
       showPromisedToast(toastRef, "NFT Featured", true, "SUCCESS");
-      setTxState("SUCCESS");
+      notifyPayment(ProductType.NFT_FEATURE);
     }
-  }, [error?.message, isError, isSuccess, setTxState]);
+  }, [error?.message, isError, isSuccess, notifyPayment]);
 
   const featureNFT = async (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
     e.stopPropagation();
-    setTxState("BEGIN");
     const csrf = await getCsrfToken();
     if (!publicKey || !csrf || !signMessage || !signTransaction || !paymentOption) return;
     try {
@@ -92,8 +89,6 @@ const FeatureNFT: React.FC<BuyProperties> = ({ title, featureOption, sourceImage
         mint: nft.mint,
         nftType: nft.type?.toString() ?? "",
       });
-
-      setTxState("WAITING");
     } catch (error) {
       showPromisedToast(
         toastRef,
@@ -101,7 +96,6 @@ const FeatureNFT: React.FC<BuyProperties> = ({ title, featureOption, sourceImage
         true,
         "ERROR"
       );
-      setTxState("ERROR");
       console.error(error);
     }
   };
@@ -122,23 +116,20 @@ const FeatureNFT: React.FC<BuyProperties> = ({ title, featureOption, sourceImage
             </FrameBox>
           </div>
           <div className="flex flex-wrap items-center lg:w-1/2">
-            {txState != "SUCCESS" && (
-              <div className="mb-5 w-full p-5 sm:p-0">
-                <div className="w-full text-center sm:w-auto">
-                  {/* <Balance className="mx-auto mb-2 w-fit"></Balance> */}
-                  <p className="titles-color textStroke mb-4 text-2xl">Current Feature Costs:</p>
-                  {paymentOptions && (
-                    <PaymentMethodSelector
-                      paymentOptions={paymentOptions}
-                      selected={paymentOption}
-                      onChange={(opt) => {
-                        setpaymentOption(opt);
-                      }}
-                    ></PaymentMethodSelector>
-                  )}
-                </div>
+            <div className="mb-5 w-full p-5 sm:p-0">
+              <div className="w-full text-center sm:w-auto">
+                <p className="titles-color textStroke mb-4 text-2xl">Current Feature Costs:</p>
+                {paymentOptions && (
+                  <PaymentMethodSelector
+                    paymentOptions={paymentOptions}
+                    selected={paymentOption}
+                    onChange={(opt) => {
+                      setpaymentOption(opt);
+                    }}
+                  ></PaymentMethodSelector>
+                )}
               </div>
-            )}
+            </div>
             <div className="mx-auto flex w-full flex-wrap">
               {!isSuccess ? (
                 <motion.button
