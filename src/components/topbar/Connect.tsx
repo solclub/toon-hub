@@ -58,11 +58,14 @@ export const Connect = () => {
     if (wallet.connected && status === "unauthenticated") {
       handleSignIn();
     }
-  }, [wallet, status, walletModal]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [wallet.connected]);
 
   useEffect(() => {
     if (wallet.disconnecting) {
-      signOut();
+      signOut({
+        callbackUrl: `${window.location.origin}`,
+      });
     }
   }, [wallet.disconnecting]);
 
@@ -86,7 +89,7 @@ export const Connect = () => {
               </div>
             </div>
             <div>
-              <label className="swap swap-rotate ">
+              <label className="swap-rotate swap ">
                 <input type="checkbox" />
                 <svg
                   className="swap-on"
@@ -218,7 +221,6 @@ export const Connect = () => {
                 className="w-full"
                 onClick={() => {
                   wallet.disconnect();
-                  signOut();
                 }}
               >
                 Sign Out

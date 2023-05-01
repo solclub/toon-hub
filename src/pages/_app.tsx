@@ -21,7 +21,7 @@ const MyApp: AppType<{ session: Session | null }> = ({
   return (
     <ConnectionProvider endpoint={endpoint}>
       <ClientWalletProvider autoConnect>
-        <SessionProvider session={session}>
+        <SessionProvider session={session} refetchInterval={0}>
           <Layout>
             <NFTManagerProvider>
               <Component {...pageProps} />

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import FrameBox, { FrameType } from "components/common/FrameBox";
 import classNames from "classnames";
 import Image from "next/image";
@@ -8,10 +8,12 @@ import { motion } from "framer-motion";
 import type { DemonUpgrades, UserNFT } from "server/database/models/user-nfts.model";
 import UpgradeNFT from "./UpgradeNFT";
 import type { ProductOption } from "types/catalog";
+import { ProductType } from "types/catalog";
 import type { GolemUpgrades } from "server/database/models/user-nfts.model";
 import { NFTType } from "server/database/models/nft.model";
 import type { RudeNFT } from "server/database/models/nft.model";
 import SwapArtNFT from "./SwapArtNFT";
+import { useNFTManager } from "contexts/NFTManagerContext";
 
 const NftVersion: React.FC<{
   upgradeOpt?: ProductOption;
@@ -20,8 +22,10 @@ const NftVersion: React.FC<{
     upgrades: UserNFT | undefined;
   };
 }> = ({ upgradeOpt, swapArtOpt, nft }) => {
+  const { paymentChannel } = useNFTManager();
   const [isUpgradeModalOpen, setUpgradeModalOpen] = useState(false);
   const [isSwapArtModalOpen, setSwapArtModalOpen] = useState(false);
+
   const userNft = nft?.upgrades;
   const upgradeType =
     userNft?.type == NFTType.GOLEM
@@ -33,6 +37,26 @@ const NftVersion: React.FC<{
     const [po] = opt.paymentOptions;
     const price = po?.amounts.map((x) => `${x.amount} ${x.token}`);
     return price?.join(" + ");
+  };
+
+  useEffect(() => {
+    paymentChannel.on("payment_success", handlePaymentSuccess);
+    return () => {
+      paymentChannel.removeListener("payment_success", handlePaymentSuccess);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const handlePaymentSuccess = (type: ProductType) => {
+    console.log("emmiter: ", type);
+    switch (type) {
+      case ProductType.NFT_ART_SWAP:
+        setSwapArtModalOpen(false);
+        break;
+      case ProductType.NFT_UPGRADE:
+        setUpgradeModalOpen(false);
+        break;
+    }
   };
 
   return (

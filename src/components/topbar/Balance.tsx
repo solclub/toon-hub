@@ -8,10 +8,6 @@ import { trpc } from "../../utils/trpc";
 const Balance: React.FC<{ className?: string }> = ({ className }) => {
   const { isLoading, data } = trpc.nfts.getWalletBalance.useQuery();
 
-  // const utils = trpc.useContext();
-  // const result = utils.nfts.getWalletBalance.fetch();
-  // console.log("getWalletBalance", result);
-
   return (
     <div
       className={classNames(

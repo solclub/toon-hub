@@ -282,7 +282,7 @@ const LeaderBoard = () => {
                 key={`${nftTypeTab}_${mint ?? ""}_${owner ?? ""}`}
                 index={i}
                 className={classNames(
-                  "m-1 flex h-24 w-full flex-wrap items-center overflow-hidden rounded-xl border-2 p-2",
+                  "m-1 mx-4 flex h-24 w-full flex-wrap items-center overflow-hidden rounded-xl border-2 p-2",
                   borderColor
                 )}
               >

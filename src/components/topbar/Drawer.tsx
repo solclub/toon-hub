@@ -89,6 +89,7 @@ export const Drawer = ({ children }: Props) => {
               </li>
             );
           })}
+          <div className="divider"></div>
         </ul>
       </div>
     </div>

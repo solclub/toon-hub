@@ -25,11 +25,12 @@ export const leaderboardRouter = router({
   getItemPosition: publicProcedure
     .input(
       z.object({
-        mint: z.string(),
+        mint: z.string().nullish(),
       })
     )
     .query(async ({ input }) => {
       const { mint } = input;
+      if (!mint) return { item: -1 };
       const item = await leaderboardService.getItemPosition(mint);
       return { item };
     }),

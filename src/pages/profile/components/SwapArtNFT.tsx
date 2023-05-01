@@ -1,7 +1,7 @@
 import { motion } from "framer-motion";
 import Image from "next/image";
 import React, { useEffect, useRef, useState } from "react";
-import type { PaymentOption, ProductOption } from "types/catalog";
+import { PaymentOption, ProductOption, ProductType } from "types/catalog";
 import PaymentMethodSelector from "components/common/PaymentMethodSelector";
 import NftHidden from "assets/images/skin.png";
 import Divider from "assets/images/divider.png";
@@ -36,7 +36,7 @@ const SwapArtNFT: React.FC<BuyProperties> = ({
   nft,
 }) => {
   const { publicKey, signMessage, signTransaction } = useWallet();
-  const { prepTransaction, setTxState, txState } = useNFTManager();
+  const { prepTransaction, notifyPayment } = useNFTManager();
   const toastRef = useRef("");
   const swapArtMetadata = trpc.upgradeNft.swapArtMetadata.useMutation();
   const { isLoading, error, isError, isSuccess } = swapArtMetadata;
@@ -44,7 +44,6 @@ const SwapArtNFT: React.FC<BuyProperties> = ({
   const [paymentOption, setpaymentOption] = useState<PaymentOption>();
 
   useEffect(() => {
-    setTxState("NONE");
     if (paymentOptions) {
       const [paymentOption] = paymentOptions;
       setpaymentOption(paymentOption);
@@ -55,19 +54,17 @@ const SwapArtNFT: React.FC<BuyProperties> = ({
   useEffect(() => {
     if (isError) {
       showErrorToast(error?.message || "unexpected error");
-      setTxState("ERROR");
       console.error(error?.message);
     }
 
     if (isSuccess) {
       showSuccessToast("Success Swap", 1000);
-      setTxState("SUCCESS");
+      notifyPayment(ProductType.NFT_ART_SWAP);
     }
-  }, [error?.message, isError, isSuccess, setTxState]);
+  }, [error?.message, isError, isSuccess, notifyPayment]);
 
   const swapArtNFT = async (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
     e.stopPropagation();
-    setTxState("BEGIN");
     const csrf = await getCsrfToken();
     console.log(!publicKey, !csrf, !signMessage, !signTransaction, !paymentOption);
     if (!publicKey || !csrf || !signMessage || !signTransaction || !paymentOption) return;
@@ -106,11 +103,8 @@ const SwapArtNFT: React.FC<BuyProperties> = ({
             ? (upgradeOption.key as GolemUpgrades)
             : (upgradeOption.key as DemonUpgrades),
       });
-
-      setTxState("WAITING");
     } catch (error) {
       showErrorToast("Error generating Preview, try again or contact support!");
-      setTxState("ERROR");
       console.error(error);
     }
   };
@@ -177,22 +171,20 @@ const SwapArtNFT: React.FC<BuyProperties> = ({
           </div>
         </div>
       </div>
-      {txState != "SUCCESS" && (
-        <div className="mb-5 w-1/2 p-5 sm:p-0">
-          <div className="w-full text-center sm:w-auto">
-            <p className="titles-color textStroke mb-4 text-2xl">Current Swap Costs:</p>
-            {paymentOptions && (
-              <PaymentMethodSelector
-                paymentOptions={paymentOptions}
-                selected={paymentOption}
-                onChange={(opt) => {
-                  setpaymentOption(opt);
-                }}
-              ></PaymentMethodSelector>
-            )}
-          </div>
+      <div className="mb-5 w-1/2 p-5 sm:p-0">
+        <div className="w-full text-center sm:w-auto">
+          <p className="titles-color textStroke mb-4 text-2xl">Current Swap Costs:</p>
+          {paymentOptions && (
+            <PaymentMethodSelector
+              paymentOptions={paymentOptions}
+              selected={paymentOption}
+              onChange={(opt) => {
+                setpaymentOption(opt);
+              }}
+            ></PaymentMethodSelector>
+          )}
         </div>
-      )}
+      </div>
 
       <div className="z-10 w-full xl:pt-3">
         <div className="text-center"></div>
