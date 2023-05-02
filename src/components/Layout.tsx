@@ -11,8 +11,8 @@ const Layout = ({ children }: Props) => {
   return (
     <>
       <Head>
-        <title>Rude Dashboard</title>
-        <meta name="description" content="Rude Dashboard" />
+        <title>The Hub</title>
+        <meta name="description" content="The Hub" />
         <link rel="icon" href="/favicon.ico" />
       </Head>
       <main className="mx-auto h-screen w-screen">

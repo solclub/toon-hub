@@ -7,8 +7,6 @@ import FrameBox from "../components/common/FrameBox";
 import Loader from "../components/common/Loader";
 import { NFTType } from "server/database/models/nft.model";
 import { toPascalCase } from "utils/string-utils";
-import FeaturedFlag from "assets/images/featured-flag.png";
-import { CountDown } from "components/common/CountDown";
 
 const Profile = () => {
   const [selectedCollection, setSelectedCollection] = useState<NFTType | "ALL">("ALL");
@@ -27,7 +25,7 @@ const Profile = () => {
   return (
     <div className="mt-8 flex flex-wrap">
       <div className="w-full text-2xl">
-        <div className="mb-4 flex justify-between">
+        <div className="flex justify-between">
           <div className="flex w-full items-center justify-between">
             <div className="flex items-center">My Collection</div>
             <div className="flex items-center">
@@ -77,7 +75,7 @@ const Profile = () => {
           </div>
         </div>
       </div>
-      <div className="w-full pt-3 font-thin">Select the characters to customize</div>
+      <div className="w-full font-thin">Select the characters to customize</div>
 
       <div className="flex w-full flex-wrap justify-center gap-y-6 gap-x-4 pt-8 pb-20">
         {isLoading && (

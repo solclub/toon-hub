@@ -1,4 +1,4 @@
-import { MutableRefObject, useEffect, useRef } from "react";
+import { useEffect, useRef } from "react";
 
 export const usePortal = () => {
   const portal = useRef<HTMLElement | null>(null);
