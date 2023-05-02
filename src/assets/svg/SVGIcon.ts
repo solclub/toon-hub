@@ -4,5 +4,7 @@ import menuitem from "assets/svg/menuitem.svg";
 import rudeverse from "assets/svg/rudeverse.svg";
 import menui from "assets/svg/menu.svg";
 import Sol from "assets/svg/sol";
+import twitter from "assets/svg/twitter.svg";
+import discord from "assets/svg/discord.svg";
 
-export default { thehub, menuitem, rudeverse, menui, Sol };
+export default { thehub, menuitem, rudeverse, menui, Sol, twitter, discord };

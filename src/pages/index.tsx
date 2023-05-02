@@ -5,18 +5,13 @@ import Link from "next/link";
 import twitterBg from "../assets/images/twiter_banner.png";
 import warimage from "../assets/images/war_banner.png";
 import rankImage from "../assets/images/rarity_banner.png";
+import nftToysImage from "../assets/images/nfttoys_banner.png";
 import rewardsImage from "../assets/images/rewards_banner.png";
 import type { EquipmentRarity } from "../components/common/Equipment";
 import Equipment from "../components/common/Equipment";
 import classNames from "classnames";
 import phrases from "./sample-data/phrases.json";
-
 import EmptyWeaponImage from "../assets/weapons/no-weapon.png";
-// import gem from "../assets/weapons/SLOT1/COMMON/Stoneheart.png";
-// import gem1 from "../assets/weapons/SLOT2/EPIC/Flamestreak-Bow.png";
-// import gem2 from "../assets/weapons/SLOT3/LEGENDARY/Ancient-Hammer.png";
-// import gem3 from "../assets/weapons/SLOT4/MYTHIC/Life-taker.png";
-
 import ImgTwitterBlue from "../assets/images/twitter_blue.png";
 import ImgPowerRating from "../assets/images/power_rating_icon.png";
 import ImgSolScan from "../assets/images/solscan.png";
@@ -29,7 +24,7 @@ const Home: NextPage = () => {
 
   const [twitPhrase, setTwitPhrasePhrase] = useState("");
   useEffect(() => {
-    setTwitPhrasePhrase(`”${phrases[Math.floor(Math.random() * (phrases.length - 0 + 1)) + 0]}”`);
+    setTwitPhrasePhrase(`\"${phrases[Math.floor(Math.random() * (phrases.length - 0 + 1)) + 0]}\"`);
   }, []);
 
   const featuredNFT = featured.data;
@@ -166,9 +161,9 @@ const Home: NextPage = () => {
               </div>
             </div>
           </Panel>
-          <Panel className="mt-5 flex w-full flex-wrap items-center align-middle">
+          <Panel className="mt-5 flex w-full flex-grow items-center justify-center gap-4">
             <a
-              className="w-1/3 hover:scale-105 hover:transition-transform"
+              className="hover:scale-105 hover:transition-transform"
               href="https://app.rudegolems.com/connect"
               target={"_blank"}
               rel="noreferrer"
@@ -176,7 +171,7 @@ const Home: NextPage = () => {
               <Image alt="War staking app" src={warimage} />
             </a>
             <a
-              className="w-1/3 hover:scale-105 hover:transition-transform"
+              className="hover:scale-105 hover:transition-transform"
               href="https://rudegolems.com/ranking/"
               target={"_blank"}
               rel="noreferrer"
@@ -184,12 +179,20 @@ const Home: NextPage = () => {
               <Image alt="Rarity tool" src={rankImage} />
             </a>
             <a
-              className="w-1/3 hover:scale-105 hover:transition-transform"
+              className="hover:scale-105 hover:transition-transform"
               href="https://rewards.creadorestudios.io/"
               target={"_blank"}
               rel="noreferrer"
             >
               <Image alt="Rewards" src={rewardsImage} />
+            </a>
+            <a
+              className="hover:scale-105 hover:transition-transform"
+              href="https://nftoys.site/"
+              target={"_blank"}
+              rel="noreferrer"
+            >
+              <Image alt="NFT Toys" src={nftToysImage} />
             </a>
           </Panel>
         </div>
@@ -387,18 +390,18 @@ const LeaderBoard = () => {
           }
         )}
       </div>
-      <div className="btn-group-horizontal btn-group mx-auto self-start pb-2 font-medieval-sharp">
+      <div className="btn-group btn-group-horizontal mx-auto self-start pb-2 font-medieval-sharp">
         <button
-          className="btn btn-sm  "
+          className="btn-sm btn  "
           disabled={page[nftTypeTab] == 0}
           onClick={handleFetchPreviousPage}
         >
           «
         </button>
-        <button className="btn btn-sm ">Page {(page[nftTypeTab] ?? 0) + 1}</button>
+        <button className="btn-sm btn ">Page {(page[nftTypeTab] ?? 0) + 1}</button>
 
         <button
-          className=" btn  btn-sm "
+          className=" btn-sm  btn "
           disabled={(data?.pages[page[nftTypeTab] ?? 0]?.items?.length ?? 0) < queryLimit}
           onClick={handleFetchNextPage}
         >

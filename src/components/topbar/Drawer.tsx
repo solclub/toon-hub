@@ -5,6 +5,11 @@ import classNames from "classnames";
 import { Connect } from "./Connect";
 import SVGIcon from "assets/svg/SVGIcon";
 import { useRouter } from "next/router";
+import warimage from "assets/images/war_banner_small.png";
+import rankImage from "assets/images/rarity_banner_small.png";
+import nftToysImage from "assets/images/nfttoys_banner_small.png";
+import rewardsImage from "assets/images/rewards_banner_small.png";
+import Image from "next/image";
 
 type Props = {
   children: JSX.Element;
@@ -63,33 +68,69 @@ export const Drawer = ({ children }: Props) => {
       <div className="drawer-side">
         <label htmlFor="main-drawer" className="drawer-overlay"></label>
 
-        <ul className="panel menu w-80 p-4 text-base-content ">
+        <ul className="panel menu flex w-80 flex-col justify-start p-4 text-base-content">
           <div className="mx-auto mt-4 w-56">
             <SVGIcon.rudeverse />
           </div>
-          {menuItems.map((item) => {
-            return (
-              <li key={item.name} className="text-white">
-                <Link
-                  onClick={toggle}
-                  href={item.path}
-                  className={classNames(
-                    "mt-4 text-white",
-                    {
-                      "bg-[#362f2e]": item.path == currentPath,
-                    },
-                    {
-                      "disabled pointer-events-none text-gray-500": !connected && item.isPrivate,
-                    }
-                  )}
-                >
-                  <SVGIcon.menuitem />
-                  {item.name}
-                </Link>
-              </li>
-            );
-          })}
-          <div className="divider"></div>
+          <div className="">
+            {menuItems.map((item) => {
+              return (
+                <li key={item.name} className="text-white">
+                  <Link
+                    onClick={toggle}
+                    href={item.path}
+                    className={classNames(
+                      "mt-4 text-white",
+                      {
+                        "bg-[#362f2e]": item.path == currentPath,
+                      },
+                      {
+                        "disabled pointer-events-none text-gray-500": !connected && item.isPrivate,
+                      }
+                    )}
+                  >
+                    <SVGIcon.menuitem />
+                    {item.name}
+                  </Link>
+                </li>
+              );
+            })}
+          </div>
+          <div className="mt-auto grid grid-cols-2 gap-3 justify-self-end">
+            <div className="divider col-span-2"></div>
+            <a
+              className="hover:scale-105 hover:transition-transform"
+              href="https://app.rudegolems.com/connect"
+              target={"_blank"}
+              rel="noreferrer"
+            >
+              <Image alt="War staking app" src={warimage} />
+            </a>
+            <a
+              className="hover:scale-105 hover:transition-transform"
+              href="https://rudegolems.com/ranking/"
+              target={"_blank"}
+              rel="noreferrer"
+            >
+              <Image alt="Rarity tool" src={rankImage} />
+            </a>
+            <a
+              className="hover:scale-105 hover:transition-transform"
+              href="https://rewards.creadorestudios.io/"
+              target={"_blank"}
+              rel="noreferrer"
+            >
+              <Image alt="Rewards" src={rewardsImage} />
+            </a>
+            <a
+              className="hover:scale-105 hover:transition-transform"
+              href="https://nftoys.site/"
+              target={"_blank"}
+              rel="noreferrer"
+            >
+              <Image alt="NFT Toys" src={nftToysImage} />
+            </a>
+          </div>
         </ul>
       </div>
     </div>
