@@ -1,10 +1,8 @@
 import { z } from "zod";
-
 import { router, protectedProcedure } from "./trpc/trpc-context";
-import { ProductType } from "types/catalog";
-import type { Product } from "types/catalog";
-import catalog from "server/data/catalog.json";
+import { ProductType } from "server/database/models/catalog.model";
 import { NFTType } from "server/database/models/nft.model";
+import catalogService from "server/services/catalog-service";
 
 export const catalogRouter = router({
   getProductAF: protectedProcedure
@@ -14,18 +12,12 @@ export const catalogRouter = router({
         collection: z.nativeEnum(NFTType).nullish(),
       })
     )
-    .query(({ input }) => {
+    .query(async ({ input }) => {
       const { type, collection } = input;
-      const result = catalog.filter(
-        (x) => (collection ? x.collection == collection : true) && x.type == type
-      ) as Product[];
-
-      if (result.length == 1) {
-        return result[0];
-      }
-      return {} as Product;
+      const result = await catalogService.getProductsByTypeAndCollection(type, collection);
+      return result;
     }),
-  getAll: protectedProcedure.query(({}) => {
-    return catalog as Product[];
+  getAll: protectedProcedure.query(async ({}) => {
+    return await catalogService.getAll();
   }),
 });

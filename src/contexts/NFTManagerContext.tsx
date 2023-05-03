@@ -13,8 +13,13 @@ import { useEffect } from "react";
 import { createContext, useContext, useState } from "react";
 import { connection } from "server/services/connections/web3-public";
 import { getButterflies } from "server/services/onchain-service";
-import type { Amount, PaymentOption, Product, ProductType } from "types/catalog";
-import { PaymentToken } from "types/catalog";
+import type {
+  Amount,
+  PaymentOption,
+  Product,
+  ProductType,
+} from "server/database/models/catalog.model";
+import { PaymentToken } from "server/database/models/catalog.model";
 import { trpc } from "utils/trpc";
 import { EventEmitter } from "events";
 
@@ -60,7 +65,7 @@ export const NFTManagerProvider = (props: { children: React.ReactNode }) => {
   }, [isCatalogSuccess, products]);
 
   const getProduct = (prodType: ProductType, collection?: string) => {
-    const result = catalog?.filter((x) => x.type == prodType && x.collection == collection);
+    const result = catalog?.filter((x) => x.type == prodType && x.collectionName == collection);
     return result;
   };
 

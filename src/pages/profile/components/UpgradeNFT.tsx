@@ -1,8 +1,8 @@
 import { motion } from "framer-motion";
 import Image from "next/image";
 import React, { useEffect, useRef, useState } from "react";
-import type { PaymentOption, ProductOption } from "types/catalog";
-import { ProductType } from "types/catalog";
+import type { PaymentOption, ProductOption } from "server/database/models/catalog.model";
+import { ProductType } from "server/database/models/catalog.model";
 import PaymentMethodSelector from "components/common/PaymentMethodSelector";
 import NftHidden from "assets/images/skin.png";
 import FrameBox from "components/common/FrameBox";

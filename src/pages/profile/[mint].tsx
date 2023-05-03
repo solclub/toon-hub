@@ -11,8 +11,7 @@ import Panel from "components/common/Panel";
 import Loader from "components/common/Loader";
 import NftVersion from "./components/NFTVersion";
 import type { UserNFT } from "server/database/models/user-nfts.model";
-import type { Product } from "types/catalog";
-import { ProductType } from "types/catalog";
+import { ProductType } from "server/database/models/catalog.model";
 import type { RudeNFT } from "server/database/models/nft.model";
 import { trpc } from "utils/trpc";
 import { getRudeNftName } from "utils/nfttier";
@@ -33,6 +32,7 @@ import { Modal } from "components/common/Modal";
 import FeatureNFT from "pages/profile/components/FeatureNFT";
 import { toPascalCase } from "utils/string-utils";
 import VideoView from "./components/VideoView";
+import type { Product } from "server/database/models/catalog.model";
 
 type Weapon = {
   image: string | StaticImageData;
