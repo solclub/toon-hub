@@ -7,13 +7,13 @@ import { Modal } from "components/common/Modal";
 import { motion } from "framer-motion";
 import type { DemonUpgrades, UserNFT } from "server/database/models/user-nfts.model";
 import UpgradeNFT from "./UpgradeNFT";
-import type { ProductOption } from "types/catalog";
-import { ProductType } from "types/catalog";
+import { ProductType } from "server/database/models/catalog.model";
 import type { GolemUpgrades } from "server/database/models/user-nfts.model";
 import { NFTType } from "server/database/models/nft.model";
 import type { RudeNFT } from "server/database/models/nft.model";
 import SwapArtNFT from "./SwapArtNFT";
 import { useNFTManager } from "contexts/NFTManagerContext";
+import type { ProductOption } from "server/database/models/catalog.model";
 
 const NftVersion: React.FC<{
   upgradeOpt?: ProductOption;
