@@ -60,7 +60,7 @@ const NftVersion: React.FC<{
   };
 
   return (
-    <div className=" w-[25%] text-center">
+    <div className="w-full text-center lg:w-[25%]">
       {upgradeOpt && userNft && (
         <>
           <h3

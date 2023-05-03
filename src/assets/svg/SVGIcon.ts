@@ -6,5 +6,7 @@ import menui from "assets/svg/menu.svg";
 import Sol from "assets/svg/sol";
 import twitter from "assets/svg/twitter.svg";
 import discord from "assets/svg/discord.svg";
+import open from "assets/svg/open.svg";
+import close from "assets/svg/close.svg";
 
-export default { thehub, menuitem, rudeverse, menui, Sol, twitter, discord };
+export default { thehub, menuitem, rudeverse, menui, Sol, twitter, discord, open, close };

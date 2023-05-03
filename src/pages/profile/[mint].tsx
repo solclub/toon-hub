@@ -196,7 +196,9 @@ const Profile: NextPage = () => {
         </span>
 
         <span>
-          <div className="inline w-5/12 pl-3 text-xl font-extrabold">{profileNFT?.name}</div>
+          <div className="hidden w-5/12 pl-3 text-xl font-extrabold lg:inline">
+            {profileNFT?.name}
+          </div>
         </span>
 
         <span>
@@ -219,7 +221,7 @@ const Profile: NextPage = () => {
         </span>
       </div>
       <div className="mt-5 flex flex-wrap justify-center gap-x-4">
-        <div className="w-2/6">
+        <div className="w-full lg:w-2/6">
           <Panel className="panel flex flex-wrap rounded-md p-3">
             <div className="overflow-hidde w-full">
               <div className=" relative h-[500px] w-full">
@@ -231,8 +233,7 @@ const Profile: NextPage = () => {
                       profileNFT?.image
                     }
                     alt={profileNFT?.name}
-                    height={500}
-                    width={500}
+                    fill
                   />
                 ) : (
                   <div className="flex h-full items-center justify-center">
@@ -243,15 +244,15 @@ const Profile: NextPage = () => {
                 )}
                 <div className="absolute bottom-0 h-[60%] w-full  rounded-2xl bg-gradient-to-t from-black to-transparent"></div>
                 <div className="absolute bottom-0 h-[60%] w-full">
-                  <div className="absolute bottom-10 left-10">
-                    <div className="mt-2 w-20 overflow-hidden overflow-ellipsis text-sm font-thin">
+                  <div className="absolute bottom-8 left-5 lg:left-10">
+                    <div className="mt-2 w-20 overflow-hidden overflow-ellipsis text-xl font-thin">
                       {toPascalCase(profileNFT?.type ?? "")}
                     </div>
-                    <div className=" font-medieval-sharp text-3xl text-amber-100">
+                    <div className=" font-medieval-sharp text-4xl text-amber-100">
                       {getRudeNftName(profileNFT?.name) || "Unknow"}
                     </div>
                   </div>
-                  <div className="absolute bottom-9 right-10">
+                  <div className="absolute bottom-9 right-5 lg:right-10">
                     {featureProduct?.options[0] && profileNFT && (
                       <>
                         {isLoadingFeatured && <Loader></Loader>}
@@ -291,9 +292,9 @@ const Profile: NextPage = () => {
                 </div>
               </div>
             </div>
-            <div className=" mt-4 flex w-full gap-3 text-center">
+            <div className="mt-4 flex w-full flex-wrap text-center lg:gap-3">
               <div
-                className={classNames("info-card m-auto h-[160px] w-1/5 grow", {
+                className={classNames("info-card m-auto h-[160px] w-1/2 grow lg:w-1/5", {
                   "loading-effect opacity-20": isProfileLoading,
                 })}
               >
@@ -316,7 +317,7 @@ const Profile: NextPage = () => {
               </div>
 
               <div
-                className={classNames("info-card m-auto h-[160px] w-1/5 grow", {
+                className={classNames("info-card m-auto h-[160px] w-1/2 grow lg:w-1/5", {
                   "loading-effect": isProfileLoading,
                 })}
               >
@@ -337,7 +338,7 @@ const Profile: NextPage = () => {
               </div>
 
               <div
-                className={classNames("info-card m-auto h-[160px] w-1/5 grow", {
+                className={classNames("info-card m-auto h-[160px] w-1/2 grow lg:w-1/5", {
                   "loading-effect": isProfileLoading,
                 })}
               >
@@ -353,7 +354,7 @@ const Profile: NextPage = () => {
               </div>
 
               <div
-                className={classNames("info-card m-auto h-[160px] w-1/5 grow", {
+                className={classNames("info-card m-auto h-[160px] w-1/2 grow lg:w-1/5", {
                   "loading-effect": isProfileLoading,
                 })}
               >
@@ -375,7 +376,7 @@ const Profile: NextPage = () => {
             </div>
           </Panel>
         </div>
-        <Panel className="panel flex w-full max-w-[65%] flex-wrap rounded-md p-8">
+        <Panel className="panel mt-3 flex w-full flex-wrap rounded-md p-8 lg:mt-0 lg:max-w-[65%] ">
           {profileNFT && profileNFT?.type && (
             <CustomizePanel
               weapons={weapons}
@@ -441,6 +442,7 @@ const CustomizePanel = ({ weapons, nft, upgradeProducts, swapProducts }: ArmoryP
       <div className="flex w-full flex-wrap justify-center text-center">
         <h2 className="mb-3 block w-full text-xl">Armory</h2>
         {weapons &&
+          false &&
           weapons.map((x) => {
             const { image, rarity, expireDate, name, owned, points, price } = x;
             return (

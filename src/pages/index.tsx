@@ -52,16 +52,16 @@ const Home: NextPage = () => {
     },
   ];
   return (
-    <div className="relative">
-      <div className="flex items-center gap-4 pt-5 pb-3">
-        <div className="mx-auto w-6/12">
+    <div className="relative mb-8">
+      <div className="flex items-center gap-4 lg:pb-3 lg:pt-5">
+        <div className="mx-auto w-full lg:w-6/12">
           <div className="relative flex h-20 w-full flex-wrap justify-center justify-items-center gap-0">
-            <div className="z-10 flex h-1/3 w-full items-center py-2">
+            <div className="z-10 hidden h-1/3 w-full items-center lg:flex lg:py-2">
               <Image className="mx-auto mt-2" src={ImgTwitterBlue} alt="twit icon" />
             </div>
-            <Image className="" src={twitterBg} alt="Twit Phrase" fill />
+            <Image className="hidden lg:block" src={twitterBg} alt="Twit Phrase" fill />
             <Link
-              className="z-50 h-2/3 w-full text-center"
+              className="z-20 h-2/3 w-full text-center"
               href={"https://twitter.com/intent/tweet?text=" + twitPhrase + "%0a@rudegolems"}
               target="_blank"
             >
@@ -71,14 +71,14 @@ const Home: NextPage = () => {
           </div>
         </div>
       </div>
-      <div className="mt-7 flex flex-wrap  align-middle">
-        <div className="w-[60%]">
+      <div className="mt-7 flex flex-wrap align-middle">
+        <div className="w-full lg:w-[60%]">
           <Panel className="panel flex flex-wrap rounded-md ">
             {featuredNFT && (
-              <div className="overflow-hidde w-[63%] p-3">
+              <div className="overflow-hidde w-full p-3 lg:w-[63%]">
                 <div className=" relative h-[500px] w-full">
                   <Image
-                    className="absolute max-h-[500px] rounded-2xl object-cover "
+                    className="absolute max-h-[500px] rounded-2xl object-cover"
                     src={
                       featuredNFT?.nft?.upgrades?.images.get(featuredNFT?.nft?.upgrades?.current) ??
                       ""
@@ -140,7 +140,7 @@ const Home: NextPage = () => {
               </div>
             )}
 
-            <div className="flex w-[35%] flex-wrap items-center align-middle">
+            <div className="flex w-full flex-wrap items-center pb-8 align-middle lg:w-[35%]">
               <div className="flex w-full flex-wrap items-center justify-center gap-6">
                 <div className="w-full pb-3 text-center text-2xl text-slate-200">Equipment</div>
                 {equipment &&
@@ -155,48 +155,13 @@ const Home: NextPage = () => {
                       name={`equipment-${i}`}
                     ></Equipment>
                   ))}
-                {/* <button className="btn-rude text-center text-xl">
-                  Customize
-                </button> */}
               </div>
             </div>
           </Panel>
-          <Panel className="mt-5 flex w-full flex-grow items-center justify-center gap-4">
-            <a
-              className="hover:scale-105 hover:transition-transform"
-              href="https://app.rudegolems.com/connect"
-              target={"_blank"}
-              rel="noreferrer"
-            >
-              <Image alt="War staking app" src={warimage} />
-            </a>
-            <a
-              className="hover:scale-105 hover:transition-transform"
-              href="https://rudegolems.com/ranking/"
-              target={"_blank"}
-              rel="noreferrer"
-            >
-              <Image alt="Rarity tool" src={rankImage} />
-            </a>
-            <a
-              className="hover:scale-105 hover:transition-transform"
-              href="https://rewards.creadorestudios.io/"
-              target={"_blank"}
-              rel="noreferrer"
-            >
-              <Image alt="Rewards" src={rewardsImage} />
-            </a>
-            <a
-              className="hover:scale-105 hover:transition-transform"
-              href="https://nftoys.site/"
-              target={"_blank"}
-              rel="noreferrer"
-            >
-              <Image alt="NFT Toys" src={nftToysImage} />
-            </a>
-          </Panel>
+          <LinksItems className="hidden lg:flex"></LinksItems>
         </div>
         <LeaderBoard></LeaderBoard>
+        <LinksItems className="flex lg:hidden"></LinksItems>
       </div>
     </div>
   );
@@ -248,7 +213,7 @@ const LeaderBoard = () => {
   };
 
   return (
-    <Panel className="panel ml-3 flex w-[35%] flex-col flex-wrap rounded-md align-top">
+    <Panel className="panel ml-0 mt-3 flex w-full flex-col flex-wrap rounded-md align-top lg:mt-0 lg:ml-3 lg:w-[35%]">
       <div className="tabs mx-auto mt-3 h-fit w-10/12 justify-center self-start p-3">
         {["Golems", "Demons", "All", "By Wallet"].map((tab, index) => (
           <a
@@ -455,5 +420,46 @@ const WalletLink = ({
     </div>
   );
 };
+
+const LinksItems = ({ className }: { className?: string }) => (
+  <Panel
+    className={
+      (className ?? " ") + " mt-5 flex w-full flex-grow flex-wrap items-center justify-between"
+    }
+  >
+    <a
+      className="w-full p-1 hover:scale-105 hover:transition-transform lg:w-1/4"
+      href="https://app.rudegolems.com/connect"
+      target={"_blank"}
+      rel="noreferrer"
+    >
+      <Image alt="War staking app" src={warimage} />
+    </a>
+    <a
+      className="w-full p-1 hover:scale-105 hover:transition-transform lg:w-1/4"
+      href="https://rudegolems.com/ranking/"
+      target={"_blank"}
+      rel="noreferrer"
+    >
+      <Image alt="Rarity tool" src={rankImage} />
+    </a>
+    <a
+      className="w-full p-1 hover:scale-105 hover:transition-transform lg:w-1/4"
+      href="https://rewards.creadorestudios.io/"
+      target={"_blank"}
+      rel="noreferrer"
+    >
+      <Image alt="Rewards" src={rewardsImage} />
+    </a>
+    <a
+      className="w-full p-1 hover:scale-105 hover:transition-transform lg:w-1/4"
+      href="https://nftoys.site/"
+      target={"_blank"}
+      rel="noreferrer"
+    >
+      <Image alt="NFT Toys" src={nftToysImage} />
+    </a>
+  </Panel>
+);
 
 export default Home;
