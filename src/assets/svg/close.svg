@@ -1,0 +1,11 @@
+<svg
+    className="swap-off"
+    width="34"
+    height="34"
+    viewBox="0 0 34 34"
+    fill="none"
+    xmlns="http://www.w3.org/2000/svg"
+>
+    <circle cx="17" cy="17" r="16" stroke="#BEA97E" strokeWidth="2" />
+    <path d="M22.46 14L16.708 23.0002L11 14H22.46Z" fill="white" />
+</svg>

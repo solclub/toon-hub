@@ -43,26 +43,24 @@ export const Drawer = ({ children }: Props) => {
 
       <div className="drawer-content pt-7">
         <div className="relative flex flex-wrap">
-          <div className="absolute flex w-full items-center justify-center">
-            <div>
-              <Link href={"/"}>
-                <SVGIcon.thehub />
-              </Link>
-            </div>
+          <div className="absolute flex h-4 w-full items-center justify-center lg:h-auto">
+            <Link href={"/"}>
+              <SVGIcon.thehub />
+            </Link>
           </div>
-          <div className="flex w-1/2 justify-start pl-8 align-middle">
+          <div className="flex justify-start pl-8 align-middle lg:w-1/2">
             <label htmlFor="main-drawer" className="drawer-button z-40 mr-4 inline cursor-pointer">
               <SVGIcon.menui></SVGIcon.menui>
             </label>
-            <div className="w-44">
+            <div className="hidden w-44 lg:block">
               <SVGIcon.rudeverse />
             </div>
           </div>
-          <div className="flex w-1/2 justify-end  pr-8 align-middle">
+          <div className="mx-8 flex justify-end align-middle lg:mx-0 lg:w-1/2 lg:pr-8">
             <Connect></Connect>
           </div>
         </div>
-        <div className="container m-auto px-8">{children}</div>
+        <div className="container m-auto lg:px-8">{children}</div>
       </div>
 
       <div className="drawer-side">
