@@ -428,7 +428,11 @@ const CustomizePanel = ({ weapons, nft, upgradeProducts, swapProducts }: ArmoryP
         <h2 className="block w-full text-xl">Select your alternative version</h2>
         {upgradeOpts &&
           upgradeOpts
-            .filter((x) => x.isAvailable)
+            .filter((x) =>
+              nft?.attributes.find((x) => x.name === "Background")?.value == "God"
+                ? x.key == "ORIGINAL" && true && x.isAvailable
+                : x.isAvailable
+            )
             .map((opt) => (
               <NftVersion
                 key={opt.name}

@@ -65,18 +65,17 @@ export const syncUserNFTs = async (
         const item = <UserNFT>{
           mint: x.mint,
           type: x.type,
-          current: GolemUpgrades.ORIGINAL,
           wallet: wallet,
           active: true,
+          current: GolemUpgrades.ORIGINAL,
           images: new Map<string, string>([[GolemUpgrades.ORIGINAL, x.image]]),
-          localImage: x.image,
           isTraining: checkIsTraining(x),
         };
         await usernfts.UserNFTsModel().updateOne({ mint: item.mint }, item, { upsert: true });
       });
 
     removedItems.forEach(async (x) => {
-      await usernfts.UserNFTsModel().updateOne({ mint: x, wallet }, { $set: { active: false } });
+      await usernfts.UserNFTsModel().updateOne({ mint: x, wallet }, { active: false });
     });
   }
 };

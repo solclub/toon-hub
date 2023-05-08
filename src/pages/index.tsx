@@ -53,20 +53,28 @@ const Home: NextPage = () => {
   ];
   return (
     <div className="relative mb-8">
-      <div className="flex items-center gap-4 lg:pb-3 lg:pt-5">
-        <div className="mx-auto w-full lg:w-6/12">
-          <div className="relative flex h-20 w-full flex-wrap justify-center justify-items-center gap-0">
-            <div className="z-10 hidden h-1/3 w-full items-center lg:flex lg:py-2">
-              <Image className="mx-auto mt-2" src={ImgTwitterBlue} alt="twit icon" />
+      <div className="flex flex-wrap lg:pb-3 lg:pt-5">
+        <div className="mx-auto h-[100px] lg:w-6/12">
+          <div className="relative grid h-full w-full items-start  justify-center">
+            <div className="z-20 mt-2 h-fit w-full">
+              <Image className="mx-auto " src={ImgTwitterBlue} alt="twit icon" />
             </div>
-            <Image className="hidden lg:block" src={twitterBg} alt="Twit Phrase" fill />
+            <Image
+              className="absolute top-0 left-0 hidden lg:block"
+              src={twitterBg}
+              alt="Twit Phrase"
+              height={100}
+              width={800}
+            ></Image>
             <Link
-              className="z-20 h-2/3 w-full text-center"
+              className="z-20 row-span-3 w-full text-center"
               href={"https://twitter.com/intent/tweet?text=" + twitPhrase + "%0a@rudegolems"}
               target="_blank"
             >
-              <span className="text-base italic leading-none text-white">{twitPhrase}</span>
-              <span className="block text-xs text-[#65514E]">Click here to tweet</span>
+              <span className="text-sm italic leading-none text-white hover:underline">
+                {twitPhrase}
+              </span>
+              <span className="block text-xs text-[#ba6556]">Click here to tweet</span>
             </Link>
           </div>
         </div>
@@ -133,6 +141,36 @@ const Home: NextPage = () => {
                               "Unknow"}
                           </Link>
                         </span>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="absolute right-1 top-1">
+                    <div className="dropdown">
+                      <label tabIndex={0} className="m-1 cursor-pointer">
+                        <svg
+                          className="inline-block h-6 align-middle"
+                          id="info-circle"
+                          data-name="Layer 1"
+                          xmlns="http://www.w3.org/2000/svg"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            fill="#3A3DAB"
+                            d="M12,2A10,10,0,1,0,22,12,10.01114,10.01114,0,0,0,12,2Zm0,18a8,8,0,1,1,8-8A8.00917,8.00917,0,0,1,12,20Zm0-8.5a1,1,0,0,0-1,1v3a1,1,0,0,0,2,0v-3A1,1,0,0,0,12,11.5Zm0-4a1.25,1.25,0,1,0,1.25,1.25A1.25,1.25,0,0,0,12,7.5Z"
+                          ></path>
+                        </svg>
+                      </label>
+                      <div
+                        tabIndex={0}
+                        className="card-compact card dropdown-content w-72 bg-black bg-opacity-30 backdrop-blur-sm backdrop-filter"
+                      >
+                        <div className="card-body">
+                          <h3 className="card-title">Want to Feature your NFT?</h3>
+                          <p>
+                            Make your NFT shine on your NFT profile. Log in and feature your
+                            masterpiece now!
+                          </p>
+                        </div>
                       </div>
                     </div>
                   </div>
