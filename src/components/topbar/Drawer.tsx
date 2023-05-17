@@ -87,7 +87,7 @@ export const Drawer = ({ children }: Props) => {
                       }
                     )}
                   >
-                    <SVGIcon.menuitem />
+                    <SVGIcon.hubRock />
                     {item.name}
                   </Link>
                 </li>

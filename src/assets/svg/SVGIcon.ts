@@ -8,5 +8,6 @@ import twitter from "assets/svg/twitter.svg";
 import discord from "assets/svg/discord.svg";
 import open from "assets/svg/open.svg";
 import close from "assets/svg/close.svg";
+import hubRock from "assets/svg/hub-rock.svg";
 
-export default { thehub, menuitem, rudeverse, menui, Sol, twitter, discord, open, close };
+export default { thehub, menuitem, rudeverse, menui, Sol, twitter, discord, open, close, hubRock };
