@@ -8,9 +8,10 @@ deploy-mainnet-railway:
     - if: '$CI_PIPELINE_SOURCE == "push" && $CI_COMMIT_BRANCH == "main"'
   script:
     - apt-get update && apt-get install -y curl
-    - curl -fsSL https://raw.githubusercontent.com/railwayapp/cli/master/v2.sh | sh
-    - RAILWAY_TOKEN=$RAILWAY_TOKEN railway link $RAILWAY_PROJECY_ID
-    - RAILWAY_TOKEN=$RAILWAY_TOKEN railway up --service=$RAILWAY_MAINNET_SERVICE_NAME -d
+    - curl -fsSL https://railway.app/install.sh | bash
+    - RAILWAY_TOKEN=$RAILWAY_TOKEN railway link $RAILWAY_PROJECY_ID --environment production
+    - RAILWAY_TOKEN=$RAILWAY_TOKEN railway service $RAILWAY_MAINNET_SERVICE_NAME
+    - RAILWAY_TOKEN=$RAILWAY_TOKEN railway up
 
 deploy-devnet-railway:
   stage: deploy
@@ -19,6 +20,7 @@ deploy-devnet-railway:
     - if: '$CI_PIPELINE_SOURCE == "push" && $CI_COMMIT_BRANCH == "devnet"'
   script:
     - apt-get update && apt-get install -y curl
-    - curl -fsSL https://raw.githubusercontent.com/railwayapp/cli/master/v2.sh | sh
-    - RAILWAY_TOKEN=$RAILWAY_TOKEN railway link $RAILWAY_PROJECY_ID
-    - RAILWAY_TOKEN=$RAILWAY_TOKEN railway up --service=$RAILWAY_DEVNET_SERVICE_NAME -d
+    - curl -fsSL https://railway.app/install.sh | bash
+    - RAILWAY_TOKEN=$RAILWAY_TOKEN railway link $RAILWAY_PROJECY_ID --environment production
+    - RAILWAY_TOKEN=$RAILWAY_TOKEN railway service $RAILWAY_DEVNET_SERVICE_NAME
+    - RAILWAY_TOKEN=$RAILWAY_TOKEN railway up

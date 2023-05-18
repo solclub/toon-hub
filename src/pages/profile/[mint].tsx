@@ -1,52 +1,51 @@
 import { useState, useEffect } from "react";
-import { type NextPage } from "next";
 import type { StaticImageData } from "next/image";
 import Image from "next/image";
+import { type NextPage } from "next";
 import Link from "next/link";
 import { useRouter } from "next/router";
-import classnames from "classnames";
-import NftHidden from "../../assets/images/nft-hidden.png";
-import ComingSoonImg from "../../assets/images/coming_soon.png";
+import type { EquipmentRarity } from "components/common/Equipment";
+import Equipment, { EquipmentRarityLabels } from "components/common/Equipment";
+import { CountDown } from "components/common/CountDown";
+import Panel from "components/common/Panel";
+import Loader from "components/common/Loader";
+import NftVersion from "./components/NFTVersion";
+import type { UserNFT } from "server/database/models/user-nfts.model";
+import { ProductType } from "server/database/models/catalog.model";
+import type { RudeNFT } from "server/database/models/nft.model";
+import { trpc } from "utils/trpc";
+import { getRudeNftName } from "utils/nfttier";
 import classNames from "classnames";
-import { Modal } from "../../components/common/Modal";
-import type { EquipmentRarity } from "../../components/common/Equipment";
-import Equipment, {
-  EquipmentRarityLabels,
-} from "../../components/common/Equipment";
-import { CountDown } from "../../components/common/CountDown";
-import LeaderBoardIcon from "../../assets/images/leaderboard_icon.png";
-import PowerRatingIcon from "../../assets/images/power_rating_icon.png";
-import TierIcon from "../../assets/images/tier_icon.png";
-import WeaponsIcon from "../../assets/images/weapons_icon.png";
-import { trpc } from "../../utils/trpc";
-import nftTierSelector from "../../utils/nfttier";
-import gem from "../../assets/weapons/SLOT1/COMMON/Stoneheart.png";
-import gem1 from "../../assets/weapons/SLOT2/EPIC/Flamestreak-Bow.png";
-import gem2 from "../../assets/weapons/SLOT3/LEGENDARY/Ancient-Hammer.png";
-import gem3 from "../../assets/weapons/SLOT4/MYTHIC/Life-taker.png";
-import FrameBox, { FrameType } from "../../components/common/FrameBox";
-import Panel from "../../components/common/Panel";
-import { NFTType, RudeNFT } from "../../server/database/models/nft.model";
-import {
-  DemonUpgrades,
-  GolemUpgrades,
-  UserNFT,
-} from "../../server/database/models/user-nfts.model";
+import NftHidden from "assets/images/skin.png";
 
-type NFTUpgrades = {
-  name: string;
-  type: GolemUpgrades | DemonUpgrades;
-  price: string;
-};
+import ComingSoonImg from "assets/images/coming_soon.png";
+import LeaderBoardIcon from "assets/images/leaderboard_icon.png";
+import PowerRatingIcon from "assets/images/power_rating_icon.png";
+import TierIcon from "assets/images/tier_icon.png";
+import WeaponsIcon from "assets/images/weapons_icon.png";
+import gem from "assets/weapons/SLOT1/COMMON/Stoneheart.png";
+import gem2 from "assets/weapons/SLOT3/LEGENDARY/Ancient-Hammer.png";
+import gem3 from "assets/weapons/SLOT4/MYTHIC/Life-taker.png";
+import WeaponChest from "assets/weapons/weapon-chest.png";
+import { useNFTManager } from "contexts/NFTManagerContext";
+import { Modal } from "components/common/Modal";
+import FeatureNFT from "pages/profile/components/FeatureNFT";
+import { toPascalCase } from "utils/string-utils";
+import VideoView from "./components/VideoView";
+import type { Product } from "server/database/models/catalog.model";
 
 type Weapon = {
   image: string | StaticImageData;
   name: string;
   points: number;
   price: string;
-  rarity: string;
+  rarity: EquipmentRarity;
   expireDate: Date;
   owned: boolean;
+};
+
+type NFTInfo = RudeNFT & {
+  upgrades: UserNFT | undefined;
 };
 
 const sampleWeapons: Weapon[] = [
@@ -60,13 +59,13 @@ const sampleWeapons: Weapon[] = [
     rarity: "COMMON",
   },
   {
-    image: gem1,
+    image: WeaponChest,
     name: "Rare",
     points: 5000,
     price: "$ 0.3 Sol",
     owned: false,
     expireDate: new Date("02/18/2023"),
-    rarity: "EPIC",
+    rarity: "NONE",
   },
   {
     image: gem2,
@@ -88,55 +87,97 @@ const sampleWeapons: Weapon[] = [
   },
 ];
 
-const toPascalCase = (str: string) => {
-  return str
-    .replace(/\w+/g, (w: any) => w[0].toUpperCase() + w.slice(1).toLowerCase())
-    .replace(/\s/g, "");
-};
-
-const sampleUpgrades: NFTUpgrades[] = [
-  {
-    name: toPascalCase(GolemUpgrades.ORIGINAL),
-    type: GolemUpgrades.ORIGINAL,
-    price: "$ 0.3 Sol",
-  },
-  {
-    name: toPascalCase(GolemUpgrades.REWORK),
-    type: GolemUpgrades.REWORK,
-    price: "$ 0.3 Sol",
-  },
-  {
-    name: toPascalCase(GolemUpgrades.CARTOON),
-    type: GolemUpgrades.CARTOON,
-    price: "$ 1 Sol",
-  },
-];
-
 const Profile: NextPage = () => {
-  const router = useRouter();
-  const [upgrades, setUpgrades] = useState<NFTUpgrades[]>([]);
   const [weapons, setWeapons] = useState<Weapon[]>([]);
-  const { mint, type } = router.query;
-  const profileNFT = trpc.nfts.getUserNFTbyMint.useQuery({
-    mint: mint as string,
-  }).data;
+  const [isOnUpgradeVideoModalOpen, setOnUpgradeVideoModalOpen] = useState(false);
+  const [isOpen, setOpen] = useState(false);
+  const [profileNavState, setProfileNavState] = useState({ current: 0, before: -1, after: 1 });
+  const router = useRouter();
+  const { getProduct, paymentChannel } = useNFTManager();
+  const { mint } = router.query;
+  const utils = trpc.useContext();
 
-  const powerRating = "8542";
-  const leaderboardPosition = "560";
-  const totalNFTPower = "56412";
-  const weaponsEquiped = "2";
-  const collection = "golems";
+  const [featureProduct] = getProduct(ProductType.NFT_FEATURE) ?? [{ options: [] }];
+
+  const { data: profileNFT, isLoading: isProfileLoading } = trpc.nfts.getUserNFTbyMint.useQuery({
+    mint: (mint ?? "") as string,
+  });
+
+  const { data: isFeaturedData, isLoading: isLoadingFeatured } =
+    trpc.featureNft.userFeaturedNftByMint.useQuery({
+      mint: (mint ?? "") as string,
+    });
+
+  const { data: mintPosition } = trpc.leaderboard.getItemPosition.useQuery({
+    mint: mint as string,
+  });
+
+  const { data: userMints } = trpc.nfts.getUserMints.useQuery();
+  const weaponsEquiped = "0";
 
   useEffect(() => {
-    setUpgrades(sampleUpgrades);
+    paymentChannel.on("payment_success", handlePaymentSuccess);
+    return () => {
+      paymentChannel.removeListener("payment_success", handlePaymentSuccess);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const handlePaymentSuccess = (type: ProductType) => {
+    console.log("emmiter: ", type);
+    switch (type) {
+      case ProductType.NFT_ART_SWAP:
+        break;
+      case ProductType.NFT_UPGRADE:
+        utils.nfts.getUserNFTbyMint.invalidate();
+        setOnUpgradeVideoModalOpen(true);
+
+        break;
+      case ProductType.NFT_FEATURE:
+        break;
+
+      default:
+        console.error(type);
+        break;
+    }
+  };
+
+  useEffect(() => {
     setWeapons(sampleWeapons);
   }, [mint]);
+
+  useEffect(() => {
+    if (mint && userMints) {
+      if ((userMints ?? []).length > 0) {
+        const current = userMints?.indexOf(mint as string);
+        function getNextOrBeforeProfile(
+          strings: string[],
+          isNext: boolean,
+          currentIndex: number
+        ): number {
+          if (isNext) {
+            const nextIndex = currentIndex + 1;
+            return nextIndex < strings.length ? nextIndex : 0;
+          } else {
+            const previousIndex = currentIndex - 1;
+            return previousIndex >= 0 ? previousIndex : strings.length - 1;
+          }
+        }
+        console.log(current, userMints);
+        setProfileNavState({
+          current,
+          before: getNextOrBeforeProfile(userMints, false, current),
+          after: getNextOrBeforeProfile(userMints, true, current),
+        });
+      }
+    }
+  }, [mint, userMints]);
 
   return (
     <div>
       <div className="mt-10 flex w-full justify-between">
         <span>
-          <Link href={"/list"}>
+          <Link href={"/profile/" + userMints?.[profileNavState.before]}>
             <svg
               className="my-auto inline"
               width="12"
@@ -155,12 +196,14 @@ const Profile: NextPage = () => {
         </span>
 
         <span>
-          <div className="inline w-5/12 pl-3">{profileNFT?.name}</div>
+          <div className="hidden w-5/12 pl-3 text-xl font-extrabold lg:inline">
+            {profileNFT?.name}
+          </div>
         </span>
 
         <span>
-          <div className="inline w-5/12 justify-end pr-3">{"Next"}</div>
-          <Link href={"/list"}>
+          <Link href={"/profile/" + userMints?.[profileNavState.after]}>
+            <div className="inline w-5/12 justify-end pr-3">{"Next"}</div>
             <svg
               className="my-auto inline"
               width="12"
@@ -178,40 +221,83 @@ const Profile: NextPage = () => {
         </span>
       </div>
       <div className="mt-5 flex flex-wrap justify-center gap-x-4">
-        <div className="w-2/6">
+        <div className="w-full lg:w-2/6">
           <Panel className="panel flex flex-wrap rounded-md p-3">
-            {profileNFT && (
-              <div className="overflow-hidde w-full">
-                <div className=" relative h-[500px] w-full">
-                  {profileNFT.image && (
-                    <Image
-                      className="absolute max-h-[500px] rounded-2xl object-cover "
-                      src={profileNFT.image}
-                      alt={profileNFT.name}
-                      fill
-                    />
-                  )}
-                  <div className="absolute bottom-0 h-[60%] w-full  rounded-2xl bg-gradient-to-t from-black to-transparent"></div>
-                  <div className="absolute bottom-0 h-[60%] w-full">
-                    <div className="absolute bottom-10 left-10">
-                      <div className="mt-2 w-20 overflow-hidden overflow-ellipsis text-sm font-thin">
-                        Power
-                      </div>
-                      <div className=" text-3xl text-amber-100">
-                        {totalNFTPower || "Unknow"}
-                      </div>
+            <div className="overflow-hidde w-full">
+              <div className=" relative h-[500px] w-full">
+                {profileNFT?.image ? (
+                  <Image
+                    className="absolute max-h-[500px] rounded-2xl object-cover"
+                    src={
+                      profileNFT?.upgrades?.images.get(profileNFT?.upgrades?.current) ??
+                      profileNFT?.image
+                    }
+                    alt={profileNFT?.name}
+                    fill
+                  />
+                ) : (
+                  <div className="flex h-full items-center justify-center">
+                    <div>
+                      <Loader></Loader>
                     </div>
-                    <div className="absolute bottom-9 right-10">
-                      <button className="btn-rude w-[230px] text-xs font-thin">
-                        Feature your warrior
-                      </button>
+                  </div>
+                )}
+                <div className="absolute bottom-0 h-[60%] w-full  rounded-2xl bg-gradient-to-t from-black to-transparent"></div>
+                <div className="absolute bottom-0 h-[60%] w-full">
+                  <div className="absolute bottom-8 left-5 lg:left-10">
+                    <div className="mt-2 w-20 overflow-hidden overflow-ellipsis text-xl font-thin">
+                      {toPascalCase(profileNFT?.type ?? "")}
                     </div>
+                    <div className=" font-medieval-sharp text-4xl text-amber-100">
+                      {getRudeNftName(profileNFT?.name) || "Unknow"}
+                    </div>
+                  </div>
+                  <div className="absolute bottom-9 right-5 lg:right-10">
+                    {featureProduct?.options[0] && profileNFT && (
+                      <>
+                        {isLoadingFeatured && <Loader></Loader>}
+                        {!isFeaturedData?.featuredNFT ? (
+                          <button
+                            className="btn-rude btn text-xs font-thin"
+                            onClick={() => {
+                              setOpen(true);
+                            }}
+                          >
+                            Feature your warrior
+                          </button>
+                        ) : (
+                          <button className="btn-rude disabled btn cursor-default font-thin  ">
+                            🚀 featured!{" "}
+                          </button>
+                        )}
+
+                        <Modal
+                          className="lg:w-4/5"
+                          isOpen={isOpen}
+                          backdropDismiss={true}
+                          handleClose={() => setOpen(false)}
+                        >
+                          <FeatureNFT
+                            nft={profileNFT}
+                            title={featureProduct?.options[0]?.name ?? " Feature NFT"}
+                            featureOption={featureProduct.options[0]}
+                            sourceImageUrl={profileNFT?.upgrades?.images?.get(
+                              profileNFT?.upgrades?.current
+                            )}
+                          ></FeatureNFT>
+                        </Modal>
+                      </>
+                    )}
                   </div>
                 </div>
               </div>
-            )}
-            <div className=" mt-4 flex w-full gap-3 text-center">
-              <div className="info-card m-auto h-[160px] w-1/5 grow">
+            </div>
+            <div className="mt-4 flex w-full flex-wrap text-center lg:gap-3">
+              <div
+                className={classNames("info-card m-auto h-[160px] w-1/2 grow lg:w-1/5", {
+                  "loading-effect opacity-20": isProfileLoading,
+                })}
+              >
                 <div className="grid h-full w-full flex-wrap justify-center py-4 text-center align-middle">
                   <div className="w-full">
                     <label className="block text-xs">Leaderboard</label>
@@ -225,12 +311,16 @@ const Profile: NextPage = () => {
                     ></Image>
                   </div>
                   <div className="w-full text-3xl text-[#BEA97E]">
-                    {leaderboardPosition}
+                    {mintPosition?.item ?? "..."}
                   </div>
                 </div>
               </div>
 
-              <div className="info-card m-auto h-[160px] w-1/5 grow">
+              <div
+                className={classNames("info-card m-auto h-[160px] w-1/2 grow lg:w-1/5", {
+                  "loading-effect": isProfileLoading,
+                })}
+              >
                 <div className="grid h-full w-full flex-wrap justify-center py-4 text-center align-middle">
                   <div className="w-full">
                     <label className="block text-xs">Power Rating</label>
@@ -243,184 +333,120 @@ const Profile: NextPage = () => {
                       width={40}
                     ></Image>
                   </div>
-                  <div className="w-full text-3xl text-[#BEA97E]">
-                    {powerRating}
-                  </div>
+                  <div className="w-full text-3xl text-[#BEA97E]">{profileNFT?.power}</div>
                 </div>
               </div>
 
-              <div className="info-card m-auto h-[160px] w-1/5 grow">
+              <div
+                className={classNames("info-card m-auto h-[160px] w-1/2 grow lg:w-1/5", {
+                  "loading-effect": isProfileLoading,
+                })}
+              >
                 <div className="grid h-full w-full flex-wrap justify-center py-4 text-center align-middle">
                   <div className="w-full">
                     <label className="block text-xs">Tier</label>
                   </div>
                   <div className="w-full grow">
-                    <Image
-                      className="mx-auto"
-                      src={TierIcon}
-                      alt="Tier"
-                      width={40}
-                    ></Image>
+                    <Image className="mx-auto" src={TierIcon} alt="Tier" width={40}></Image>
                   </div>
-                  <div className="w-full text-4xl text-[#BEA97E]">
-                    {nftTierSelector(
-                      profileNFT?.rudeRank ?? 100000,
-                      collection
-                    )}
-                  </div>
+                  <div className="w-full text-4xl text-[#BEA97E]">{profileNFT?.tier}</div>
                 </div>
               </div>
 
-              <div className="info-card m-auto h-[160px] w-1/5 grow">
+              <div
+                className={classNames("info-card m-auto h-[160px] w-1/2 grow lg:w-1/5", {
+                  "loading-effect": isProfileLoading,
+                })}
+              >
                 <div className="grid h-full w-full flex-wrap justify-center py-4 text-center align-middle">
                   <div className="w-full">
-                    <label className="block text-xs">Weapos</label>
+                    <label className="block text-xs">Weapons</label>
                   </div>
                   <div className="w-full grow">
                     <Image
                       className="mx-auto"
                       src={WeaponsIcon}
-                      alt="Weapos Equiped"
+                      alt="Weapons Equiped"
                       width={40}
                     ></Image>
                   </div>
-                  <div className="w-full text-4xl text-[#BEA97E]">
-                    {weaponsEquiped}
-                  </div>
+                  <div className="w-full text-4xl text-[#BEA97E]">{weaponsEquiped}</div>
                 </div>
               </div>
             </div>
           </Panel>
         </div>
-        <Armory
-          upgrades={upgrades}
-          weapons={weapons}
-          nftUpgrades={profileNFT?.upgrades}
-        ></Armory>
+        <Panel className="panel mt-3 flex w-full flex-wrap rounded-md p-8 lg:mt-0 lg:max-w-[65%] ">
+          {profileNFT && profileNFT?.type && (
+            <CustomizePanel
+              weapons={weapons}
+              nft={profileNFT}
+              upgradeProducts={getProduct(ProductType.NFT_UPGRADE, profileNFT?.type)?.[0]}
+              swapProducts={getProduct(ProductType.NFT_ART_SWAP, profileNFT?.type)?.[0]}
+            ></CustomizePanel>
+          )}
+        </Panel>
       </div>
+      <Modal
+        className="w-full "
+        isOpen={isOnUpgradeVideoModalOpen}
+        backdropDismiss={true}
+        handleClose={() => setOnUpgradeVideoModalOpen(false)}
+      >
+        <VideoView>
+          <Image
+            src={profileNFT?.upgrades?.images?.get(profileNFT.upgrades?.current) ?? NftHidden}
+            alt={"Golem Image"}
+            width={800}
+            height={800}
+          ></Image>
+        </VideoView>
+      </Modal>
     </div>
   );
 };
 
 type ArmoryProps = {
-  upgrades: NFTUpgrades[];
-  nftUpgrades?: UserNFT;
+  nft?: NFTInfo;
   weapons: Weapon[];
+  upgradeProducts: Product | undefined;
+  swapProducts: Product | undefined;
 };
 
-const Armory = ({ upgrades, weapons, nftUpgrades }: ArmoryProps) => {
+const CustomizePanel = ({ weapons, nft, upgradeProducts, swapProducts }: ArmoryProps) => {
+  const upgradeOpts = upgradeProducts?.options;
+  const swapArtOpts = swapProducts?.options;
+
   const onBuyEquipment = (x: Weapon) => {
     //check status
     console.log(x);
   };
 
-  const onBuyArtEvent = (x: NFTUpgrades) => {
-    console.log(x);
-  };
-
   return (
-    <Panel className="panel flex max-w-[65%] flex-wrap rounded-md p-8">
-      <div className="flex flex-wrap justify-center gap-x-5 gap-y-3">
-        <h2 className="block w-full text-xl">
-          Select your alternative version
-        </h2>
-        {upgrades &&
-          upgrades.map((x) => (
-            <div key={x.name} className=" w-[25%] text-center">
-              <h3
-                className={classNames("pb-3", {
-                  "text-[#BFA97F]": nftUpgrades?.current == x.type,
-                })}
-              >
-                {x.name}
-              </h3>
-              <FrameBox
-                frameType={() => {
-                  if (
-                    nftUpgrades?.images?.get(x.type) &&
-                    nftUpgrades?.current == x.type
-                  )
-                    return FrameType.default;
-                  if (
-                    nftUpgrades?.current != x.type &&
-                    nftUpgrades?.images?.get(x.type)
-                  )
-                    return FrameType.gray;
-                  return FrameType.green;
-                }}
-              >
-                <div
-                  className={classnames(
-                    "clip-css relative h-full text-center",
-                    {
-                      "relative h-full transition duration-200 ease-in-out hover:-translate-y-1 hover:scale-110":
-                        nftUpgrades?.images?.get(x.type) == undefined,
-                    }
-                  )}
-                >
-                  <Image
-                    src={nftUpgrades?.images?.get(x.type) ?? NftHidden}
-                    alt="Picture of the author"
-                    width={900}
-                    height={900}
-                  ></Image>
-
-                  {nftUpgrades?.images?.get(x.type) == undefined && (
-                    <div className="absolute top-4 w-full text-green-400">
-                      {x.price}
-                    </div>
-                  )}
-                  <div className="absolute bottom-0 h-3/4 w-full bg-gradient-to-t from-black to-transparent "></div>
-                  <label
-                    htmlFor={x.name}
-                    className="absolute top-0 left-0 h-full w-full cursor-pointer"
-                  ></label>
-                </div>
-              </FrameBox>
-              <div className="relative -top-5 z-50 w-full items-center">
-                <button
-                  onClick={() => {
-                    onBuyArtEvent(x);
-                  }}
-                  className={classNames(
-                    "hover:shadow-lg hover:shadow-slate-400",
-                    "rounded-full px-3 py-1",
-                    { "bg-[#6F5B38]": nftUpgrades?.current == x.type },
-                    {
-                      "bg-gray-600":
-                        nftUpgrades?.current != x.type &&
-                        nftUpgrades?.images?.get(x.type) != undefined,
-                    },
-                    {
-                      "bg-green-400 text-black":
-                        nftUpgrades?.images?.get(x.type) == undefined,
-                    }
-                  )}
-                >
-                  {nftUpgrades?.current == x.type
-                    ? "Used"
-                    : nftUpgrades?.current != x.type &&
-                      nftUpgrades?.images?.get(x.type) != undefined
-                    ? "Select"
-                    : "Reveal"}
-                </button>
-              </div>
-              <Modal className="w-fit" triggerId={x.name}>
-                <Image
-                  className="rounded-3xl border-solid"
-                  src={nftUpgrades?.images?.get(x.type) ?? NftHidden}
-                  alt={x.name}
-                  width={700}
-                  height={800}
-                ></Image>
-              </Modal>
-            </div>
-          ))}
+    <>
+      <div className="flex flex-wrap justify-center gap-x-5 gap-y-3 text-center">
+        <h2 className="block w-full text-xl">Select your alternative version</h2>
+        {upgradeOpts &&
+          upgradeOpts
+            .filter((x) =>
+              nft?.attributes.find((x) => x.name === "Background")?.value == "God"
+                ? x.key == "ORIGINAL" && true && x.isAvailable
+                : x.isAvailable
+            )
+            .map((opt) => (
+              <NftVersion
+                key={opt.name}
+                upgradeOpt={opt}
+                swapArtOpt={swapArtOpts?.filter((x) => x.key == opt.key)?.[0]}
+                nft={nft}
+              ></NftVersion>
+            ))}
       </div>
 
-      <div className="flex flex-wrap justify-center">
-        <h2 className="mb-3 block w-full text-xl">Select your weapons</h2>
+      <div className="flex w-full flex-wrap justify-center text-center">
+        <h2 className="mb-3 block w-full text-xl">Armory</h2>
         {weapons &&
+          false &&
           weapons.map((x) => {
             const { image, rarity, expireDate, name, owned, points, price } = x;
             return (
@@ -445,27 +471,14 @@ const Armory = ({ upgrades, weapons, nftUpgrades }: ArmoryProps) => {
                   </div>
                   <div className="w-full">{EquipmentRarityLabels[rarity]}</div>
                 </div>
-                <Modal className="w-full" triggerId={name}>
-                  <Image
-                    className="rounded-3xl border-solid"
-                    src={image}
-                    alt={name}
-                    width={700}
-                    height={800}
-                  ></Image>
-                </Modal>
               </div>
             );
           })}
         <div className="ml-5 cursor-pointer hover:shadow-sm">
-          <Image
-            src={ComingSoonImg}
-            alt="Coming soon"
-            className="object-fill"
-          ></Image>
+          <Image src={ComingSoonImg} alt="Coming soon" className="object-fill"></Image>
         </div>
       </div>
-    </Panel>
+    </>
   );
 };
 

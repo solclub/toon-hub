@@ -1,9 +1,4 @@
-import type { NextRequest } from "next/server";
-import { NextResponse } from "next/server";
-import { env } from "./env/server.mjs";
-import { getToken, JWT } from "next-auth/jwt";
-import { NextRequestWithAuth, withAuth } from "next-auth/middleware";
-import { getSession } from "next-auth/react/index.js";
+import { withAuth } from "next-auth/middleware";
 
 export const config = {
   matcher: "/api/auth/:provider/",

@@ -20,7 +20,6 @@ export const getOrCreateAssociatedTokenAccount = async (
   wallet: string | PublicKey,
   mintkey: string | PublicKey
 ) => {
-  console.log("ata fnding");
   let ix = null;
   const walletKey = getPublicKey(wallet);
   const tokenKey = getPublicKey(mintkey);
@@ -31,12 +30,7 @@ export const getOrCreateAssociatedTokenAccount = async (
 
   if (!ataData) {
     console.log("ata not present");
-    ix = createAssociatedTokenAccountInstruction(
-      walletKey,
-      ata,
-      walletKey,
-      tokenKey
-    );
+    ix = createAssociatedTokenAccountInstruction(walletKey, ata, walletKey, tokenKey);
   }
 
   return { ix, ata };

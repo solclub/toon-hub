@@ -42,7 +42,7 @@ const selectGolemTier = (rank: number): string => {
   if (rank <= GolemTiers.TIER_7) {
     return "7";
   }
-  return "not found";
+  return "";
 };
 
 const selectDemonTier = (rank: number): string => {
@@ -61,7 +61,7 @@ const selectDemonTier = (rank: number): string => {
   if (rank <= DemonTiers.TIER_4) {
     return "4";
   }
-  return "not found";
+  return "";
 };
 const nftTierSelector = (rank: number, collection: string): string => {
   if (collection == "golems") {
@@ -73,3 +73,8 @@ const nftTierSelector = (rank: number, collection: string): string => {
   throw new Error("Invalid collection");
 };
 export default nftTierSelector;
+
+export const getRudeNftName = (fullName: string | undefined): string | undefined => {
+  if (!fullName || !fullName.includes("#")) return fullName;
+  return fullName.split("#")[1];
+};
