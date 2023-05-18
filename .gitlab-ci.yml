@@ -22,4 +22,3 @@ deploy-devnet-railway:
     - curl -fsSL https://railway.app/install.sh | bash
     - RAILWAY_TOKEN=$RAILWAY_TOKEN railway link $RAILWAY_PROJECY_ID --environment production
     - RAILWAY_TOKEN=$RAILWAY_TOKEN railway up --service $RAILWAY_DEVNET_SERVICE_NAME -d
-
