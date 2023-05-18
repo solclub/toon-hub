@@ -3,7 +3,6 @@ import mongoose, { model, Schema } from "mongoose";
 export enum NFTType {
   GOLEM = "GOLEM",
   DEMON = "DEMON",
-  OTHER = "OTHER",
 }
 export interface RudeNFT {
   id: string;
@@ -12,8 +11,10 @@ export interface RudeNFT {
   image: string;
   rudeScore: number;
   attributes: NFTAttribute[];
-  rudeRank: number;
   type?: NFTType;
+  rudeRank: number;
+  tier?: number;
+  power?: number;
 }
 
 export interface NFTAttribute extends Record<string, unknown> {
@@ -22,7 +23,7 @@ export interface NFTAttribute extends Record<string, unknown> {
   rarity: number;
 }
 
-const NFTAttributeSchema = new Schema<NFTAttribute>({
+export const NFTAttributeSchema = new Schema<NFTAttribute>({
   name: String,
   value: String,
   rarity: Number,
@@ -40,6 +41,8 @@ const RudeNFTSchema = new Schema<RudeNFT>({
     type: String,
     enum: Object.values(NFTType),
   },
+  tier: Number,
+  power: Number,
 });
 
 const rudeNFTModels = {

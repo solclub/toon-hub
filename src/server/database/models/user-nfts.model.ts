@@ -16,9 +16,10 @@ export interface UserNFT {
   mint: string;
   wallet: string;
   current: DemonUpgrades | GolemUpgrades;
-  images: Map<DemonUpgrades | GolemUpgrades, string>;
+  images: Map<DemonUpgrades | GolemUpgrades | string, string>;
   type: NFTType;
   active: boolean;
+  isTraining: boolean;
 }
 
 const RudeNFTSchema = new Schema<UserNFT>({
@@ -34,6 +35,7 @@ const RudeNFTSchema = new Schema<UserNFT>({
     enum: Object.values(NFTType),
   },
   active: { type: Boolean, default: true },
+  isTraining: { type: Boolean, default: false },
 });
 
 const UserNFTsModel = {

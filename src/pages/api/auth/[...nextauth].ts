@@ -1,12 +1,13 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import NextAuth, { type NextAuthOptions } from "next-auth";
 import DiscordProvider from "next-auth/providers/discord";
 import TwitterProvider from "next-auth/providers/twitter";
 import CredentialsProvider from "next-auth/providers/credentials";
-import { env } from "../../../env/server.mjs";
+import { env } from "env/server.mjs";
 import { getCsrfToken, getSession } from "next-auth/react";
-import { SigninMessage } from "../../../utils/SigninMessage";
+import { SigninMessage } from "utils/signin-message";
 import type { NextApiRequest, NextApiResponse } from "next";
-import userModel from "../../../server/database/models/user.model";
+import userModel from "server/database/models/user.model";
 
 export const createOptions = async (
   req: NextApiRequest,
@@ -16,31 +17,34 @@ export const createOptions = async (
   return {
     callbacks: {
       jwt: ({ token, user, account, profile }) => {
-        if (user) {
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          const anyProfile = profile as any;
-
-          token.name = user.name;
-          token.email = user.email;
-          token.test = account?.account;
-          token.picture = user.image;
-          token.user = user;
-          if (account?.provider == "twitter") {
-            token.user = {
-              ...user,
-              username: anyProfile?.data?.username || user.name,
-            };
-          }
-          if (account?.provider == "discord") {
-            token.user = {
-              ...user,
-              username: `${anyProfile?.username}#${anyProfile.discriminator}` || user.name,
-            };
-          }
+        if (!user) {
+          return token;
         }
+
+        const anyProfile = profile as any;
+        const { name, email, image } = user;
+
+        token.name = name;
+        token.email = email;
+        token.test = account?.account;
+        token.picture = image;
+        token.user = user;
+
+        if (account?.provider === "twitter") {
+          token.user = {
+            ...user,
+            username: anyProfile?.data?.username || name,
+          };
+        } else if (account?.provider === "discord") {
+          token.user = {
+            ...user,
+            username: `${anyProfile?.username}#${anyProfile?.discriminator}` || name,
+          };
+        }
+
         return token;
       },
-      session: async ({ session, user, token }) => {
+      session: async ({ session, token }) => {
         const walletId = (token as any)?.user?.id;
         const exists = await userModel().findOne({ walletId });
         return { ...session, ...token, ...exists?.toObject() };
@@ -101,19 +105,22 @@ export const createOptions = async (
             type: "text",
           },
         },
-        async authorize(credentials, req2) {
+        async authorize(credentials) {
           try {
-            const req = req2 as NextApiRequest;
-
             const { message, signature } = credentials ?? {};
-            const signinMessage = new SigninMessage(JSON.parse(message || "{}"));
-
             const nonce = await getCsrfToken({ req });
+
+            if (!message || !signature) {
+              throw new Error("Could not validate the signed message");
+            }
+
+            const signinMessage = new SigninMessage(message);
+
             if (signinMessage.nonce !== nonce) {
               throw new Error("Could not validate the signed message");
             }
 
-            const validationResult = await signinMessage.validate(signature || "");
+            const validationResult = signinMessage.validate(signature || "");
             if (!validationResult) {
               throw new Error("Could not validate the signed message");
             }
@@ -121,25 +128,22 @@ export const createOptions = async (
             const user = await userModel().findOne({ walletId: signinMessage.publicKey });
 
             if (!user) {
-              try {
-                await userModel().create({
-                  walletId: signinMessage.publicKey,
-                  twitterVerified: false,
-                  discordVerified: false,
-                  twitterDetails: null,
-                  discordDetails: null,
-                  totalPower: 0,
-                  totalTraining: 0,
-                  totalWarriors: 0,
-                  golemNumbers: null,
-                  golemKeys: null,
-                  demonNumbers: null,
-                  demonKeys: null,
-                });
-              } catch (error) {
-                console.log(error);
-              }
+              await userModel().create({
+                walletId: signinMessage.publicKey,
+                twitterVerified: false,
+                discordVerified: false,
+                twitterDetails: null,
+                discordDetails: null,
+                totalPower: 0,
+                totalTraining: 0,
+                totalWarriors: 0,
+                golemNumbers: null,
+                golemKeys: null,
+                demonNumbers: null,
+                demonKeys: null,
+              });
             }
+
             return (async function () {
               return {
                 id: signinMessage.publicKey,
@@ -156,44 +160,46 @@ export const createOptions = async (
 };
 
 const saveProviderData = async (provider: string, id: string, profile: any) => {
-  if (provider == "twitter") {
+  const userModelInstance = userModel();
+
+  const updateDetails = {
+    upsert: true,
+  };
+
+  if (provider === "twitter") {
+    const { data } = profile;
+    const twitterDetails = {
+      email: null,
+      image: data.profile_image_url,
+      name: data.name,
+      username: data.username,
+    };
+
     try {
-      await userModel().updateOne(
+      await userModelInstance.updateOne(
         { walletId: id },
-        {
-          twitterVerified: true,
-          twitterDetails: {
-            email: null,
-            image: profile.data.profile_image_url,
-            name: profile.data.name,
-            username: profile.data.username,
-          },
-        },
-        {
-          upsert: true,
-        }
+        { twitterVerified: true, twitterDetails },
+        updateDetails
       );
     } catch (error) {
       console.error(error);
     }
   }
 
-  if (provider == "discord") {
+  if (provider === "discord") {
+    const { email, image_url, username, discriminator } = profile;
+    const discordDetails = {
+      email,
+      image: image_url,
+      name: username,
+      username: `${username}#${discriminator}`,
+    };
+
     try {
-      await userModel().updateOne(
+      await userModelInstance.updateOne(
         { walletId: id },
-        {
-          discordVerified: true,
-          discordDetails: {
-            email: profile.email,
-            image: profile.image_url,
-            name: profile.username,
-            username: `${profile?.username}#${profile.discriminator}`,
-          },
-        },
-        {
-          upsert: true,
-        }
+        { discordVerified: true, discordDetails },
+        updateDetails
       );
     } catch (error) {
       console.error(error);

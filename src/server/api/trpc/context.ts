@@ -1,12 +1,14 @@
 import { type inferAsyncReturnType } from "@trpc/server";
 import { type CreateNextContextOptions } from "@trpc/server/adapters/next";
 import { type Session } from "next-auth";
-
-import { getServerAuthSession } from "../common/get-server-auth-session";
-import dbConnect from "../database/mongoose";
+import { getCsrfToken } from "next-auth/react";
+import { getServerAuthSession } from "server/common/get-server-auth-session";
+import { validateSignedMessage } from "server/common/validate-signed-message";
+import dbConnect from "server/database/mongoose";
 
 type CreateContextOptions = {
   session: Session | null;
+  csrf: string | undefined;
 };
 
 /** Use this helper for:
@@ -18,6 +20,8 @@ export const createContextInner = async (opts: CreateContextOptions) => {
   await dbConnect();
   return {
     session: opts.session,
+    csrf: opts.csrf,
+    validateSignedMessage,
   };
 };
 
@@ -30,9 +34,11 @@ export const createContext = async (opts: CreateNextContextOptions) => {
 
   // Get the session from the server using the unstable_getServerSession wrapper function
   const session = await getServerAuthSession({ req, res });
+  const csrf = await getCsrfToken({ req });
 
   return await createContextInner({
     session,
+    csrf,
   });
 };
 
