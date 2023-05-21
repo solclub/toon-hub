@@ -4,6 +4,17 @@ export enum NFTType {
   GOLEM = "GOLEM",
   DEMON = "DEMON",
 }
+
+export enum GolemUpgrades {
+  ORIGINAL = "ORIGINAL",
+  REWORK = "REWORK",
+  CARTOON = "CARTOON",
+}
+
+export enum DemonUpgrades {
+  ORIGINAL = "ORIGINAL",
+  CARTOON = "CARTOON",
+}
 export interface RudeNFT {
   id: string;
   name: string;
@@ -11,6 +22,8 @@ export interface RudeNFT {
   image: string;
   rudeScore: number;
   attributes: NFTAttribute[];
+  current: DemonUpgrades | GolemUpgrades;
+  images: Map<DemonUpgrades | GolemUpgrades | string, string>;
   type?: NFTType;
   rudeRank: number;
   tier?: number;
@@ -36,7 +49,13 @@ const RudeNFTSchema = new Schema<RudeNFT>({
   image: String,
   rudeScore: Number,
   attributes: [NFTAttributeSchema],
+  current: {
+    type: String,
+    enum: [...Object.values(GolemUpgrades), ...Object.values(DemonUpgrades)],
+  },
+  images: { type: Map, of: String },
   rudeRank: Number,
+
   type: {
     type: String,
     enum: Object.values(NFTType),

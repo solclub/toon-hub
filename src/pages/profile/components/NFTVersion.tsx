@@ -5,11 +5,11 @@ import Image from "next/image";
 import NftHidden from "assets/images/skin.png";
 import { Modal } from "components/common/Modal";
 import { motion } from "framer-motion";
-import type { DemonUpgrades, UserNFT } from "server/database/models/user-nfts.model";
+import type { UserNFT } from "server/database/models/user-nfts.model";
 import UpgradeNFT from "./UpgradeNFT";
 import { ProductType } from "server/database/models/catalog.model";
-import type { GolemUpgrades } from "server/database/models/user-nfts.model";
 import { NFTType } from "server/database/models/nft.model";
+import type { DemonUpgrades, GolemUpgrades } from "server/database/models/nft.model";
 import type { RudeNFT } from "server/database/models/nft.model";
 import SwapArtNFT from "./SwapArtNFT";
 import { useNFTManager } from "contexts/NFTManagerContext";
@@ -19,16 +19,15 @@ const NftVersion: React.FC<{
   upgradeOpt?: ProductOption;
   swapArtOpt?: ProductOption | undefined;
   nft?: RudeNFT & {
-    upgrades: UserNFT | undefined;
+    user: UserNFT | undefined;
   };
 }> = ({ upgradeOpt, swapArtOpt, nft }) => {
   const { paymentChannel } = useNFTManager();
   const [isUpgradeModalOpen, setUpgradeModalOpen] = useState(false);
   const [isSwapArtModalOpen, setSwapArtModalOpen] = useState(false);
 
-  const userNft = nft?.upgrades;
   const upgradeType =
-    userNft?.type == NFTType.GOLEM
+    nft?.type == NFTType.GOLEM
       ? (upgradeOpt?.key as GolemUpgrades)
       : (upgradeOpt?.key as DemonUpgrades);
 
@@ -61,20 +60,20 @@ const NftVersion: React.FC<{
 
   return (
     <div className="w-full text-center lg:w-[25%]">
-      {upgradeOpt && userNft && (
+      {upgradeOpt && nft && (
         <>
           <h3
             className={classNames("pb-3", {
-              "text-[#BFA97F]": userNft.current == upgradeOpt.key,
+              "text-[#BFA97F]": nft.current == upgradeOpt.key,
             })}
           >
             {upgradeOpt?.name}
           </h3>
           <FrameBox
             frameType={() => {
-              if (userNft?.images?.get(upgradeType) && userNft?.current == upgradeOpt.key)
+              if (nft?.images?.get(upgradeType) && nft?.current == upgradeOpt.key)
                 return FrameType.default;
-              if (userNft?.current != upgradeType && userNft?.images?.get(upgradeType))
+              if (nft?.current != upgradeType && nft?.images?.get(upgradeType))
                 return FrameType.gray;
               return FrameType.green;
             }}
@@ -82,17 +81,17 @@ const NftVersion: React.FC<{
             <div
               className={classNames("clip-css relative h-full text-center", {
                 "relative h-full transition duration-200 ease-in-out hover:-translate-y-1 hover:scale-110":
-                  userNft?.images?.get(upgradeType) == undefined,
+                  nft?.images?.get(upgradeType) == undefined,
               })}
             >
               <Image
-                src={userNft?.images?.get(upgradeType) ?? NftHidden}
+                src={nft?.images?.get(upgradeType) ?? NftHidden}
                 alt="Picture of the author"
                 width={900}
                 height={900}
               ></Image>
 
-              {userNft?.images?.get(upgradeType) == undefined && (
+              {nft?.images?.get(upgradeType) == undefined && (
                 <div className="absolute top-4 w-full font-medieval-sharp text-green-400">
                   {getPriceSingleText(upgradeOpt)}
                 </div>
@@ -110,30 +109,26 @@ const NftVersion: React.FC<{
           <div className="relative -top-5 z-50 w-full items-center">
             <button
               onClick={() => {
-                if (
-                  userNft?.current != upgradeType &&
-                  userNft?.images?.get(upgradeType) != undefined
-                ) {
+                if (nft?.current != upgradeType && nft?.images?.get(upgradeType) != undefined) {
                   setSwapArtModalOpen(!isUpgradeModalOpen);
                 }
               }}
               className={classNames(
                 "hover:shadow-lg hover:shadow-slate-400",
                 "rounded-full px-3 py-1",
-                { "bg-[#6F5B38]": userNft?.current == upgradeType },
+                { "bg-[#6F5B38]": nft?.current == upgradeType },
                 {
                   "bg-gray-600":
-                    userNft?.current != upgradeType &&
-                    userNft?.images?.get(upgradeType) != undefined,
+                    nft?.current != upgradeType && nft?.images?.get(upgradeType) != undefined,
                 },
                 {
-                  "bg-green-400 text-black": userNft?.images?.get(upgradeType) == undefined,
+                  "bg-green-400 text-black": nft?.images?.get(upgradeType) == undefined,
                 }
               )}
             >
-              {userNft?.current == upgradeType
+              {nft?.current == upgradeType
                 ? "Used"
-                : userNft?.current != upgradeType && userNft?.images?.get(upgradeType) != undefined
+                : nft?.current != upgradeType && nft?.images?.get(upgradeType) != undefined
                 ? "Select"
                 : "Reveal"}
             </button>
@@ -145,17 +140,17 @@ const NftVersion: React.FC<{
             backdropDismiss={true}
             handleClose={() => setUpgradeModalOpen(false)}
           >
-            {upgradeOpt.isAvailable && !userNft?.images.has(upgradeOpt.key) ? (
+            {upgradeOpt.isAvailable && !nft?.images.has(upgradeOpt.key) ? (
               <UpgradeNFT
                 nft={nft}
                 title={upgradeOpt.name}
                 upgradeOption={upgradeOpt}
-                sourceImageUrl={userNft?.images?.get(userNft.current)}
+                sourceImageUrl={nft?.images?.get(nft.current)}
               ></UpgradeNFT>
             ) : (
               <Image
                 className="items-center rounded-3xl border-solid bg-gray-600 object-cover"
-                src={userNft?.images.get(upgradeOpt.key) ?? NftHidden}
+                src={nft?.images.get(upgradeOpt.key) ?? NftHidden}
                 alt={"Golem Image"}
                 width={800}
                 height={800}
@@ -174,8 +169,8 @@ const NftVersion: React.FC<{
                 nft={nft}
                 title={swapArtOpt.name}
                 upgradeOption={swapArtOpt}
-                sourceImageUrl={userNft?.images?.get(userNft.current)}
-                targetImageUrl={userNft?.images?.get(swapArtOpt.key)}
+                sourceImageUrl={nft?.images?.get(nft.current)}
+                targetImageUrl={nft?.images?.get(swapArtOpt.key)}
               ></SwapArtNFT>
             )}
           </Modal>

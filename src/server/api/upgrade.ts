@@ -6,7 +6,7 @@ import type {
   UpdateMetadataRequest,
 } from "server/services/upgrade-service";
 import upgradeService from "server/services/upgrade-service";
-import { DemonUpgrades, GolemUpgrades } from "server/database/models/user-nfts.model";
+import { DemonUpgrades, GolemUpgrades } from "server/database/models/nft.model";
 import { addUpgradedImage, getUserNFTbyMint } from "server/services/nfts-service";
 import { TRPCError } from "@trpc/server";
 
@@ -33,7 +33,7 @@ export const upgradeRouter = router({
         const base64 = upgradeUrlImage.toString("base64");
         const base = `data:image/png";base64,${base64}`;
 
-        await addUpgradedImage(mint, ctx.session.walletId, upgradeType, base ?? "");
+        await addUpgradedImage(mint, nft.type, upgradeType, base ?? "");
 
         return base;
       }
@@ -101,11 +101,21 @@ export const upgradeRouter = router({
       ctx.validateSignedMessage(signedMessage, stringMessage, nonce, ctx.csrf);
       const wallet = ctx.session.walletId;
 
+      const nft = await getUserNFTbyMint(wallet, mint);
+
+      if (!nft || !nft.type) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "NFT not found or has no type",
+        });
+      }
+
       const request: SwapArtMetadataRequest = {
         serializedTx,
         wallet,
         mintAddress: mint,
         upgradeType,
+        collection: nft.type,
       };
 
       const result = await upgradeService.confirmAndSwapMetadata(request);

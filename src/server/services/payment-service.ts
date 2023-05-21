@@ -5,6 +5,7 @@ import { PublicKey } from "@solana/web3.js";
 
 interface PaymentRequestInfo {
   serializedTx: string;
+  service: string;
   wallet: string;
   mint: string;
 }
@@ -43,7 +44,7 @@ const proccessPayment = async <T>(
       txId: signature,
       wallet: wallet,
       mint: mint,
-      service: "test",
+      service: request.service,
     });
 
     logEvent("info", "Save state in db, TxSig:", signature);

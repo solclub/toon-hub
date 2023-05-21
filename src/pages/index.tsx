@@ -14,6 +14,8 @@ import phrases from "./sample-data/phrases.json";
 import EmptyWeaponImage from "../assets/weapons/no-weapon.png";
 import ImgTwitterBlue from "../assets/images/twitter_blue.png";
 import ImgPowerRating from "../assets/images/power_rating_icon.png";
+import NftHidden from "assets/images/skin.png";
+
 import ImgSolScan from "../assets/images/solscan.png";
 import Panel from "../components/common/Panel";
 import { trpc } from "utils/trpc";
@@ -87,19 +89,14 @@ const Home: NextPage = () => {
                 <div className=" relative h-[500px] w-full">
                   <Image
                     className="absolute max-h-[500px] rounded-2xl object-cover"
-                    src={
-                      featuredNFT?.nft?.upgrades?.images.get(featuredNFT?.nft?.upgrades?.current) ??
-                      ""
-                    }
+                    src={featuredNFT?.nft?.images?.get(featuredNFT?.nft?.current) ?? NftHidden}
                     alt="Picture of the author"
                     fill
                   />
                   <div className="absolute bottom-0 h-[60%] w-full rounded-xl bg-gradient-to-t from-black to-transparent"></div>
                   <div className="absolute bottom-10 left-10  h-[60%] w-[50%] ">
                     <div className="absolute bottom-0">
-                      <div className=" text-2xl font-bold">
-                        {featuredNFT?.nft?.name || "Unknow"}
-                      </div>
+                      <div className=" text-2xl font-bold">{featuredNFT?.nft?.name || ""}</div>
                       <div className="mt-2 text-xl font-normal">
                         <Image
                           className="inline"
@@ -393,18 +390,18 @@ const LeaderBoard = () => {
           }
         )}
       </div>
-      <div className="btn-group btn-group-horizontal mx-auto self-start pb-2 font-medieval-sharp">
+      <div className="btn-group-horizontal btn-group mx-auto self-start pb-2 font-medieval-sharp">
         <button
-          className="btn-sm btn  "
+          className="btn btn-sm  "
           disabled={page[nftTypeTab] == 0}
           onClick={handleFetchPreviousPage}
         >
           «
         </button>
-        <button className="btn-sm btn ">Page {(page[nftTypeTab] ?? 0) + 1}</button>
+        <button className="btn btn-sm ">Page {(page[nftTypeTab] ?? 0) + 1}</button>
 
         <button
-          className=" btn-sm  btn "
+          className=" btn  btn-sm "
           disabled={(data?.pages[page[nftTypeTab] ?? 0]?.items?.length ?? 0) < queryLimit}
           onClick={handleFetchNextPage}
         >

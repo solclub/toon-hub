@@ -62,6 +62,12 @@ export const getLeaderboard = async (
       },
     },
     {
+      $match: {
+        "nft.active": true,
+        "twitterDetails.username": { $exists: true },
+      },
+    },
+    {
       $project: {
         name: {
           $cond: {
@@ -84,8 +90,20 @@ export const getLeaderboard = async (
             else: "$golem.rudeRank",
           },
         },
-        images: "$nft.images",
-        current: "$nft.current",
+        images: {
+          $cond: {
+            if: { $eq: ["$nft.type", "DEMON"] },
+            then: "$demon.images",
+            else: "$golem.images",
+          },
+        },
+        current: {
+          $cond: {
+            if: { $eq: ["$nft.type", "DEMON"] },
+            then: "$demon.current",
+            else: "$golem.current",
+          },
+        },
         owner: "$nft.wallet",
         twitter: "$twitterDetails.username",
         power: {
@@ -164,13 +182,30 @@ export const getWalletLeaderboard = async (skip: number, limit: number): Promise
           { "nfts.type": "GOLEM", "golem.power": { $exists: true } },
           { "nfts.type": "DEMON", "demon.power": { $exists: true } },
         ],
+        $and: [{ "nfts.active": true }, { "twitterDetails.username": { $exists: true } }],
       },
     },
     {
       $group: {
         _id: "$nfts.wallet",
-        images: { $first: "$nfts.images" },
-        current: { $first: "$nfts.current" },
+        images: {
+          $first: {
+            $cond: {
+              if: { $eq: ["$nfts.type", "DEMON"] },
+              then: "$demon.images",
+              else: "$golem.images",
+            },
+          },
+        },
+        current: {
+          $first: {
+            $cond: {
+              if: { $eq: ["$nfts.type", "DEMON"] },
+              then: "$demon.current",
+              else: "$golem.current",
+            },
+          },
+        },
         twitter: { $first: "$twitterDetails.username" },
         twitterImage: { $first: "$twitterDetails.image" },
         power: {
