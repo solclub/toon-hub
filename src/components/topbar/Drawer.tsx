@@ -70,6 +70,7 @@ export const Drawer = ({ children }: Props) => {
           <div className="mx-auto mt-4 w-56">
             <SVGIcon.rudeverse />
           </div>
+          <div className="divider col-span-2"></div>
           <div className="">
             {menuItems.map((item) => {
               return (

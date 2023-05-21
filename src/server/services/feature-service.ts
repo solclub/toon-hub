@@ -15,6 +15,7 @@ export const confirmAndSave = async (req: FeatureNFTRequest) => {
       mint: req.mintAddress,
       serializedTx: req.serializedTx,
       wallet: req.wallet,
+      service: "FeatureNFT",
     },
     async () => {
       return await saveFeaturedNFT(req);

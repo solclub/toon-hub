@@ -4,7 +4,7 @@ import { collectionsSchemas } from "../data/collections";
 import mergeImages from "./sharp-service";
 import { addUpgradedImage, getUserNFTbyMint } from "./nfts-service";
 import cloudinaryService from "./cloudinary-service";
-import { DemonUpgrades, GolemUpgrades } from "server/database/models/user-nfts.model";
+import { DemonUpgrades, GolemUpgrades } from "server/database/models/nft.model";
 import axios from "axios";
 import { env } from "env/server.mjs";
 import paymentService from "./payment-service";
@@ -43,6 +43,7 @@ export interface SwapArtMetadataRequest {
   wallet: string;
   serializedTx: string;
   upgradeType: string;
+  collection: NFTType;
 }
 
 export const confirmAndUpgradeMetadata = async (req: UpdateMetadataRequest) => {
@@ -51,6 +52,7 @@ export const confirmAndUpgradeMetadata = async (req: UpdateMetadataRequest) => {
       mint: req.mintAddress,
       serializedTx: req.serializedTx,
       wallet: req.wallet,
+      service: "UpdateMetadata",
     },
     async (txId: string) => {
       return await upgradeMetadata(req, txId);
@@ -66,6 +68,7 @@ export const confirmAndSwapMetadata = async (req: SwapArtMetadataRequest) => {
       mint: req.mintAddress,
       serializedTx: req.serializedTx,
       wallet: req.wallet,
+      service: "SwapArtMetadata",
     },
     async (txId: string) => {
       return await swapArtMetadata(req, txId);
@@ -116,7 +119,12 @@ export const upgradeMetadata = async (req: UpdateMetadataRequest, txId: string) 
   );
 
   console.log("Updating db", upgradeResult.data);
-  await addUpgradedImage(req.mintAddress, req.wallet, req.upgradeType, upgradeResult.data.image);
+  await addUpgradedImage(
+    req.mintAddress,
+    req.collection,
+    req.upgradeType,
+    upgradeResult.data.image
+  );
   console.log("done");
   return upgradeResult.data;
 };
@@ -130,7 +138,7 @@ export const swapArtMetadata = async (req: SwapArtMetadataRequest, txId: string)
     throw "NFT not found or has no type";
   }
 
-  const tempImgUrl = nft.upgrades?.images?.get(req?.upgradeType);
+  const tempImgUrl = nft?.images?.get(req?.upgradeType);
   const upgradeEndpoint = getMetadataUpdater(req.upgradeType, nft?.type);
   const headers = {
     "access-token": UpgradeServerToken,
@@ -159,7 +167,12 @@ export const swapArtMetadata = async (req: SwapArtMetadataRequest, txId: string)
   );
 
   console.log("swapping db", upgradeResult.data);
-  await addUpgradedImage(req.mintAddress, req.wallet, req.upgradeType, upgradeResult.data.image);
+  await addUpgradedImage(
+    req.mintAddress,
+    req.collection,
+    req.upgradeType,
+    upgradeResult.data.image
+  );
   console.log("done");
   return upgradeResult.data;
 };

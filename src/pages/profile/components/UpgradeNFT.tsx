@@ -6,7 +6,8 @@ import { ProductType } from "server/database/models/catalog.model";
 import PaymentMethodSelector from "components/common/PaymentMethodSelector";
 import NftHidden from "assets/images/skin.png";
 import FrameBox from "components/common/FrameBox";
-import type { DemonUpgrades, GolemUpgrades, UserNFT } from "server/database/models/user-nfts.model";
+import type { DemonUpgrades, GolemUpgrades } from "server/database/models/nft.model";
+import type { UserNFT } from "server/database/models/user-nfts.model";
 import { showSuccessToast, showErrorToast, showPromisedToast } from "utils/toast-utils";
 import { trpc } from "utils/trpc";
 import type { RudeNFT } from "server/database/models/nft.model";
@@ -24,7 +25,7 @@ interface BuyProperties {
   upgradeOption: ProductOption;
   sourceImageUrl?: string;
   nft: RudeNFT & {
-    upgrades: UserNFT | undefined;
+    user: UserNFT | undefined;
   };
 }
 

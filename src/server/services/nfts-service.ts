@@ -2,7 +2,7 @@ import type { RudeNFT } from "../database/models/nft.model";
 import { NFTType } from "../database/models/nft.model";
 import rudeNFTModels from "../database/models/nft.model";
 import type { UserNFT } from "../database/models/user-nfts.model";
-import usernfts, { GolemUpgrades } from "../database/models/user-nfts.model";
+import usernfts from "../database/models/user-nfts.model";
 import { PublicKey } from "@solana/web3.js";
 import { getInTrainingNfts } from "./war-service";
 import { getButterfliesBalance, getRudeTokenBalance, getSolBalance } from "./onchain-service";
@@ -67,8 +67,8 @@ export const syncUserNFTs = async (
           type: x.type,
           wallet: wallet,
           active: true,
-          current: GolemUpgrades.ORIGINAL,
-          images: new Map<string, string>([[GolemUpgrades.ORIGINAL, x.image]]),
+          // current: GolemUpgrades.ORIGINAL,
+          // images: new Map<string, string>([[GolemUpgrades.ORIGINAL, x.image]]),
           isTraining: checkIsTraining(x),
         };
         await usernfts.UserNFTsModel().updateOne({ mint: item.mint }, item, { upsert: true });
@@ -82,7 +82,7 @@ export const syncUserNFTs = async (
 
 export const addUpgradedImage = async (
   mint: string,
-  wallet: string,
+  collection: NFTType,
   upgradeType: string,
   imageUrl: string,
   isCurrent = true
@@ -91,10 +91,16 @@ export const addUpgradedImage = async (
   if (isCurrent) {
     update.$set = { current: upgradeType, ...update.$set };
   }
-  const filter = { mint: mint, wallet };
+  const filter = { mint: mint };
 
   const options = { new: true };
-  return await usernfts.UserNFTsModel().findOneAndUpdate(filter, update, options);
+
+  switch (collection) {
+    case NFTType.DEMON:
+      return await rudeNFTModels.DemonModel().findOneAndUpdate(filter, update, options);
+    case NFTType.GOLEM:
+      return await rudeNFTModels.GolemModel().findOneAndUpdate(filter, update, options);
+  }
 };
 
 export const getSyncedNfts = async (wallet: string) => {
@@ -108,24 +114,24 @@ export const getSyncedNfts = async (wallet: string) => {
 export const getUserNFTbyMint = async (
   wallet: string,
   mint: string
-): Promise<RudeNFT & { upgrades: UserNFT | undefined }> => {
-  const upgrades = (
+): Promise<RudeNFT & { user: UserNFT | undefined }> => {
+  const user = (
     await usernfts.UserNFTsModel().findOne({ mint: mint, active: true, wallet })
   )?.toObject();
 
   const golems = await rudeNFTModels.GolemModel().findOne({ mint: mint });
 
   if (golems) {
-    return { ...golems?.toObject(), type: NFTType.GOLEM, upgrades };
+    return { ...golems?.toObject(), type: NFTType.GOLEM, user };
   }
 
   const demons = await rudeNFTModels.DemonModel().findOne({ mint: mint });
 
   if (demons) {
-    return { ...demons?.toObject(), type: NFTType.DEMON, upgrades };
+    return { ...demons?.toObject(), type: NFTType.DEMON, user };
   }
 
-  return {} as RudeNFT & { upgrades: UserNFT | undefined };
+  return {} as RudeNFT & { user: UserNFT | undefined };
 };
 
 export const getNFTsByWalletId = async (
