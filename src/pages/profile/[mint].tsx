@@ -45,7 +45,7 @@ type Weapon = {
 };
 
 type NFTInfo = RudeNFT & {
-  upgrades: UserNFT | undefined;
+  user: UserNFT | undefined;
 };
 
 const sampleWeapons: Weapon[] = [
@@ -228,10 +228,7 @@ const Profile: NextPage = () => {
                 {profileNFT?.image ? (
                   <Image
                     className="absolute max-h-[500px] rounded-2xl object-cover"
-                    src={
-                      profileNFT?.upgrades?.images.get(profileNFT?.upgrades?.current) ??
-                      profileNFT?.image
-                    }
+                    src={profileNFT?.images.get(profileNFT?.current) ?? profileNFT?.image}
                     alt={profileNFT?.name}
                     fill
                   />
@@ -266,7 +263,7 @@ const Profile: NextPage = () => {
                             Feature your warrior
                           </button>
                         ) : (
-                          <button className="btn-rude disabled btn cursor-default font-thin  ">
+                          <button className="btn-rude btn disabled cursor-default font-thin  ">
                             🚀 featured!{" "}
                           </button>
                         )}
@@ -281,9 +278,7 @@ const Profile: NextPage = () => {
                             nft={profileNFT}
                             title={featureProduct?.options[0]?.name ?? " Feature NFT"}
                             featureOption={featureProduct.options[0]}
-                            sourceImageUrl={profileNFT?.upgrades?.images?.get(
-                              profileNFT?.upgrades?.current
-                            )}
+                            sourceImageUrl={profileNFT?.images?.get(profileNFT?.current)}
                           ></FeatureNFT>
                         </Modal>
                       </>
@@ -395,7 +390,7 @@ const Profile: NextPage = () => {
       >
         <VideoView>
           <Image
-            src={profileNFT?.upgrades?.images?.get(profileNFT.upgrades?.current) ?? NftHidden}
+            src={profileNFT?.images?.get(profileNFT.current) ?? NftHidden}
             alt={"Golem Image"}
             width={800}
             height={800}

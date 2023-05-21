@@ -58,7 +58,7 @@ const Profile = () => {
                   ))}
                 </ul>
               </div>
-              <button className="btn-square btn" onClick={handleRefresh}>
+              <button className="btn btn-square" onClick={handleRefresh}>
                 <svg
                   className="p-1"
                   xmlns="http://www.w3.org/2000/svg"
@@ -93,8 +93,8 @@ const Profile = () => {
                 <Link href={"/profile/" + x.mint}>
                   <Image
                     className="octagon rounded-3xl border-solid "
-                    src={x.image}
-                    alt="Picture of the author"
+                    src={x?.images?.get(x.current) ?? x.image}
+                    alt="current nft image"
                     width={300}
                     height={300}
                   ></Image>
@@ -108,7 +108,7 @@ const Profile = () => {
             {featuredItems.data &&
               featuredItems.data.featuredNFTs.find((f) => f.mint == x.mint) && (
                 <div
-                  className="tooltip btn-sm btn-circle btn absolute top-4 right-8 border-[#AB9F3A] p-1"
+                  className="btn tooltip btn-sm btn-circle absolute top-4 right-8 border-[#AB9F3A] p-1"
                   data-tip="featured nft"
                 >
                   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" id="rocket">

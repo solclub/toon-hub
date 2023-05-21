@@ -7,7 +7,7 @@ import PaymentMethodSelector from "components/common/PaymentMethodSelector";
 import NftHidden from "assets/images/skin.png";
 import Divider from "assets/images/divider.png";
 import FrameBox from "components/common/FrameBox";
-import type { DemonUpgrades, GolemUpgrades, UserNFT } from "server/database/models/user-nfts.model";
+import type { DemonUpgrades, GolemUpgrades } from "server/database/models/nft.model";
 import { showSuccessToast, showErrorToast, showPromisedToast } from "utils/toast-utils";
 import { trpc } from "utils/trpc";
 import type { RudeNFT } from "server/database/models/nft.model";
@@ -18,6 +18,7 @@ import { SigninMessage } from "utils/signin-message";
 import { getCsrfToken } from "next-auth/react";
 import bs58 from "bs58";
 import Loader from "components/common/Loader";
+import type { UserNFT } from "server/database/models/user-nfts.model";
 
 interface BuyProperties {
   title: string;
@@ -25,7 +26,7 @@ interface BuyProperties {
   sourceImageUrl?: string;
   targetImageUrl?: string;
   nft: RudeNFT & {
-    upgrades: UserNFT | undefined;
+    user: UserNFT | undefined;
   };
 }
 
