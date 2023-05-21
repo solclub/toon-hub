@@ -21,7 +21,7 @@ interface BuyProperties {
   featureOption: ProductOption;
   sourceImageUrl?: string;
   nft: RudeNFT & {
-    upgrades: UserNFT | undefined;
+    user: UserNFT | undefined;
   };
 }
 

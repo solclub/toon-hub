@@ -1,22 +1,11 @@
 import mongoose, { model, Schema } from "mongoose";
 import { NFTType } from "./nft.model";
 
-export enum GolemUpgrades {
-  ORIGINAL = "ORIGINAL",
-  REWORK = "REWORK",
-  CARTOON = "CARTOON",
-}
-
-export enum DemonUpgrades {
-  ORIGINAL = "ORIGINAL",
-  CARTOON = "CARTOON",
-}
-
 export interface UserNFT {
   mint: string;
   wallet: string;
-  current: DemonUpgrades | GolemUpgrades;
-  images: Map<DemonUpgrades | GolemUpgrades | string, string>;
+  //current: DemonUpgrades | GolemUpgrades;
+  // images: Map<DemonUpgrades | GolemUpgrades | string, string>;
   type: NFTType;
   active: boolean;
   isTraining: boolean;
@@ -25,11 +14,11 @@ export interface UserNFT {
 const RudeNFTSchema = new Schema<UserNFT>({
   mint: String,
   wallet: String,
-  current: {
-    type: String,
-    enum: [...Object.values(GolemUpgrades), ...Object.values(DemonUpgrades)],
-  },
-  images: { type: Map, of: String },
+  // current: {
+  //   type: String,
+  //   enum: [...Object.values(GolemUpgrades), ...Object.values(DemonUpgrades)],
+  // },
+  // images: { type: Map, of: String },
   type: {
     type: String,
     enum: Object.values(NFTType),
