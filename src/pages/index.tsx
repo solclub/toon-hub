@@ -70,7 +70,11 @@ const Home: NextPage = () => {
             ></Image>
             <Link
               className="z-20 row-span-3 w-full text-center"
-              href={"https://twitter.com/intent/tweet?text=" + twitPhrase + "%0a@rudegolems"}
+              href={
+                "https://twitter.com/intent/tweet?text=" +
+                twitPhrase.replaceAll('"', "") +
+                "%0a@rudegolems"
+              }
               target="_blank"
             >
               <span className="text-sm italic leading-none text-white hover:underline">
