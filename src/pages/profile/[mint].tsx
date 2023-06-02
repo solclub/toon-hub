@@ -330,7 +330,7 @@ const Profile: NextPage = () => {
                   <div className="w-full">
                     <label className="block text-xs">Leaderboard</label>
                   </div>
-                  <div className="w-full grow">
+                  <div className="tooltip w-full grow " data-tip="global position">
                     <Image
                       className="mx-auto"
                       src={LeaderBoardIcon}
@@ -353,7 +353,7 @@ const Profile: NextPage = () => {
                   <div className="w-full">
                     <label className="block text-xs">Power Rating</label>
                   </div>
-                  <div className="w-full grow">
+                  <div className="tooltip w-full grow " data-tip="accumulated power">
                     <Image
                       className="mx-auto"
                       src={PowerRatingIcon}
