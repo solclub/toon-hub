@@ -239,6 +239,36 @@ const Profile: NextPage = () => {
                     </div>
                   </div>
                 )}
+                <div className="absolute right-1 top-1">
+                  <div className="dropdown">
+                    <label tabIndex={0} className="m-1 cursor-pointer">
+                      <svg
+                        className="inline-block h-6 align-middle"
+                        id="info-circle"
+                        data-name="Layer 1"
+                        xmlns="http://www.w3.org/2000/svg"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          fill="#3A3DAB"
+                          d="M12,2A10,10,0,1,0,22,12,10.01114,10.01114,0,0,0,12,2Zm0,18a8,8,0,1,1,8-8A8.00917,8.00917,0,0,1,12,20Zm0-8.5a1,1,0,0,0-1,1v3a1,1,0,0,0,2,0v-3A1,1,0,0,0,12,11.5Zm0-4a1.25,1.25,0,1,0,1.25,1.25A1.25,1.25,0,0,0,12,7.5Z"
+                        ></path>
+                      </svg>
+                    </label>
+                    <div
+                      tabIndex={0}
+                      className="card-compact card dropdown-content w-72 bg-black bg-opacity-30 backdrop-blur-sm backdrop-filter"
+                    >
+                      <div className="card-body">
+                        <h3 className="card-title">Want to Feature your NFT?</h3>
+                        <p>
+                          By taking this action, you have the opportunity to be featured on the main
+                          page. Featured warriors are updated every 48 hours.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
                 <div className="absolute bottom-0 h-[60%] w-full  rounded-2xl bg-gradient-to-t from-black to-transparent"></div>
                 <div className="absolute bottom-0 h-[60%] w-full">
                   <div className="absolute bottom-8 left-5 lg:left-10">
@@ -249,22 +279,25 @@ const Profile: NextPage = () => {
                       {getRudeNftName(profileNFT?.name) || "Unknow"}
                     </div>
                   </div>
+
                   <div className="absolute bottom-9 right-5 lg:right-10">
                     {featureProduct?.options[0] && profileNFT && (
                       <>
                         {isLoadingFeatured && <Loader></Loader>}
                         {!isFeaturedData?.featuredNFT ? (
-                          <button
-                            className="btn-rude btn text-xs font-thin"
-                            onClick={() => {
-                              setOpen(true);
-                            }}
-                          >
-                            Feature your warrior
-                          </button>
+                          <>
+                            <button
+                              className="btn-rude btn text-xs font-thin"
+                              onClick={() => {
+                                setOpen(true);
+                              }}
+                            >
+                              Feature your warrior
+                            </button>
+                          </>
                         ) : (
-                          <button className="btn-rude btn disabled cursor-default font-thin  ">
-                            🚀 featured!{" "}
+                          <button className="btn-rude disabled btn cursor-default font-thin  ">
+                            🚀 In Queue!{" "}
                           </button>
                         )}
 
