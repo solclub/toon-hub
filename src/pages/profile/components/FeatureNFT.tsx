@@ -141,7 +141,9 @@ const FeatureNFT: React.FC<BuyProperties> = ({ title, featureOption, sourceImage
                   Feature NFT
                 </motion.button>
               ) : (
-                <div className="text-stroke mx-auto text-2xl text-yellow-400">NFT Featured!!</div>
+                <div className="text-stroke mx-auto text-2xl text-yellow-400">
+                  ¡Success! NFT will be featured soon 🚀
+                </div>
               )}
             </div>
           </div>
