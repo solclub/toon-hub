@@ -70,7 +70,11 @@ const Home: NextPage = () => {
             ></Image>
             <Link
               className="z-20 row-span-3 w-full text-center"
-              href={"https://twitter.com/intent/tweet?text=" + twitPhrase + "%0a@rudegolems"}
+              href={
+                "https://twitter.com/intent/tweet?text=" +
+                twitPhrase.replaceAll('"', "") +
+                "%0a@rudegolems"
+              }
               target="_blank"
             >
               <span className="text-sm italic leading-none text-white hover:underline">
@@ -390,18 +394,18 @@ const LeaderBoard = () => {
           }
         )}
       </div>
-      <div className="btn-group-horizontal btn-group mx-auto self-start pb-2 font-medieval-sharp">
+      <div className="btn-group btn-group-horizontal mx-auto self-start pb-2 font-medieval-sharp">
         <button
-          className="btn btn-sm  "
+          className="btn-sm btn  "
           disabled={page[nftTypeTab] == 0}
           onClick={handleFetchPreviousPage}
         >
           «
         </button>
-        <button className="btn btn-sm ">Page {(page[nftTypeTab] ?? 0) + 1}</button>
+        <button className="btn-sm btn ">Page {(page[nftTypeTab] ?? 0) + 1}</button>
 
         <button
-          className=" btn  btn-sm "
+          className=" btn-sm  btn "
           disabled={(data?.pages[page[nftTypeTab] ?? 0]?.items?.length ?? 0) < queryLimit}
           onClick={handleFetchNextPage}
         >

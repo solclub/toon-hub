@@ -58,7 +58,7 @@ const Profile = () => {
                   ))}
                 </ul>
               </div>
-              <button className="btn btn-square" onClick={handleRefresh}>
+              <button className="btn-square btn" onClick={handleRefresh}>
                 <svg
                   className="p-1"
                   xmlns="http://www.w3.org/2000/svg"
@@ -108,8 +108,8 @@ const Profile = () => {
             {featuredItems.data &&
               featuredItems.data.featuredNFTs.find((f) => f.mint == x.mint) && (
                 <div
-                  className="btn tooltip btn-sm btn-circle absolute top-4 right-8 border-[#AB9F3A] p-1"
-                  data-tip="featured nft"
+                  className="tooltip btn-sm btn-circle btn absolute top-4 right-8 border-[#AB9F3A] p-1"
+                  data-tip="in featuring queue"
                 >
                   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" id="rocket">
                     <path
