@@ -21,13 +21,13 @@ type TransactionStatus = "PENDING" | "SUCCESS" | "FAILED";
 
 const proccessPayment = async <T>(
   request: PaymentRequestInfo,
-  proccessService: (txId: string) => Promise<T>
+  proccessService: (txId: string, verifiedOwner: string) => Promise<T>
 ): Promise<PaymentResponseInfo<T>> => {
   const { serializedTx: txEncoded, wallet, mint } = request;
   let signature = "";
   try {
-    const isOwner = await verifyNftOwner(wallet, mint);
-    if (!isOwner) {
+    const verifiedOwner = await verifyNftOwner(wallet, mint);
+    if (!verifiedOwner) {
       throw new Error("You are not the owner of the NFT!");
     }
 
@@ -65,7 +65,7 @@ const proccessPayment = async <T>(
     return {
       status: "SUCCESS",
       txSig: signature,
-      data: await proccessService(signature),
+      data: await proccessService(signature, verifiedOwner),
     };
   } catch (error) {
     let message;
@@ -86,7 +86,7 @@ const service = {
 
 export default service;
 
-const verifyNftOwner = async (owner: string, mint: string): Promise<boolean> => {
+const verifyNftOwner = async (owner: string, mint: string): Promise<string | null> => {
   const largestAccounts = await connection.getTokenLargestAccounts(new PublicKey(mint));
   const largestAccount = largestAccounts?.value[0];
   const largestAccountInfo = largestAccount
@@ -96,9 +96,14 @@ const verifyNftOwner = async (owner: string, mint: string): Promise<boolean> => 
   const parsedOwner = accountData instanceof Buffer ? null : accountData?.parsed?.info?.owner;
   const pdaKey = await getUserPDAKey(owner);
   if (!parsedOwner && !pdaKey) {
-    return false;
+    return null;
   }
-  return parsedOwner === pdaKey || parsedOwner === owner;
+
+  if (parsedOwner === pdaKey || parsedOwner === owner) {
+    return parsedOwner;
+  }
+
+  return null;
 };
 
 const logEvent = (type: "error" | "info" | "warning" = "info", ...messages: string[]): void => {
