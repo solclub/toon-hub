@@ -5,6 +5,7 @@ import featuredModel from "server/database/models/featured-nft.model";
 export interface FeatureNFTRequest {
   mintAddress: string;
   wallet: string;
+  verifiedOwner: string;
   serializedTx: string;
   nftType: string;
 }
@@ -17,8 +18,8 @@ export const confirmAndSave = async (req: FeatureNFTRequest) => {
       wallet: req.wallet,
       service: "FeatureNFT",
     },
-    async () => {
-      return await saveFeaturedNFT(req);
+    async (txId, verifiedOwner) => {
+      return await saveFeaturedNFT({ ...req, verifiedOwner });
     }
   );
 

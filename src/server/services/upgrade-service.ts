@@ -32,6 +32,7 @@ interface NFTLayer {
 export interface UpdateMetadataRequest {
   mintAddress: string;
   wallet: string;
+  verifiedOwner: string;
   serializedTx: string;
   upgradeType: string;
   collection: NFTType;
@@ -41,6 +42,7 @@ export interface UpdateMetadataRequest {
 export interface SwapArtMetadataRequest {
   mintAddress: string;
   wallet: string;
+  verifiedOwner: string;
   serializedTx: string;
   upgradeType: string;
   collection: NFTType;
@@ -54,8 +56,8 @@ export const confirmAndUpgradeMetadata = async (req: UpdateMetadataRequest) => {
       wallet: req.wallet,
       service: "UpdateMetadata",
     },
-    async (txId: string) => {
-      return await upgradeMetadata(req, txId);
+    async (txId, verifiedOwner) => {
+      return await upgradeMetadata({ ...req, verifiedOwner: verifiedOwner }, txId);
     }
   );
 
@@ -70,8 +72,8 @@ export const confirmAndSwapMetadata = async (req: SwapArtMetadataRequest) => {
       wallet: req.wallet,
       service: "SwapArtMetadata",
     },
-    async (txId: string) => {
-      return await swapArtMetadata(req, txId);
+    async (txId, verifiedOwner) => {
+      return await swapArtMetadata({ ...req, verifiedOwner }, txId);
     }
   );
 
@@ -99,7 +101,7 @@ export const upgradeMetadata = async (req: UpdateMetadataRequest, txId: string) 
   const reqBody = {
     mintAddress: req.mintAddress,
     upgradeType: req.upgradeType,
-    owner: req.wallet,
+    owner: req.verifiedOwner,
     image: tempImgUrl,
   };
 
@@ -111,7 +113,13 @@ export const upgradeMetadata = async (req: UpdateMetadataRequest, txId: string) 
     throw "There is not an updater for a collection provided";
   }
 
-  console.log("upgrading... ", upgradeEndpoint, JSON.stringify(reqBody, null, 2));
+  console.log(
+    "upgrading... ",
+    "owner wallet:",
+    req.wallet,
+    upgradeEndpoint,
+    JSON.stringify(reqBody, null, 2)
+  );
   const upgradeResult = await axios.post<{ signature: string; image: string }>(
     upgradeEndpoint,
     reqBody,
@@ -147,7 +155,7 @@ export const swapArtMetadata = async (req: SwapArtMetadataRequest, txId: string)
   const reqBody = {
     mintAddress: req.mintAddress,
     upgradeType: req.upgradeType,
-    owner: req.wallet,
+    owner: req.verifiedOwner,
     image: tempImgUrl,
   };
 
@@ -159,7 +167,13 @@ export const swapArtMetadata = async (req: SwapArtMetadataRequest, txId: string)
     throw "There is not an updater for a collection provided";
   }
 
-  console.log("swapping... ", upgradeEndpoint, JSON.stringify(reqBody, null, 2));
+  console.log(
+    "swapping... ",
+    "owner wallet:",
+    req.wallet,
+    upgradeEndpoint,
+    JSON.stringify(reqBody, null, 2)
+  );
   const upgradeResult = await axios.post<{ signature: string; image: string }>(
     upgradeEndpoint,
     reqBody,
