@@ -66,6 +66,7 @@ export const upgradeRouter = router({
 
       const request: UpdateMetadataRequest = {
         serializedTx,
+        verifiedOwner: wallet,
         wallet,
         attributes: nft.attributes,
         collection: nft.type,
@@ -113,6 +114,7 @@ export const upgradeRouter = router({
       const request: SwapArtMetadataRequest = {
         serializedTx,
         wallet,
+        verifiedOwner: wallet,
         mintAddress: mint,
         upgradeType,
         collection: nft.type,

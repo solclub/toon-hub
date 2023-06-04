@@ -25,6 +25,7 @@ export const featureRouter = router({
       const wallet = ctx.session.walletId;
       const request: FeatureNFTRequest = {
         nftType: nftType,
+        verifiedOwner: wallet,
         wallet: wallet,
         mintAddress: mint,
         serializedTx,
