@@ -11,6 +11,7 @@ import nftToysImage from "assets/images/nfttoys_banner_small.png";
 import rewardsImage from "assets/images/rewards_banner_small.png";
 import Image from "next/image";
 import CountdownTimer from "components/common/CountdownTimer";
+import { trpc } from "utils/trpc";
 
 type Props = {
   children: JSX.Element;
@@ -22,6 +23,7 @@ export const Drawer = ({ children }: Props) => {
   const [currentPath, setCurrentPath] = useState("/");
   const toggle = () => setDrawerOpen(!isDrawerOpen);
   const router = useRouter();
+  const serverTime = trpc.featureNft.serverDate.useQuery();
 
   useEffect(() => {
     setCurrentPath(router.pathname);
@@ -33,9 +35,8 @@ export const Drawer = ({ children }: Props) => {
   ];
 
   const [targetDate] = useState(new Date(Date.UTC(2023, 5, 23)));
-  const today = new Date();
 
-  if (today <= targetDate)
+  if (!serverTime.data || serverTime.data <= targetDate)
     return (
       <div className="flex min-h-screen items-center justify-center">
         <div className="flex flex-col items-center">
