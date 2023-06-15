@@ -32,7 +32,7 @@ export const Drawer = ({ children }: Props) => {
     { name: "My Collection", path: "/list", isPrivate: true },
   ];
 
-  const [targetDate] = useState(new Date("2023-06-23"));
+  const [targetDate] = useState(new Date(Date.UTC(2023, 5, 23)));
   const today = new Date();
 
   if (today <= targetDate)
@@ -44,7 +44,7 @@ export const Drawer = ({ children }: Props) => {
           <div className="my-5 text-3xl text-yellow-600">
             <CountdownTimer targetDate={targetDate} />
           </div>
-          <div>Soon, you'll discover something amazing</div>
+          <div>{"Soon, you'll discover something amazing"}</div>
         </div>
       </div>
     );
