@@ -52,6 +52,10 @@ export const featureRouter = router({
 
     return { nft, user };
   }),
+
+  serverDate: publicProcedure.query(async () => {
+    return new Date();
+  }),
   userFeaturedNfts: protectedProcedure.query(async ({ ctx }) => {
     const wallet = ctx.session.walletId;
     const featuredNFTs = await featureService.getUserFeaturedNFTs(wallet);
