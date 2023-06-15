@@ -20,7 +20,6 @@ import ImgSolScan from "../assets/images/solscan.png";
 import Panel from "../components/common/Panel";
 import { trpc } from "utils/trpc";
 import Loader from "components/common/Loader";
-import CountdownTimer from "components/common/CountdownTimer";
 
 const Home: NextPage = () => {
   const featured = trpc.featureNft.latest.useQuery();
