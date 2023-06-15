@@ -10,6 +10,7 @@ import rankImage from "assets/images/rarity_banner_small.png";
 import nftToysImage from "assets/images/nfttoys_banner_small.png";
 import rewardsImage from "assets/images/rewards_banner_small.png";
 import Image from "next/image";
+import CountdownTimer from "components/common/CountdownTimer";
 
 type Props = {
   children: JSX.Element;
@@ -31,6 +32,23 @@ export const Drawer = ({ children }: Props) => {
     { name: "My Collection", path: "/list", isPrivate: true },
   ];
 
+  const [targetDate] = useState(new Date(Date.UTC(2023, 5, 23)));
+  const today = new Date();
+
+  if (today <= targetDate)
+    return (
+      <div className="flex min-h-screen items-center justify-center">
+        <div className="flex flex-col items-center">
+          <SVGIcon.thehub />
+
+          <div className="my-5 text-3xl text-yellow-600">
+            <CountdownTimer targetDate={targetDate} />
+          </div>
+          <div>{"Soon, you'll discover something amazing"}</div>
+        </div>
+      </div>
+    );
+
   return (
     <div className="drawer">
       <input
@@ -44,9 +62,7 @@ export const Drawer = ({ children }: Props) => {
       <div className="drawer-content pt-7">
         <div className="relative flex flex-wrap">
           <div className="absolute flex h-4 w-full items-center justify-center lg:h-auto">
-            <Link href={"/"}>
-              <SVGIcon.thehub />
-            </Link>
+            <Link href={"/"}></Link>
           </div>
           <div className="flex justify-start pl-8 align-middle lg:w-1/2">
             <label htmlFor="main-drawer" className="drawer-button z-40 mr-4 inline cursor-pointer">
