@@ -257,13 +257,13 @@ const Profile: NextPage = () => {
                     </label>
                     <div
                       tabIndex={0}
-                      className="card-compact card dropdown-content w-72 bg-black bg-opacity-30 backdrop-blur-sm backdrop-filter"
+                      className="card dropdown-content card-compact w-72 bg-black bg-opacity-30 backdrop-blur-sm backdrop-filter"
                     >
                       <div className="card-body">
                         <h3 className="card-title">Want to Feature your NFT?</h3>
                         <p>
                           By taking this action, you have the opportunity to be featured on the main
-                          page. Featured warriors are updated every 48 hours.
+                          page. Featured warriors are updated every 24 hours.
                         </p>
                       </div>
                     </div>
