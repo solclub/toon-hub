@@ -34,7 +34,7 @@ export const Drawer = ({ children }: Props) => {
     { name: "My Collection", path: "/list", isPrivate: true },
   ];
 
-  const [targetDate] = useState(new Date(Date.UTC(2023, 5, 25, 18)));
+  const [targetDate] = useState(new Date(Date.UTC(2023, 5, 26, 18)));
 
   if (!serverTime.data || serverTime.data <= targetDate)
     return (
