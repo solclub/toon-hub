@@ -23,7 +23,6 @@ export const Drawer = ({ children }: Props) => {
   const [currentPath, setCurrentPath] = useState("/");
   const toggle = () => setDrawerOpen(!isDrawerOpen);
   const router = useRouter();
-  const serverTime = trpc.featureNft.serverDate.useQuery();
 
   useEffect(() => {
     setCurrentPath(router.pathname);
@@ -33,22 +32,6 @@ export const Drawer = ({ children }: Props) => {
     { name: "Home", path: "/", isPrivate: false },
     { name: "My Collection", path: "/list", isPrivate: true },
   ];
-
-  const [targetDate] = useState(new Date(Date.UTC(2023, 5, 26, 18)));
-
-  if (!serverTime.data || serverTime.data <= targetDate)
-    return (
-      <div className="flex min-h-screen items-center justify-center">
-        <div className="flex flex-col items-center">
-          <SVGIcon.thehub />
-
-          <div className="my-5 text-3xl text-yellow-600">
-            <CountdownTimer targetDate={targetDate} />
-          </div>
-          <div>{"Soon, you'll discover something amazing"}</div>
-        </div>
-      </div>
-    );
 
   return (
     <div className="drawer">
