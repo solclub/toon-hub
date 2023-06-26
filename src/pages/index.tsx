@@ -284,7 +284,7 @@ const LeaderBoard = () => {
               borderColors[index < borderColors.length ? index : borderColors.length - 1];
             const hasSvg = index <= 2;
             const rank = index + 1;
-
+            const twitterImageBig = twitterImage.replace("_normal", "_bigger");
             return (
               <Panel
                 key={`${nftTypeTab}_${mint ?? ""}_${owner ?? ""}`}
@@ -295,7 +295,7 @@ const LeaderBoard = () => {
                 )}
               >
                 <div className="relative mr-3 aspect-square w-20 overflow-hidden rounded-2xl">
-                  <Image alt="profile image" src={twitterImage ?? images[current] ?? ""} fill />
+                  <Image alt="profile image" src={twitterImageBig ?? images[current] ?? ""} fill />
                   <div className="absolute -bottom-3 -left-3 aspect-square h-12 rounded-full bg-[rgba(0,0,0,.7)] bg-black text-right text-white"></div>
                   {hasSvg ? (
                     <svg
