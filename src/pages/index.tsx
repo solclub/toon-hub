@@ -284,7 +284,7 @@ const LeaderBoard = () => {
               borderColors[index < borderColors.length ? index : borderColors.length - 1];
             const hasSvg = index <= 2;
             const rank = index + 1;
-            const twitterImageBig = twitterImage.replace("_normal", "_bigger");
+            const twitterImageBig = twitterImage?.replace("_normal", "_bigger");
             return (
               <Panel
                 key={`${nftTypeTab}_${mint ?? ""}_${owner ?? ""}`}
