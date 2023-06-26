@@ -46,7 +46,9 @@ export const Drawer = ({ children }: Props) => {
       <div className="drawer-content pt-7">
         <div className="relative flex flex-wrap">
           <div className="absolute flex h-4 w-full items-center justify-center lg:h-auto">
-            <Link href={"/"}></Link>
+            <Link href={"/"}>
+              <SVGIcon.thehub></SVGIcon.thehub>
+            </Link>
           </div>
           <div className="flex justify-start pl-8 align-middle lg:w-1/2">
             <label htmlFor="main-drawer" className="drawer-button z-40 mr-4 inline cursor-pointer">
