@@ -73,13 +73,13 @@ const Home: NextPage = () => {
               className="z-20 row-span-3 w-full text-center"
               href={
                 "https://twitter.com/intent/tweet?text=" +
-                twitPhrase.replaceAll('"', "") +
-                "%0a@rudegolems"
+                (twitPhrase ?? "My Golem is me and I am my Golem").replaceAll('"', "") +
+                "%0a@rudegolems %23rudequote"
               }
               target="_blank"
             >
               <span className="text-sm italic leading-none text-white hover:underline">
-                {twitPhrase}
+                {twitPhrase ?? "My Golem is me and I am my Golem"}
               </span>
               <span className="block text-xs text-[#ba6556]">Click here to tweet</span>
             </Link>
