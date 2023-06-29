@@ -196,7 +196,9 @@ const getNFTDocuments = async (nftType: NFTType, nftModel: Model<RudeNFT>, mintA
 };
 
 const isNFTValid = (nft: NFT): nft is Metadata => {
-  return /Golem|Demon/.test(nft.name);
+  return (
+    /Golem|Demon/.test(nft.name) || golemGods.includes(nft.name) || demonGods.includes(nft.name)
+  );
 };
 
 const getCollectionType = (name: string): string => {
