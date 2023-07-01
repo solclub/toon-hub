@@ -1,4 +1,4 @@
-import type { Metadata, Nft, Sft } from "@metaplex-foundation/js";
+import type { Metadata } from "@metaplex-foundation/js";
 import { getAssociatedTokenAddress } from "@solana/spl-token";
 import { LAMPORTS_PER_SOL, PublicKey } from "@solana/web3.js";
 import { env } from "env/client.mjs";
@@ -32,7 +32,7 @@ export const getSolBalance = async (wallet: string): Promise<number> => {
   }
 };
 
-export const getButterflies = async (wallet: string): Promise<(Metadata | Nft | Sft)[]> => {
+export const getButterflies = async (wallet: string): Promise<Metadata[]> => {
   const walletPubKey = new PublicKey(wallet);
   const walletNfts = await metaplex.nfts().findAllByOwner({ owner: walletPubKey });
   const filteredNfts = walletNfts.filter(
@@ -40,7 +40,8 @@ export const getButterflies = async (wallet: string): Promise<(Metadata | Nft | 
       nft.updateAuthorityAddress.toBase58() === "9dASnA6jbwLc7xjhCm7JYasTwAiyhypvC7PfDw7nfLBN" &&
       nft.name.includes("Butterfly")
   );
-  return filteredNfts;
+
+  return filteredNfts.map((x) => x as Metadata);
 };
 
 export const getButterfliesBalance = async (wallet: string): Promise<number> => {

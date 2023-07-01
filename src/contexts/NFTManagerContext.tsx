@@ -90,7 +90,6 @@ const prepTransaction = async (
   txSigner: <T extends Transaction | VersionedTransaction>(transaction: T) => Promise<T>
 ): Promise<string> => {
   const instructions: TransactionInstruction[] = [];
-
   for (const paymentAmount of payment.amounts) {
     await buildTokenInstruction(owner, paymentAmount, instructions);
   }
@@ -119,12 +118,8 @@ const buildTokenInstruction = async (
       instructions.push(...instruction);
     },
     [PaymentToken.RUDE]: async () => {
-      console.log(RUDE_TOKEN_KEY.toString(), RUDE_SINK_KEY.toString());
-
       const userRudeTokenAccount = await getAssociatedTokenAddress(RUDE_TOKEN_KEY, owner);
-      console.log("RUDE ADDRESS ", RUDE_TOKEN_KEY.toBase58(), RUDE_SINK_KEY.toBase58());
       const rudeTokenSinkAccount = await getAssociatedTokenAddress(RUDE_TOKEN_KEY, RUDE_SINK_KEY);
-      console.log("RUDE ADDRESS 2 ", rudeTokenSinkAccount.toBase58());
       const instruction = await buildRudeTokenInstruction(
         userRudeTokenAccount,
         rudeTokenSinkAccount,
@@ -148,12 +143,14 @@ const buildButterflyInstructions = async (
 ): Promise<TransactionInstruction[]> => {
   const instructions: TransactionInstruction[] = [];
   const butterflies = await getButterflies(userWallet.toBase58());
-  if (butterflies.length < amount) throw Error("The user does not have enough butterflies");
+  if (butterflies.length < amount || butterflies.length == 0)
+    throw Error("The user does not have enough butterflies");
 
   for (let index = 0; index < amount; index++) {
     const butterfly = butterflies[index];
+    if (!butterfly) throw "invalid butterfly";
 
-    const userButterflyMint = butterfly?.address as PublicKey;
+    const userButterflyMint = butterfly.mintAddress;
     const userButterflyTokenAccount = await getAssociatedTokenAddress(
       userButterflyMint,
       userWallet

@@ -163,7 +163,6 @@ const Profile: NextPage = () => {
             return previousIndex >= 0 ? previousIndex : strings.length - 1;
           }
         }
-        console.log(current, userMints);
         setProfileNavState({
           current,
           before: getNextOrBeforeProfile(userMints, false, current),
