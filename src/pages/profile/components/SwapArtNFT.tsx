@@ -68,7 +68,6 @@ const SwapArtNFT: React.FC<BuyProperties> = ({
   const swapArtNFT = async (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
     e.stopPropagation();
     const csrf = await getCsrfToken();
-    console.log(!publicKey, !csrf, !signMessage, !signTransaction, !paymentOption);
     if (!publicKey || !csrf || !signMessage || !signTransaction || !paymentOption) return;
     try {
       showPromisedToast(toastRef, "Initating Swap: Sign message...", false);
