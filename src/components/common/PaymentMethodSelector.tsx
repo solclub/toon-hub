@@ -28,6 +28,7 @@ const PaymentMethodSelector: React.FC<{
     <div className="flex w-full font-mono">
       <div className="flex w-full flex-wrap justify-evenly px-5 text-start font-mono text-xl">
         {paymentOptions
+          .filter((x) => x.enabled)
           ?.sort((a, b) => a.order - b.order)
           ?.map((opt, i) => (
             <React.Fragment key={opt.type}>
@@ -52,7 +53,7 @@ const PaymentMethodSelector: React.FC<{
                   </React.Fragment>
                 ))}
               </motion.button>
-              {i < paymentOptions.length - 1 && (
+              {i < paymentOptions.filter((x) => x.enabled).length - 1 && (
                 <div className="divider divider-horizontal ">or</div>
               )}
             </React.Fragment>
