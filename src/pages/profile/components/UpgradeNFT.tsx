@@ -61,7 +61,6 @@ const UpgradeNFT: React.FC<BuyProperties> = ({ title, upgradeOption, sourceImage
   const upgradeGolem = async (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
     e.stopPropagation();
     const csrf = await getCsrfToken();
-    console.log(!publicKey, !csrf, !signMessage, !signTransaction, !paymentOption);
     if (!publicKey || !csrf || !signMessage || !signTransaction || !paymentOption) return;
     try {
       showPromisedToast(toastRef, "Initating Upgrade: Sign message...", false);
