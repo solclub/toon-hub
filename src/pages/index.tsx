@@ -24,9 +24,14 @@ import Loader from "components/common/Loader";
 const Home: NextPage = () => {
   const featured = trpc.featureNft.latest.useQuery();
 
-  const [twitPhrase, setTwitPhrasePhrase] = useState("");
+  const [twitPhrase, setTwitPhrasePhrase] = useState("My Golem is me and I am my Golem");
   useEffect(() => {
-    setTwitPhrasePhrase(`\"${phrases[Math.floor(Math.random() * (phrases.length - 0 + 1)) + 0]}\"`);
+    const currentDate: Date = new Date();
+    const dayOfYear: number = Math.floor(
+      (currentDate.getTime() - new Date(currentDate.getFullYear(), 0, 0).getTime()) /
+        (1000 * 60 * 60 * 24)
+    );
+    setTwitPhrasePhrase(`\"${phrases[dayOfYear % phrases.length]}\"`);
   }, []);
 
   const featuredNFT = featured.data;
@@ -395,18 +400,18 @@ const LeaderBoard = () => {
           }
         )}
       </div>
-      <div className="btn-group btn-group-horizontal mx-auto self-start pb-2 font-medieval-sharp">
+      <div className="btn-group-horizontal btn-group mx-auto self-start pb-2 font-medieval-sharp">
         <button
-          className="btn-sm btn  "
+          className="btn btn-sm  "
           disabled={page[nftTypeTab] == 0}
           onClick={handleFetchPreviousPage}
         >
           «
         </button>
-        <button className="btn-sm btn ">Page {(page[nftTypeTab] ?? 0) + 1}</button>
+        <button className="btn btn-sm ">Page {(page[nftTypeTab] ?? 0) + 1}</button>
 
         <button
-          className=" btn-sm  btn "
+          className=" btn  btn-sm "
           disabled={(data?.pages[page[nftTypeTab] ?? 0]?.items?.length ?? 0) < queryLimit}
           onClick={handleFetchNextPage}
         >
