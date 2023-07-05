@@ -24,7 +24,7 @@ import Loader from "components/common/Loader";
 const Home: NextPage = () => {
   const featured = trpc.featureNft.latest.useQuery();
 
-  const [twitPhrase, setTwitPhrasePhrase] = useState("MyF Golem is me and I am my Golem");
+  const [twitPhrase, setTwitPhrasePhrase] = useState("My Golem is me and I am my Golem");
   useEffect(() => {
     const currentDate: Date = new Date();
     const dayOfYear: number = Math.floor(
