@@ -3,16 +3,18 @@ const { config, v2 } = require("cloudinary");
 const fs = require("fs").promises;
 const path = require("path");
 
-// Configura Cloudinary con tu Cloud Name, API Key y Secret
+// CLOUDINARY_CLOUD_NAME=dfniu7jks
+// CLOUDINARY_API_KEY=181522674338471
+// CLOUDINARY_API_SECRET=4uwb6LrenXMOz14eYDLXvINDUh0
+
 config({
-  cloud_name: "",
-  api_key: "",
-  api_secret: "",
+  cloud_name: "dfniu7jks",
+  api_key: "181522674338471",
+  api_secret: "4uwb6LrenXMOz14eYDLXvINDUh0",
 });
 
-const rootDir = "../assets/traits";
+const rootDir = "../assets/weapons";
 
-// Recorre la estructura de carpetas y sube todas las imágenes a Cloudinary
 const uploadImages = async (dir) => {
   const files = await fs.readdir(dir);
 
@@ -23,16 +25,20 @@ const uploadImages = async (dir) => {
       await uploadImages(filePath);
     } else {
       const { name, dir: traitDir } = path.parse(filePath);
-      const [collection, upgradeType, traitName] = traitDir.split(path.sep).slice(-3);
+      const [folder, slot, rarity] = traitDir.split(path.sep).slice(-3);
 
-      const publicId = `collections/${collection}/art/${upgradeType}/${traitName}/${name}`;
+      if (slot.startsWith("SLOT")) {
+        const fixedName = name.toLowerCase().replaceAll("-", "_");
+        const publicId = `weapons/${slot.toLowerCase()}/${fixedName}`;
 
-      await v2.uploader.upload(filePath, {
-        resource_type: "image",
-        public_id: publicId,
-        overwrite: false,
-      });
-      console.log(`Subida la imagen ${publicId}`);
+        await v2.uploader.upload(filePath, {
+          resource_type: "image",
+          public_id: publicId,
+          overwrite: false,
+        });
+
+        console.log(`Subida la imagen ${publicId}`);
+      }
     }
   }
 };
