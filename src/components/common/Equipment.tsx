@@ -37,6 +37,7 @@ export const EquipmentRarityLabels: Record<WeaponRarity, string> = {
   MYTHIC: "Mythic",
   SECRET: "Secret",
 };
+export type EquipmentRarityLabelsType = keyof typeof EquipmentRarityLabels;
 
 const Equipment = (equipment: Props) => {
   const { url, rarity, className, width, height, revealed, price, name, event } = equipment;
