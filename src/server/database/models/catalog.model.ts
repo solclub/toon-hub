@@ -18,6 +18,10 @@ export enum ProductType {
   NFT_UPGRADE = "NFT_UPGRADE",
   NFT_FEATURE = "NFT_FEATURE",
   NFT_ART_SWAP = "NFT_ART_SWAP",
+  WEAPONS_SLOT_1 = "WEAPONS_SLOT_1",
+  WEAPONS_SLOT_2 = "WEAPONS_SLOT_2",
+  WEAPONS_SLOT_3 = "WEAPONS_SLOT_3",
+  WEAPONS_SLOT_4 = "WEAPONS_SLOT_4",
 }
 
 export interface PaymentOption {
