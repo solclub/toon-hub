@@ -5,9 +5,17 @@ import { utils } from "@project-serum/anchor";
 import { Program, AnchorProvider } from "@project-serum/anchor";
 import warIdl from "idl/rudegolems_war.json";
 import bs58 from "bs58";
+import type { PipelineStage } from "mongoose";
 import { env } from "env/server.mjs";
 import NodeWallet from "@project-serum/anchor/dist/cjs/nodewallet";
 import { connection } from "./connections/web3-public";
+
+import warriorEquipmentModel from "server/database/models/equipped-weapon.model";
+
+export interface WarriorPowerType {
+  warriorId: string;
+  totalPower: number;
+}
 
 const PayerKeyPair = Keypair.fromSecretKey(bs58.decode(env.ANCHOR_WALLET_KEYPAIR));
 
@@ -111,4 +119,35 @@ export const getInTrainingNfts = async (wallet: string): Promise<AccountSettings
     ...account,
   }));
   return taccounts;
+};
+
+export const getWarriorsPower = async (warriorsList: string[]) => {
+  const pipeline: Array<PipelineStage> = [];
+
+  pipeline.push(
+    {
+      $match: {
+        warriorId: { $in: warriorsList },
+      },
+    },
+    {
+      $group: {
+        _id: "$warriorId",
+        totalPower: { $sum: "$warriorTotalPower" },
+      },
+    },
+    {
+      $project: {
+        _id: 0,
+        warriorId: "$_id",
+        totalPower: 1,
+      },
+    }
+  );
+
+  const result = await warriorEquipmentModel().aggregate<WarriorPowerType>(pipeline);
+  return result.reduce((acc, item) => {
+    const sum = acc + item.totalPower;
+    return sum;
+  }, 0);
 };

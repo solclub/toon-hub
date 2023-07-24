@@ -16,6 +16,7 @@ const dbConnect = async () => {
   await mongoose.connect(uri, {
     dbName: dbname,
   });
+  console.log("db connected 🔥");
 };
 
 dbConnect().catch((err) => console.log(err));

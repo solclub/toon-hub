@@ -1,10 +1,8 @@
 import { useState, useEffect } from "react";
-import type { StaticImageData } from "next/image";
 import Image from "next/image";
 import { type NextPage } from "next";
 import Link from "next/link";
 import { useRouter } from "next/router";
-import type { EquipmentRarity } from "components/common/Equipment";
 import Equipment, { EquipmentRarityLabels } from "components/common/Equipment";
 import { CountDown } from "components/common/CountDown";
 import Panel from "components/common/Panel";
@@ -23,9 +21,6 @@ import LeaderBoardIcon from "assets/images/leaderboard_icon.png";
 import PowerRatingIcon from "assets/images/power_rating_icon.png";
 import TierIcon from "assets/images/tier_icon.png";
 import WeaponsIcon from "assets/images/weapons_icon.png";
-import gem from "assets/weapons/SLOT1/COMMON/Stoneheart.png";
-import gem2 from "assets/weapons/SLOT3/LEGENDARY/Ancient-Hammer.png";
-import gem3 from "assets/weapons/SLOT4/MYTHIC/Life-taker.png";
 import WeaponChest from "assets/weapons/weapon-chest.png";
 import { useNFTManager } from "contexts/NFTManagerContext";
 import { Modal } from "components/common/Modal";
@@ -33,62 +28,14 @@ import FeatureNFT from "pages/profile/components/FeatureNFT";
 import { toPascalCase } from "utils/string-utils";
 import VideoView from "./components/VideoView";
 import type { Product } from "server/database/models/catalog.model";
-
-type Weapon = {
-  image: string | StaticImageData;
-  name: string;
-  points: number;
-  price: string;
-  rarity: EquipmentRarity;
-  expireDate: Date;
-  owned: boolean;
-};
+import type { Slot, WarriorEquipment } from "server/database/models/equipped-weapon.model";
+import { WeaponRarity } from "server/database/models/weapon.model";
 
 type NFTInfo = RudeNFT & {
   user: UserNFT | undefined;
 };
 
-const sampleWeapons: Weapon[] = [
-  {
-    image: gem,
-    name: "Common",
-    points: 5000,
-    price: "$ 0.3 Sol",
-    owned: true,
-    expireDate: new Date("02/18/2023"),
-    rarity: "COMMON",
-  },
-  {
-    image: WeaponChest,
-    name: "Rare",
-    points: 5000,
-    price: "$ 0.3 Sol",
-    owned: false,
-    expireDate: new Date("02/18/2023"),
-    rarity: "NONE",
-  },
-  {
-    image: gem2,
-    name: "Legendary",
-    points: 5000,
-    price: "$ 0.3 Sol",
-    owned: true,
-    expireDate: new Date("02/18/2023"),
-    rarity: "LEGENDARY",
-  },
-  {
-    image: gem3,
-    name: "Secret",
-    points: 5000,
-    price: "$ 0.3 Sol",
-    owned: true,
-    expireDate: new Date("02/18/2023"),
-    rarity: "MYTHIC",
-  },
-];
-
 const Profile: NextPage = () => {
-  const [weapons, setWeapons] = useState<Weapon[]>([]);
   const [isOnUpgradeVideoModalOpen, setOnUpgradeVideoModalOpen] = useState(false);
   const [isOpen, setOpen] = useState(false);
   const [profileNavState, setProfileNavState] = useState({ current: 0, before: -1, after: 1 });
@@ -109,6 +56,10 @@ const Profile: NextPage = () => {
     });
 
   const { data: mintPosition } = trpc.leaderboard.getItemPosition.useQuery({
+    mint: mint as string,
+  });
+
+  const { data: equippedWeapons } = trpc.weapons.equippedWeapons.useQuery({
     mint: mint as string,
   });
 
@@ -141,10 +92,6 @@ const Profile: NextPage = () => {
         break;
     }
   };
-
-  useEffect(() => {
-    setWeapons(sampleWeapons);
-  }, [mint]);
 
   useEffect(() => {
     if (mint && userMints) {
@@ -257,7 +204,7 @@ const Profile: NextPage = () => {
                     </label>
                     <div
                       tabIndex={0}
-                      className="card dropdown-content card-compact w-72 bg-black bg-opacity-30 backdrop-blur-sm backdrop-filter"
+                      className="card-compact card dropdown-content w-72 bg-black bg-opacity-30 backdrop-blur-sm backdrop-filter"
                     >
                       <div className="card-body">
                         <h3 className="card-title">Want to Feature your NFT?</h3>
@@ -407,7 +354,7 @@ const Profile: NextPage = () => {
         <Panel className="panel mt-3 flex w-full flex-wrap rounded-md p-8 lg:mt-0 lg:max-w-[65%] ">
           {profileNFT && profileNFT?.type && (
             <CustomizePanel
-              weapons={weapons}
+              warriorEquipment={equippedWeapons}
               nft={profileNFT}
               upgradeProducts={getProduct(ProductType.NFT_UPGRADE, profileNFT?.type)?.[0]}
               swapProducts={getProduct(ProductType.NFT_ART_SWAP, profileNFT?.type)?.[0]}
@@ -436,16 +383,16 @@ const Profile: NextPage = () => {
 
 type ArmoryProps = {
   nft?: NFTInfo;
-  weapons: Weapon[];
+  warriorEquipment: WarriorEquipment | null | undefined;
   upgradeProducts: Product | undefined;
   swapProducts: Product | undefined;
 };
 
-const CustomizePanel = ({ weapons, nft, upgradeProducts, swapProducts }: ArmoryProps) => {
+const CustomizePanel = ({ warriorEquipment, nft, upgradeProducts, swapProducts }: ArmoryProps) => {
   const upgradeOpts = upgradeProducts?.options;
   const swapArtOpts = swapProducts?.options;
 
-  const onBuyEquipment = (x: Weapon) => {
+  const onBuyEquipment = (x: Slot) => {
     //check status
     console.log(x);
   };
@@ -473,31 +420,31 @@ const CustomizePanel = ({ weapons, nft, upgradeProducts, swapProducts }: ArmoryP
 
       <div className="flex w-full flex-wrap justify-center text-center">
         <h2 className="mb-3 block w-full text-xl">Armory</h2>
-        {weapons &&
-          false &&
-          weapons.map((x) => {
-            const { image, rarity, expireDate, name, owned, points, price } = x;
+        {warriorEquipment?.slots &&
+          warriorEquipment.slots.map((x) => {
+            const { status, itemMetadata } = x || {};
+            const { rarity, powerType, powerValue, slotNumber, image, name } = itemMetadata || {};
             return (
-              <div key={name} className="w-1/6 text-center ">
+              <div key={slotNumber} className="w-1/6 text-center ">
                 <Equipment
-                  url={image}
-                  rarity={rarity as EquipmentRarity}
+                  url={image || WeaponChest}
+                  rarity={rarity as WeaponRarity}
                   className=""
                   profileView={true}
-                  revealed={owned}
-                  price={price}
-                  name={name}
+                  revealed={status === "revealed"}
+                  price={"100 $RUDE"}
+                  name={name || "reveal"}
                   event={() => {
                     onBuyEquipment(x);
                   }}
                 ></Equipment>
                 <div className="mt-6 flex w-full flex-wrap gap-y-1 text-center">
                   <div className="w-full ">{name}</div>
-                  <div className="w-full text-[#BFA97F]">{`P: ${points} `}</div>
+                  <div className="w-full text-[#BFA97F]">{`P: ${powerValue} `}</div>
                   <div className="w-full text-red-600">
-                    <CountDown date={expireDate}></CountDown>
+                    {/* <CountDown date={new Date().setHours()}></CountDown> */}
                   </div>
-                  <div className="w-full">{EquipmentRarityLabels[rarity]}</div>
+                  <div className="w-full">{EquipmentRarityLabels[rarity || "NONE"]}</div>
                 </div>
               </div>
             );
