@@ -7,8 +7,8 @@ import warimage from "../assets/images/war_banner.png";
 import rankImage from "../assets/images/rarity_banner.png";
 import nftToysImage from "../assets/images/nfttoys_banner.png";
 import rewardsImage from "../assets/images/rewards_banner.png";
-import type { EquipmentRarity } from "../components/common/Equipment";
 import Equipment from "../components/common/Equipment";
+import type { EquipmentRarityLabelsType } from "../components/common/Equipment";
 import classNames from "classnames";
 import phrases from "./sample-data/phrases.json";
 import EmptyWeaponImage from "../assets/weapons/no-weapon.png";
@@ -194,7 +194,7 @@ const Home: NextPage = () => {
                       className=""
                       key={x.id}
                       url={x.url}
-                      rarity={x.rarity as EquipmentRarity}
+                      rarity={x.rarity as EquipmentRarityLabelsType}
                       revealed={true}
                       profileView={false}
                       name={`equipment-${i}`}
@@ -400,18 +400,18 @@ const LeaderBoard = () => {
           }
         )}
       </div>
-      <div className="btn-group-horizontal btn-group mx-auto self-start pb-2 font-medieval-sharp">
+      <div className="btn-group btn-group-horizontal mx-auto self-start pb-2 font-medieval-sharp">
         <button
-          className="btn btn-sm  "
+          className="btn-sm btn  "
           disabled={page[nftTypeTab] == 0}
           onClick={handleFetchPreviousPage}
         >
           «
         </button>
-        <button className="btn btn-sm ">Page {(page[nftTypeTab] ?? 0) + 1}</button>
+        <button className="btn-sm btn ">Page {(page[nftTypeTab] ?? 0) + 1}</button>
 
         <button
-          className=" btn  btn-sm "
+          className=" btn-sm  btn "
           disabled={(data?.pages[page[nftTypeTab] ?? 0]?.items?.length ?? 0) < queryLimit}
           onClick={handleFetchNextPage}
         >
