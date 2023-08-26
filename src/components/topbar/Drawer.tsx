@@ -10,8 +10,6 @@ import rankImage from "assets/images/rarity_banner_small.png";
 import nftToysImage from "assets/images/nfttoys_banner_small.png";
 import rewardsImage from "assets/images/rewards_banner_small.png";
 import Image from "next/image";
-import CountdownTimer from "components/common/CountdownTimer";
-import { trpc } from "utils/trpc";
 
 type Props = {
   children: JSX.Element;

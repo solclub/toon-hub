@@ -11,13 +11,15 @@ export interface ItemMetadata {
   rarity?: WeaponRarity;
   powerType?: PowerType;
   powerValue?: number;
+  computedPowerValue?: number;
   slotNumber: number;
 }
 
 export interface Slot {
   status: SlotStatus;
-  itemId?: Schema.Types.ObjectId;
+  itemId?: string;
   itemMetadata?: ItemMetadata;
+  updatedAt?: Date;
 }
 
 export interface WarriorEquipment {
@@ -30,19 +32,23 @@ export interface WarriorEquipment {
 
 const itemMetadataSchema = new Schema({
   rarity: { type: String, required: true, enum: WeaponRarities },
+  name: { type: String, required: true },
+  image: { type: String, required: true },
   powerType: {
     type: String,
     enum: PowerTypes,
     required: true,
   },
   powerValue: { type: Number, required: true },
-  slotNumber: { type: Number, required: true, enum: SlotStatuses },
+  computedPowerValue: { type: Number, required: true },
+  slotNumber: { type: Number, required: true },
 });
 
 const slotSchema = new Schema({
-  status: { type: String, required: true },
-  itemId: { type: Schema.Types.ObjectId },
+  status: { type: String, required: true, enum: SlotStatuses },
+  itemId: { type: String },
   itemMetadata: { type: itemMetadataSchema },
+  updatedAt: { type: Date },
 });
 
 const warriorEquipmentSchema = new Schema({
@@ -53,11 +59,11 @@ const warriorEquipmentSchema = new Schema({
   warriorTotalPower: { type: Number, required: true },
 });
 
-const warriorEquipmentModel = () => {
+const WarriorEquipmentModel = () => {
   return (
     (mongoose.models?.WarriorEquipment as mongoose.Model<WarriorEquipment>) ||
     model<WarriorEquipment>("WarriorEquipment", warriorEquipmentSchema, "equipped_weapons")
   );
 };
 
-export default warriorEquipmentModel;
+export default WarriorEquipmentModel;

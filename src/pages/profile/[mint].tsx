@@ -3,8 +3,6 @@ import Image from "next/image";
 import { type NextPage } from "next";
 import Link from "next/link";
 import { useRouter } from "next/router";
-import Equipment, { EquipmentRarityLabels } from "components/common/Equipment";
-import { CountDown } from "components/common/CountDown";
 import Panel from "components/common/Panel";
 import Loader from "components/common/Loader";
 import NftVersion from "./components/NFTVersion";
@@ -15,21 +13,18 @@ import { trpc } from "utils/trpc";
 import { getRudeNftName } from "utils/nfttier";
 import classNames from "classnames";
 import NftHidden from "assets/images/skin.png";
-
-import ComingSoonImg from "assets/images/coming_soon.png";
 import LeaderBoardIcon from "assets/images/leaderboard_icon.png";
 import PowerRatingIcon from "assets/images/power_rating_icon.png";
 import TierIcon from "assets/images/tier_icon.png";
 import WeaponsIcon from "assets/images/weapons_icon.png";
-import WeaponChest from "assets/weapons/weapon-chest.png";
 import { useNFTManager } from "contexts/NFTManagerContext";
 import { Modal } from "components/common/Modal";
 import FeatureNFT from "pages/profile/components/FeatureNFT";
 import { toPascalCase } from "utils/string-utils";
 import VideoView from "./components/VideoView";
 import type { Product } from "server/database/models/catalog.model";
-import type { Slot, WarriorEquipment } from "server/database/models/equipped-weapon.model";
-import { WeaponRarity } from "server/database/models/weapon.model";
+import type { WarriorEquipment } from "server/database/models/equipped-weapon.model";
+import BuyEquipment from "./components/BuyEquipment";
 
 type NFTInfo = RudeNFT & {
   user: UserNFT | undefined;
@@ -37,6 +32,10 @@ type NFTInfo = RudeNFT & {
 
 const Profile: NextPage = () => {
   const [isOnUpgradeVideoModalOpen, setOnUpgradeVideoModalOpen] = useState(false);
+  const [isOnBuyWeaponModalOpen, setOnBuyWeaponModalOpen] = useState<{
+    state: boolean;
+    imageUrl?: string;
+  }>({ state: false, imageUrl: "" });
   const [isOpen, setOpen] = useState(false);
   const [profileNavState, setProfileNavState] = useState({ current: 0, before: -1, after: 1 });
   const router = useRouter();
@@ -64,7 +63,6 @@ const Profile: NextPage = () => {
   });
 
   const { data: userMints } = trpc.nfts.getUserMints.useQuery();
-  const weaponsEquiped = "0";
 
   useEffect(() => {
     paymentChannel.on("payment_success", handlePaymentSuccess);
@@ -74,7 +72,7 @@ const Profile: NextPage = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const handlePaymentSuccess = (type: ProductType) => {
+  const handlePaymentSuccess = (type: ProductType, imageUrl?: string) => {
     console.log("emmiter: ", type);
     switch (type) {
       case ProductType.NFT_ART_SWAP:
@@ -85,6 +83,11 @@ const Profile: NextPage = () => {
 
         break;
       case ProductType.NFT_FEATURE:
+        break;
+
+      case ProductType.WEAPON_SLOT:
+        utils.weapons.equippedWeapons.invalidate();
+        setOnBuyWeaponModalOpen({ state: true, imageUrl });
         break;
 
       default:
@@ -243,7 +246,7 @@ const Profile: NextPage = () => {
                             </button>
                           </>
                         ) : (
-                          <button className="btn-rude disabled btn cursor-default font-thin  ">
+                          <button className="btn-rude btn disabled cursor-default font-thin  ">
                             🚀 In Queue!{" "}
                           </button>
                         )}
@@ -308,7 +311,9 @@ const Profile: NextPage = () => {
                       width={40}
                     ></Image>
                   </div>
-                  <div className="w-full text-3xl text-[#BEA97E]">{profileNFT?.power}</div>
+                  <div className="w-full text-2xl text-[#BEA97E]">
+                    {equippedWeapons?.warriorTotalPower?.toFixed(2) ?? profileNFT?.power}
+                  </div>
                 </div>
               </div>
 
@@ -345,7 +350,9 @@ const Profile: NextPage = () => {
                       width={40}
                     ></Image>
                   </div>
-                  <div className="w-full text-4xl text-[#BEA97E]">{weaponsEquiped}</div>
+                  <div className="w-full text-4xl text-[#BEA97E]">
+                    {equippedWeapons?.slots?.filter((x) => x.status === "unlocked")?.length || 0}
+                  </div>
                 </div>
               </div>
             </div>
@@ -358,6 +365,7 @@ const Profile: NextPage = () => {
               nft={profileNFT}
               upgradeProducts={getProduct(ProductType.NFT_UPGRADE, profileNFT?.type)?.[0]}
               swapProducts={getProduct(ProductType.NFT_ART_SWAP, profileNFT?.type)?.[0]}
+              slotProducts={getProduct(ProductType.WEAPON_SLOT)?.[0]}
             ></CustomizePanel>
           )}
         </Panel>
@@ -368,9 +376,25 @@ const Profile: NextPage = () => {
         backdropDismiss={true}
         handleClose={() => setOnUpgradeVideoModalOpen(false)}
       >
-        <VideoView>
+        <VideoView type="NFT_UPGRADE">
           <Image
             src={profileNFT?.images?.get(profileNFT.current) ?? NftHidden}
+            alt={"Golem Image"}
+            width={800}
+            height={800}
+          ></Image>
+        </VideoView>
+      </Modal>
+
+      <Modal
+        className="w-full "
+        isOpen={isOnBuyWeaponModalOpen.state}
+        backdropDismiss={true}
+        handleClose={() => setOnBuyWeaponModalOpen({ state: false })}
+      >
+        <VideoView type="ROLL_WEAPON_SLOT">
+          <Image
+            src={isOnBuyWeaponModalOpen.imageUrl ?? WeaponsIcon}
             alt={"Golem Image"}
             width={800}
             height={800}
@@ -386,16 +410,19 @@ type ArmoryProps = {
   warriorEquipment: WarriorEquipment | null | undefined;
   upgradeProducts: Product | undefined;
   swapProducts: Product | undefined;
+  slotProducts: Product | undefined;
 };
 
-const CustomizePanel = ({ warriorEquipment, nft, upgradeProducts, swapProducts }: ArmoryProps) => {
+const CustomizePanel = ({
+  warriorEquipment,
+  nft,
+  upgradeProducts,
+  swapProducts,
+  slotProducts,
+}: ArmoryProps) => {
   const upgradeOpts = upgradeProducts?.options;
   const swapArtOpts = swapProducts?.options;
-
-  const onBuyEquipment = (x: Slot) => {
-    //check status
-    console.log(x);
-  };
+  const slotOpts = slotProducts?.options;
 
   return (
     <>
@@ -418,40 +445,29 @@ const CustomizePanel = ({ warriorEquipment, nft, upgradeProducts, swapProducts }
             ))}
       </div>
 
-      <div className="flex w-full flex-wrap justify-center text-center">
+      <div className="flex w-full flex-wrap justify-center gap-2 text-center">
         <h2 className="mb-3 block w-full text-xl">Armory</h2>
-        {warriorEquipment?.slots &&
-          warriorEquipment.slots.map((x) => {
-            const { status, itemMetadata } = x || {};
-            const { rarity, powerType, powerValue, slotNumber, image, name } = itemMetadata || {};
+        {nft &&
+          warriorEquipment?.slots.map((x) => {
+            const { status, itemMetadata, updatedAt } = x || {};
+            const { slotNumber } = itemMetadata || {};
+            const slotOpt = slotOpts?.find((s) => s.key === `SLOT_${slotNumber}`);
+            const slotPaymentOption = slotOpt?.paymentOptions?.[0]?.amounts?.[0];
             return (
-              <div key={slotNumber} className="w-1/6 text-center ">
-                <Equipment
-                  url={image || WeaponChest}
-                  rarity={rarity as WeaponRarity}
+              <div key={slotNumber} className="w-full text-center lg:w-1/5">
+                <BuyEquipment
+                  weaponMetadata={itemMetadata}
+                  product={slotOpt}
                   className=""
                   profileView={true}
-                  revealed={status === "revealed"}
-                  price={"100 $RUDE"}
-                  name={name || "reveal"}
-                  event={() => {
-                    onBuyEquipment(x);
-                  }}
-                ></Equipment>
-                <div className="mt-6 flex w-full flex-wrap gap-y-1 text-center">
-                  <div className="w-full ">{name}</div>
-                  <div className="w-full text-[#BFA97F]">{`P: ${powerValue} `}</div>
-                  <div className="w-full text-red-600">
-                    {/* <CountDown date={new Date().setHours()}></CountDown> */}
-                  </div>
-                  <div className="w-full">{EquipmentRarityLabels[rarity || "NONE"]}</div>
-                </div>
+                  revealed={status === "unlocked"}
+                  price={`${slotPaymentOption?.amount} $${slotPaymentOption?.token}`}
+                  nft={nft}
+                  updatedAt={updatedAt}
+                ></BuyEquipment>
               </div>
             );
           })}
-        <div className="ml-5 cursor-pointer hover:shadow-sm">
-          <Image src={ComingSoonImg} alt="Coming soon" className="object-fill"></Image>
-        </div>
       </div>
     </>
   );
