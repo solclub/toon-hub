@@ -37,7 +37,7 @@ interface NFTManagerContextType {
   catalog: Product[] | undefined;
   getProduct: (prodType: ProductType, collection?: string) => Product[] | undefined;
   paymentChannel: EventEmitter;
-  notifyPayment: (type: ProductType) => void;
+  notifyPayment: (type: ProductType, imageUrl?: string) => void;
 }
 
 const NFTManagerContext = createContext<NFTManagerContextType | null>(null);
@@ -65,12 +65,14 @@ export const NFTManagerProvider = (props: { children: React.ReactNode }) => {
   }, [isCatalogSuccess, products]);
 
   const getProduct = (prodType: ProductType, collection?: string) => {
-    const result = catalog?.filter((x) => x.type == prodType && x.collectionName == collection);
+    const result = catalog?.filter(
+      (x) => x.type == prodType && x.collectionName == (collection ?? x.collectionName)
+    );
     return result;
   };
 
-  const notifyPayment = (type: ProductType) => {
-    paymentChannel.emit(`payment_success`, type);
+  const notifyPayment = (type: ProductType, imageUrl?: string) => {
+    paymentChannel.emit(`payment_success`, type, imageUrl);
   };
 
   const value: NFTManagerContextType = {
