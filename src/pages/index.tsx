@@ -11,7 +11,6 @@ import Equipment from "../components/common/Equipment";
 import type { EquipmentRarityLabelsType } from "../components/common/Equipment";
 import classNames from "classnames";
 import phrases from "./sample-data/phrases.json";
-import EmptyWeaponImage from "../assets/weapons/no-weapon.png";
 import ImgTwitterBlue from "../assets/images/twitter_blue.png";
 import ImgPowerRating from "../assets/images/power_rating_icon.png";
 import NftHidden from "assets/images/skin.png";
@@ -36,28 +35,28 @@ const Home: NextPage = () => {
 
   const featuredNFT = featured.data;
 
-  const equipment = [
-    {
-      id: "1",
-      url: EmptyWeaponImage,
-      rarity: "NONE",
-    },
-    {
-      id: "2",
-      rarity: "NONE",
-      url: EmptyWeaponImage,
-    },
-    {
-      id: "3",
-      url: EmptyWeaponImage,
-      rarity: "NONE",
-    },
-    {
-      url: EmptyWeaponImage,
-      id: "4",
-      rarity: "NONE",
-    },
-  ];
+  // const equipment = [
+  //   {
+  //     id: "1",
+  //     url: EmptyWeaponImage,
+  //     rarity: "NONE",
+  //   },
+  //   {
+  //     id: "2",
+  //     rarity: "NONE",
+  //     url: EmptyWeaponImage,
+  //   },
+  //   {
+  //     id: "3",
+  //     url: EmptyWeaponImage,
+  //     rarity: "NONE",
+  //   },
+  //   {
+  //     url: EmptyWeaponImage,
+  //     id: "4",
+  //     rarity: "NONE",
+  //   },
+  // ];
 
   return (
     <div className="relative mb-8">
@@ -94,112 +93,114 @@ const Home: NextPage = () => {
       <div className="mt-7 flex flex-wrap align-middle">
         <div className="w-full lg:w-[60%]">
           <Panel className="panel flex flex-wrap rounded-md ">
-            {featuredNFT && (
-              <div className="overflow-hidde w-full p-3 lg:w-[63%]">
-                <div className=" relative h-[500px] w-full">
-                  <Image
-                    className="absolute max-h-[500px] rounded-2xl object-cover"
-                    src={featuredNFT?.nft?.images?.get(featuredNFT?.nft?.current) ?? NftHidden}
-                    alt="Picture of the author"
-                    fill
-                  />
-                  <div className="absolute bottom-0 h-[60%] w-full rounded-xl bg-gradient-to-t from-black to-transparent"></div>
-                  <div className="absolute bottom-10 left-10  h-[60%] w-[50%] ">
-                    <div className="absolute bottom-0">
-                      <div className=" text-2xl font-bold">{featuredNFT?.nft?.name || ""}</div>
-                      <div className="mt-2 text-xl font-normal">
-                        <Image
-                          className="inline"
-                          src={ImgTwitterBlue}
-                          alt="Twitter Image"
-                          width={15}
-                          height={15}
-                        />
-                        {(
-                          <Link
-                            className="ml-2"
-                            href={
-                              "https://twitter.com/" +
-                              featuredNFT?.user?.twitterDetails?.username.replace("@", "")
-                            }
-                            target="_blank"
-                          >
-                            {featuredNFT?.user?.twitterDetails?.username
-                              .replace("@", "")
-                              .toLowerCase()}
-                          </Link>
-                        ) || "Unknow"}
-                      </div>
-                      <div className="mt-2 overflow-hidden overflow-ellipsis text-xs font-thin">
-                        <Image
-                          className="inline"
-                          src={ImgSolScan}
-                          alt="Twitter Image"
-                          width={15}
-                          height={15}
-                        />
-                        <span className="ml-2 inline-block w-20">
-                          <Link
-                            className="ml-2"
-                            href={`https://solscan.io/token/${featuredNFT?.nft?.mint}`}
-                            target="_blank"
-                          >
-                            {"..." + featuredNFT?.user?.walletId.substring(5, 15) + "..." ||
-                              "Unknow"}
-                          </Link>
-                        </span>
-                      </div>
+            <div className="overflow-hidde w-full p-3 lg:w-[63%]">
+              <div className=" relative h-[500px] w-full">
+                <Image
+                  className="absolute max-h-[500px] rounded-2xl object-cover"
+                  src={featuredNFT?.nft?.images?.get(featuredNFT?.nft?.current) ?? NftHidden}
+                  alt="Picture of the author"
+                  fill
+                />
+                <div className="absolute bottom-0 h-[60%] w-full rounded-xl bg-gradient-to-t from-black to-transparent"></div>
+                <div className="absolute bottom-10 left-10  h-[60%] w-[50%] ">
+                  <div className="absolute bottom-0">
+                    <div className=" text-2xl font-bold">{featuredNFT?.nft?.name || ""}</div>
+                    <div className="mt-2 text-xl font-normal">
+                      <Image
+                        className="inline"
+                        src={ImgTwitterBlue}
+                        alt="Twitter Image"
+                        width={15}
+                        height={15}
+                      />
+                      {(
+                        <Link
+                          className="ml-2"
+                          href={
+                            "https://twitter.com/" +
+                            featuredNFT?.user?.twitterDetails?.username.replace("@", "")
+                          }
+                          target="_blank"
+                        >
+                          {featuredNFT?.user?.twitterDetails?.username
+                            .replace("@", "")
+                            .toLowerCase() ?? "Unknow"}
+                        </Link>
+                      ) || "Unknow"}
+                    </div>
+                    <div className="mt-2 overflow-hidden overflow-ellipsis text-xs font-thin">
+                      <Image
+                        className="inline"
+                        src={ImgSolScan}
+                        alt="Twitter Image"
+                        width={15}
+                        height={15}
+                      />
+                      <span className="ml-2 inline-block w-20">
+                        <Link
+                          className="ml-2"
+                          href={`https://solscan.io/token/${featuredNFT?.nft?.mint}`}
+                          target="_blank"
+                        >
+                          {"..." + (featuredNFT?.user?.walletId?.substring(5, 15) || "") + "..."}
+                        </Link>
+                      </span>
                     </div>
                   </div>
-                  <div className="absolute right-1 top-1">
-                    <div className="dropdown">
-                      <label tabIndex={0} className="m-1 cursor-pointer">
-                        <svg
-                          className="inline-block h-6 align-middle"
-                          id="info-circle"
-                          data-name="Layer 1"
-                          xmlns="http://www.w3.org/2000/svg"
-                          viewBox="0 0 24 24"
-                        >
-                          <path
-                            fill="#3A3DAB"
-                            d="M12,2A10,10,0,1,0,22,12,10.01114,10.01114,0,0,0,12,2Zm0,18a8,8,0,1,1,8-8A8.00917,8.00917,0,0,1,12,20Zm0-8.5a1,1,0,0,0-1,1v3a1,1,0,0,0,2,0v-3A1,1,0,0,0,12,11.5Zm0-4a1.25,1.25,0,1,0,1.25,1.25A1.25,1.25,0,0,0,12,7.5Z"
-                          ></path>
-                        </svg>
-                      </label>
-                      <div
-                        tabIndex={0}
-                        className="card-compact card dropdown-content w-72 bg-black bg-opacity-30 backdrop-blur-sm backdrop-filter"
+                </div>
+                <div className="absolute right-1 top-1">
+                  <div className="dropdown">
+                    <label tabIndex={0} className="m-1 cursor-pointer">
+                      <svg
+                        className="inline-block h-6 align-middle"
+                        id="info-circle"
+                        data-name="Layer 1"
+                        xmlns="http://www.w3.org/2000/svg"
+                        viewBox="0 0 24 24"
                       >
-                        <div className="card-body">
-                          <h3 className="card-title">Want to Feature your NFT?</h3>
-                          <p>
-                            Make your NFT shine on your NFT profile. Log in and feature your
-                            masterpiece now!
-                          </p>
-                        </div>
+                        <path
+                          fill="#3A3DAB"
+                          d="M12,2A10,10,0,1,0,22,12,10.01114,10.01114,0,0,0,12,2Zm0,18a8,8,0,1,1,8-8A8.00917,8.00917,0,0,1,12,20Zm0-8.5a1,1,0,0,0-1,1v3a1,1,0,0,0,2,0v-3A1,1,0,0,0,12,11.5Zm0-4a1.25,1.25,0,1,0,1.25,1.25A1.25,1.25,0,0,0,12,7.5Z"
+                        ></path>
+                      </svg>
+                    </label>
+                    <div
+                      tabIndex={0}
+                      className="card dropdown-content card-compact w-72 bg-black bg-opacity-30 backdrop-blur-sm backdrop-filter"
+                    >
+                      <div className="card-body">
+                        <h3 className="card-title">Want to Feature your NFT?</h3>
+                        <p>
+                          Make your NFT shine on your NFT profile. Log in and feature your
+                          masterpiece now!
+                        </p>
                       </div>
                     </div>
                   </div>
                 </div>
               </div>
-            )}
+            </div>
 
             <div className="flex w-full flex-wrap items-center pb-8 align-middle lg:w-[35%]">
               <div className="flex w-full flex-wrap items-center justify-center gap-6">
                 <div className="w-full pb-3 text-center text-2xl text-slate-200">Equipment</div>
-                {equipment &&
-                  equipment.map((x, i) => (
-                    <Equipment
-                      className=""
-                      key={x.id}
-                      url={x.url}
-                      rarity={x.rarity as EquipmentRarityLabelsType}
-                      revealed={true}
-                      profileView={false}
-                      name={`equipment-${i}`}
-                    ></Equipment>
-                  ))}
+                {featuredNFT?.slots?.map((x, i) => {
+                  if (x) {
+                    return (
+                      <Equipment
+                        className=""
+                        key={x?.slotNumber}
+                        url={x?.image}
+                        rarity={x?.rarity}
+                        name={x?.name}
+                      ></Equipment>
+                    );
+                  } else {
+                    return (
+                      <Equipment className="" key={i} rarity={"NONE"} name={"EMPTY"}></Equipment>
+                    );
+                  }
+                })}
               </div>
             </div>
           </Panel>
@@ -400,7 +401,7 @@ const LeaderBoard = () => {
           }
         )}
       </div>
-      <div className="btn-group btn-group-horizontal mx-auto self-start pb-2 font-medieval-sharp">
+      <div className="btn-group-horizontal btn-group mx-auto self-start pb-2 font-medieval-sharp">
         <button
           className="btn-sm btn  "
           disabled={page[nftTypeTab] == 0}

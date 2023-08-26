@@ -68,6 +68,37 @@ export const getLeaderboard = async (
       },
     },
     {
+      $lookup: {
+        from: "equipped_weapons",
+        localField: "nft.mint",
+        foreignField: "warriorId",
+        as: "equippedWeapons",
+      },
+    },
+    {
+      $unwind: {
+        path: "$equippedWeapons",
+        preserveNullAndEmptyArrays: true,
+      },
+    },
+    {
+      $addFields: {
+        effectivePower: {
+          $cond: {
+            if: "$equippedWeapons",
+            then: "$equippedWeapons.warriorTotalPower",
+            else: {
+              $cond: {
+                if: { $eq: ["$nft.type", "DEMON"] },
+                then: "$demon.power",
+                else: "$golem.power",
+              },
+            },
+          },
+        },
+      },
+    },
+    {
       $project: {
         name: {
           $cond: {
@@ -107,11 +138,7 @@ export const getLeaderboard = async (
         owner: "$nft.wallet",
         twitter: "$twitterDetails.username",
         power: {
-          $cond: {
-            if: { $eq: ["$nft.type", "DEMON"] },
-            then: "$demon.power",
-            else: "$golem.power",
-          },
+          $round: ["$effectivePower", 2], // Redondear a 2 decimales
         },
         type: "$nft.type",
       },
@@ -177,6 +204,20 @@ export const getWalletLeaderboard = async (skip: number, limit: number): Promise
       },
     },
     {
+      $lookup: {
+        from: "equipped_weapons",
+        localField: "nfts.mint",
+        foreignField: "warriorId",
+        as: "equippedWeapons",
+      },
+    },
+    {
+      $unwind: {
+        path: "$equippedWeapons",
+        preserveNullAndEmptyArrays: true,
+      },
+    },
+    {
       $match: {
         $or: [
           { "nfts.type": "GOLEM", "golem.power": { $exists: true } },
@@ -211,9 +252,15 @@ export const getWalletLeaderboard = async (skip: number, limit: number): Promise
         power: {
           $sum: {
             $cond: {
-              if: { $eq: ["$nfts.type", "DEMON"] },
-              then: "$demon.power",
-              else: "$golem.power",
+              if: "$equippedWeapons",
+              then: "$equippedWeapons.warriorTotalPower",
+              else: {
+                $cond: {
+                  if: { $eq: ["$nfts.type", "DEMON"] },
+                  then: "$demon.power",
+                  else: "$golem.power",
+                },
+              },
             },
           },
         },

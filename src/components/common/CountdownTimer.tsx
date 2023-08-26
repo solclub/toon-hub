@@ -5,7 +5,7 @@ interface CountdownTimerProps {
 }
 
 const CountdownTimer: React.FC<CountdownTimerProps> = ({ targetDate }) => {
-  const [timeRemaining, setTimeRemaining] = useState("");
+  const [timeRemaining, setTimeRemaining] = useState("loading...");
 
   // Lógica para calcular el tiempo restante
   useEffect(() => {

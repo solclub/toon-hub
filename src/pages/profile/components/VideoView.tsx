@@ -1,7 +1,16 @@
 import ReactPlayer from "react-player";
 import { useState } from "react";
 
-const VideoView = ({ children }: { children: React.ReactNode }) => {
+type VideoViewType = "NFT_UPGRADE" | "ROLL_WEAPON_SLOT";
+
+const VideosURLs: Record<VideoViewType, string> = {
+  NFT_UPGRADE:
+    "https://res.cloudinary.com/dfniu7jks/video/upload/v1682957771/video/upgrade-video_vxcsd3.mp4",
+  ROLL_WEAPON_SLOT:
+    "https://res.cloudinary.com/dfniu7jks/video/upload/v1692751066/video/eeebikiqpc0dpy0wy8ms.mp4",
+};
+
+const VideoView = ({ children, type }: { children: React.ReactNode; type: VideoViewType }) => {
   const [showImage, setShowImage] = useState(false);
 
   const handleVideoEnded = () => {
@@ -12,9 +21,7 @@ const VideoView = ({ children }: { children: React.ReactNode }) => {
     <div className="w-fit rounded-2xl">
       {!showImage ? (
         <ReactPlayer
-          url={
-            "https://res.cloudinary.com/dfniu7jks/video/upload/v1682957771/video/upgrade-video_vxcsd3.mp4"
-          }
+          url={VideosURLs[type]}
           height={480}
           width={480}
           playing={true}

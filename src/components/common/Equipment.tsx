@@ -4,18 +4,13 @@ import Image from "next/image";
 import classNames from "classnames";
 import FrameBox, { FrameType } from "./FrameBox";
 import type { WeaponRarity } from "server/database/models/weapon.model";
+import EmptyWeaponImage from "assets/weapons/no-weapon.png";
 
 type Props = {
-  url: string | StaticImageData;
-  rarity: WeaponRarity;
+  url?: string | StaticImageData | undefined;
+  rarity?: WeaponRarity;
   className?: string;
-  width?: number;
-  height?: number;
-  profileView?: boolean;
-  revealed?: boolean;
-  price?: string;
-  name: string;
-  event?: () => void;
+  name?: string;
 };
 
 const RarityColors: Record<WeaponRarity, string> = {
@@ -40,33 +35,18 @@ export const EquipmentRarityLabels: Record<WeaponRarity, string> = {
 export type EquipmentRarityLabelsType = keyof typeof EquipmentRarityLabels;
 
 const Equipment = (equipment: Props) => {
-  const { url, rarity, className, width, height, revealed, price, name, event } = equipment;
+  const { url, rarity, className, name } = equipment;
   return (
-    <div className={classNames(RarityColors[rarity], className, "relative ")}>
-      <FrameBox frameType={!revealed ? FrameType.green : FrameType.default}>
-        {url && (
-          <Image src={url} alt="weapon equiped" width={width || 100} height={height || 100}></Image>
-        )}
+    <div className={classNames(RarityColors[rarity ?? "NONE"], className, "relative ")}>
+      <FrameBox frameType={FrameType.default}>
+        <Image src={url ?? EmptyWeaponImage} alt={name ?? "empty"} width={100} height={100}></Image>
 
         <label
           htmlFor={name}
           className="absolute top-0 left-0 z-50 block w-full cursor-pointer"
-          style={{ height: height || 100 }}
+          style={{ height: 100 }}
         ></label>
       </FrameBox>
-      {!revealed && (
-        <>
-          <div className="absolute -bottom-2 left-0 z-50 w-full">
-            <button
-              onClick={event}
-              className="z-50 rounded-full bg-green-400 px-3 py-1 text-xs font-thin text-black"
-            >
-              buy
-            </button>
-          </div>
-          <div className="absolute top-4 w-full text-green-400">{price}</div>
-        </>
-      )}
     </div>
   );
 };
