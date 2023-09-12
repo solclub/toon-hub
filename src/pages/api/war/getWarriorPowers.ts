@@ -9,5 +9,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   const { warriorList } = req.body;
   console.log(warriorList);
   const totalPower = await getWarriorsPower(warriorList);
-  res.status(200).json(totalPower);
+  console.log(totalPower);
+  res.status(200).json({ totalPower: totalPower });
 }

@@ -14,7 +14,7 @@ import warriorEquipmentModel from "server/database/models/equipped-weapon.model"
 
 export interface WarriorPowerType {
   warriorId: string;
-  totalPower: number;
+  totalWeaponsPower: number;
 }
 
 const PayerKeyPair = Keypair.fromSecretKey(bs58.decode(env.ANCHOR_WALLET_KEYPAIR));
@@ -133,21 +133,21 @@ export const getWarriorsPower = async (warriorsList: string[]) => {
     {
       $group: {
         _id: "$warriorId",
-        totalPower: { $sum: "$warriorTotalPower" },
+        totalWeaponsPower: { $sum: "$warriorWeaponsPower" },
       },
     },
     {
       $project: {
         _id: 0,
         warriorId: "$_id",
-        totalPower: 1,
+        totalWeaponsPower: 1,
       },
     }
   );
 
   const result = await warriorEquipmentModel().aggregate<WarriorPowerType>(pipeline);
   return result.reduce((acc, item) => {
-    const sum = acc + item.totalPower;
+    const sum = acc + item.totalWeaponsPower;
     return sum;
   }, 0);
 };
