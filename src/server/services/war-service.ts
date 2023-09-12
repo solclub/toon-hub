@@ -145,7 +145,9 @@ export const getWarriorsPower = async (warriorsList: string[]) => {
     }
   );
 
+  console.log("first", warriorsList.length);
   const result = await warriorEquipmentModel().aggregate<WarriorPowerType>(pipeline);
+  console.log(result.length, result[0]?.totalWeaponsPower);
   return result.reduce((acc, item) => {
     const sum = acc + item.totalWeaponsPower;
     return sum;
