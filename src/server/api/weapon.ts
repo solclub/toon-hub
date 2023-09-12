@@ -1,10 +1,11 @@
 import { z } from "zod";
-import { router, protectedProcedure, publicProcedure } from "./trpc/trpc-context";
+import { router, protectedProcedure } from "./trpc/trpc-context";
 import { TRPCError } from "@trpc/server";
+import type { RandomWeaponRequest } from "server/services/weapon-service";
 import service from "server/services/weapon-service";
 
 export const weaponsRouter = router({
-  randomWeapon: protectedProcedure
+  buyWeapon: protectedProcedure
     .input(
       z.object({
         mint: z.string(),
@@ -17,8 +18,28 @@ export const weaponsRouter = router({
       })
     )
     .mutation(async ({ input, ctx }) => {
-      const { mint, nonce, serializedTx, signedMessage, stringMessage, nftType } = input;
-      //ctx.validateSignedMessage(signedMessage, stringMessage, nonce, ctx.csrf);
+      const { mint, nonce, serializedTx, signedMessage, stringMessage, nftType, slot } = input;
+      ctx.validateSignedMessage(signedMessage, stringMessage, nonce, ctx.csrf);
+
+      const wallet = ctx.session.walletId;
+      const request: RandomWeaponRequest = {
+        mintAddress: mint,
+        wallet: wallet,
+        verifiedOwner: wallet,
+        serializedTx,
+        nftType: nftType,
+        slot: slot,
+      };
+      const result = await service.confirmAndSave(request);
+
+      if (result.status == "FAILED") {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: result.message,
+          cause: result.data,
+        });
+      }
+      return result.data?.slots.find((x) => x.itemMetadata?.slotNumber === slot)?.itemMetadata;
     }),
   equippedWeapons: protectedProcedure
     .input(

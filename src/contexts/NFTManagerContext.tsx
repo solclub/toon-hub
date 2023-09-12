@@ -37,7 +37,7 @@ interface NFTManagerContextType {
   catalog: Product[] | undefined;
   getProduct: (prodType: ProductType, collection?: string) => Product[] | undefined;
   paymentChannel: EventEmitter;
-  notifyPayment: (type: ProductType) => void;
+  notifyPayment: (type: ProductType, imageUrl?: string) => void;
 }
 
 const NFTManagerContext = createContext<NFTManagerContextType | null>(null);
@@ -65,12 +65,14 @@ export const NFTManagerProvider = (props: { children: React.ReactNode }) => {
   }, [isCatalogSuccess, products]);
 
   const getProduct = (prodType: ProductType, collection?: string) => {
-    const result = catalog?.filter((x) => x.type == prodType && x.collectionName == collection);
+    const result = catalog?.filter(
+      (x) => x.type == prodType && x.collectionName == (collection ?? x.collectionName)
+    );
     return result;
   };
 
-  const notifyPayment = (type: ProductType) => {
-    paymentChannel.emit(`payment_success`, type);
+  const notifyPayment = (type: ProductType, imageUrl?: string) => {
+    paymentChannel.emit(`payment_success`, type, imageUrl);
   };
 
   const value: NFTManagerContextType = {
@@ -90,7 +92,6 @@ const prepTransaction = async (
   txSigner: <T extends Transaction | VersionedTransaction>(transaction: T) => Promise<T>
 ): Promise<string> => {
   const instructions: TransactionInstruction[] = [];
-
   for (const paymentAmount of payment.amounts) {
     await buildTokenInstruction(owner, paymentAmount, instructions);
   }
@@ -119,12 +120,8 @@ const buildTokenInstruction = async (
       instructions.push(...instruction);
     },
     [PaymentToken.RUDE]: async () => {
-      console.log(RUDE_TOKEN_KEY.toString(), RUDE_SINK_KEY.toString());
-
       const userRudeTokenAccount = await getAssociatedTokenAddress(RUDE_TOKEN_KEY, owner);
-      console.log("RUDE ADDRESS ", RUDE_TOKEN_KEY.toBase58(), RUDE_SINK_KEY.toBase58());
       const rudeTokenSinkAccount = await getAssociatedTokenAddress(RUDE_TOKEN_KEY, RUDE_SINK_KEY);
-      console.log("RUDE ADDRESS 2 ", rudeTokenSinkAccount.toBase58());
       const instruction = await buildRudeTokenInstruction(
         userRudeTokenAccount,
         rudeTokenSinkAccount,
@@ -148,12 +145,14 @@ const buildButterflyInstructions = async (
 ): Promise<TransactionInstruction[]> => {
   const instructions: TransactionInstruction[] = [];
   const butterflies = await getButterflies(userWallet.toBase58());
-  if (butterflies.length < amount) throw Error("The user does not have enough butterflies");
+  if (butterflies.length < amount || butterflies.length == 0)
+    throw Error("The user does not have enough butterflies");
 
   for (let index = 0; index < amount; index++) {
     const butterfly = butterflies[index];
+    if (!butterfly) throw "invalid butterfly";
 
-    const userButterflyMint = butterfly?.address as PublicKey;
+    const userButterflyMint = butterfly.mintAddress;
     const userButterflyTokenAccount = await getAssociatedTokenAddress(
       userButterflyMint,
       userWallet

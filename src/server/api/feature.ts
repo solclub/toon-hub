@@ -5,6 +5,7 @@ import featureService from "server/services/feature-service";
 import { TRPCError } from "@trpc/server";
 import { getUserNFTbyMint } from "server/services/nfts-service";
 import userModel from "server/database/models/user.model";
+import service from "server/services/weapon-service";
 
 export const featureRouter = router({
   featureNFT: protectedProcedure
@@ -49,8 +50,14 @@ export const featureRouter = router({
     const user = await userModel().findOne({
       walletId: result.wallet,
     });
+    const slots = (await service.getWeaponsEquipped(result.mint, result.wallet))?.slots
+      ?.map((x) => x.itemMetadata)
+      ?.sort(
+        (a, b) =>
+          (a?.slotNumber ?? Number.MAX_SAFE_INTEGER) - (b?.slotNumber ?? Number.MAX_SAFE_INTEGER)
+      );
 
-    return { nft, user };
+    return { nft, user, slots };
   }),
 
   serverDate: publicProcedure.query(async () => {
