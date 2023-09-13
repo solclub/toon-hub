@@ -6,6 +6,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     res.status(405).send({ message: "Only POST requests allowed" });
     return;
   }
+  console.log("war api called");
+  console.log(req.body);
   const { warriorList } = req.body;
   console.log(warriorList);
   const totalPower = await getWarriorsPower(warriorList);
