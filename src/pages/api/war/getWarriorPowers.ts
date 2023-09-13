@@ -2,7 +2,7 @@ import type { NextApiRequest, NextApiResponse } from "next";
 import { getWarriorsPower } from "server/services/war-service";
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  console.log("war api called");
+  console.log("war api called", req.method);
   console.log(req.body);
   const { warriorList } = req.body;
   console.log(warriorList);
