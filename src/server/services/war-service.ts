@@ -9,6 +9,7 @@ import type { PipelineStage } from "mongoose";
 import { env } from "env/server.mjs";
 import NodeWallet from "@project-serum/anchor/dist/cjs/nodewallet";
 import { connection } from "./connections/web3-public";
+import dbConnect from "server/database/mongoose";
 
 import warriorEquipmentModel from "server/database/models/equipped-weapon.model";
 
@@ -123,7 +124,7 @@ export const getInTrainingNfts = async (wallet: string): Promise<AccountSettings
 
 export const getWarriorsPower = async (warriorsList: string[]) => {
   const pipeline: Array<PipelineStage> = [];
-
+  await dbConnect();
   pipeline.push(
     {
       $match: {
@@ -132,24 +133,13 @@ export const getWarriorsPower = async (warriorsList: string[]) => {
     },
     {
       $group: {
-        _id: "$warriorId",
+        _id: null,
         totalWeaponsPower: { $sum: "$warriorWeaponsPower" },
-      },
-    },
-    {
-      $project: {
-        _id: 0,
-        warriorId: "$_id",
-        totalWeaponsPower: 1,
       },
     }
   );
 
-  console.log("first", warriorsList.length);
+  console.log("first", warriorsList?.length);
   const result = await warriorEquipmentModel().aggregate<WarriorPowerType>(pipeline);
-  console.log(result.length, result[0]?.totalWeaponsPower);
-  return result.reduce((acc, item) => {
-    const sum = acc + item.totalWeaponsPower;
-    return sum;
-  }, 0);
+  return result[0]?.totalWeaponsPower ?? 0;
 };
