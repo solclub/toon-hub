@@ -22,39 +22,39 @@ export interface RandomWeaponRequest {
 const rarityPerSlotTable: Record<number, Record<WeaponRarity, number>> = {
   1: {
     NONE: 0,
-    COMMON: 60,
-    RARE: 25,
-    EPIC: 10,
-    LEGENDARY: 4,
-    MYTHIC: 1,
+    COMMON: 37.5,
+    RARE: 30,
+    EPIC: 17.5,
+    LEGENDARY: 10,
+    MYTHIC: 5,
     SECRET: 0,
   },
   2: {
     NONE: 0,
-    COMMON: 60,
+    COMMON: 30,
     RARE: 25,
-    EPIC: 10,
-    LEGENDARY: 4,
-    MYTHIC: 1,
+    EPIC: 20,
+    LEGENDARY: 15,
+    MYTHIC: 10,
     SECRET: 0,
   },
   3: {
     NONE: 0,
-    COMMON: 54.5,
-    RARE: 20,
+    COMMON: 45,
+    RARE: 25,
     EPIC: 15,
-    LEGENDARY: 7,
-    MYTHIC: 3,
-    SECRET: 0,
+    LEGENDARY: 10,
+    MYTHIC: 4,
+    SECRET: 1,
   },
   4: {
     NONE: 0,
-    COMMON: 54.5,
-    RARE: 20,
-    EPIC: 15,
-    LEGENDARY: 7,
-    MYTHIC: 3,
-    SECRET: 0.5,
+    COMMON: 35,
+    RARE: 25,
+    EPIC: 20,
+    LEGENDARY: 10,
+    MYTHIC: 7.5,
+    SECRET: 2.5,
   },
 };
 
@@ -125,8 +125,12 @@ export const saveWeaponEquipped = async (req: RandomWeaponRequest): Promise<Warr
         warriorWeaponsPower += slot.itemMetadata.powerValue ?? 0;
         slot.itemMetadata.computedPowerValue = slot.itemMetadata.powerValue ?? 0;
       } else if (slot.itemMetadata?.powerType === "multiplier") {
-        const computedValue =
-          Math.round((nft.power ?? 0) * (slot.itemMetadata.powerValue ?? 0) * 100) / 100;
+        const fixedWeaponPowers = updatedSlots
+          .filter((s) => s.itemMetadata?.powerType === "fixed")
+          .reduce((total, s) => total + (s.itemMetadata?.powerValue ?? 0), 0);
+
+        const multiplier = slot.itemMetadata.powerValue ?? 1;
+        const computedValue = Math.round(fixedWeaponPowers * multiplier * 100) / 100;
         slot.itemMetadata.computedPowerValue = computedValue;
         warriorWeaponsPower += computedValue;
       }
@@ -149,10 +153,7 @@ export const saveWeaponEquipped = async (req: RandomWeaponRequest): Promise<Warr
     return updatedItem as WarriorEquipment;
   } else {
     const castedWeapon = rolledWeapon as Weapon;
-    const warriorWeaponsPower =
-      castedWeapon.powerType === "fixed"
-        ? castedWeapon.powerValue
-        : (nft.power ?? 0) * castedWeapon.powerValue;
+    const warriorWeaponsPower = castedWeapon.powerType === "fixed" ? castedWeapon.powerValue : 0;
     const warriorTotalPower = (nft.power ?? 0) + warriorWeaponsPower;
 
     const newItemData: WarriorEquipment = {

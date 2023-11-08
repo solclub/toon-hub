@@ -215,19 +215,20 @@ const BuyEquipment = (equipment: Props) => {
                 </motion.button>
               </>
             )}
-            {(!revealed || (updatedAt && targetRollDate && targetRollDate <= new Date())) && (
-              <>
-                <motion.button
-                  onClick={() => {
-                    setWeaponModalOpen(!isWeaponModalOpen);
-                  }}
-                  className="btn-rude btn w-full"
-                >
-                  Roll Now 🎲
-                </motion.button>
-                <div className="absolute top-4 left-0 mx-auto w-full text-green-400">{price}</div>
-              </>
-            )}
+            {(!revealed || (updatedAt && targetRollDate && targetRollDate <= new Date())) &&
+              nft.user?.wallet == publicKey?.toBase58() && (
+                <>
+                  <motion.button
+                    onClick={() => {
+                      setWeaponModalOpen(!isWeaponModalOpen);
+                    }}
+                    className="btn-rude btn w-full"
+                  >
+                    Roll Now 🎲
+                  </motion.button>
+                  <div className="absolute top-4 left-0 mx-auto w-full text-green-400">{price}</div>
+                </>
+              )}
           </div>
         </div>
       </div>
