@@ -8,7 +8,6 @@ import rankImage from "../assets/images/rarity_banner.png";
 import nftToysImage from "../assets/images/nfttoys_banner.png";
 import rewardsImage from "../assets/images/rewards_banner.png";
 import Equipment from "../components/common/Equipment";
-import type { EquipmentRarityLabelsType } from "../components/common/Equipment";
 import classNames from "classnames";
 import phrases from "./sample-data/phrases.json";
 import ImgTwitterBlue from "../assets/images/twitter_blue.png";
