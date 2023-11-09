@@ -216,7 +216,7 @@ const BuyEquipment = (equipment: Props) => {
               </>
             )}
             {(!revealed || (updatedAt && targetRollDate && targetRollDate <= new Date())) &&
-              nft.user?.wallet == publicKey?.toBase58() && (
+              nft?.user?.wallet == publicKey?.toBase58() && (
                 <>
                   <motion.button
                     onClick={() => {
