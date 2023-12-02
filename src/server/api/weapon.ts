@@ -1,8 +1,8 @@
-import { z } from "zod";
-import { router, protectedProcedure } from "./trpc/trpc-context";
 import { TRPCError } from "@trpc/server";
 import type { RandomWeaponRequest } from "server/services/weapon-service";
 import service from "server/services/weapon-service";
+import { z } from "zod";
+import { protectedProcedure, router } from "./trpc/trpc-context";
 
 export const weaponsRouter = router({
   buyWeapon: protectedProcedure
@@ -52,4 +52,7 @@ export const weaponsRouter = router({
       const wallet = ctx.session.walletId;
       return await service.getWeaponsEquipped(mint, wallet);
     }),
+  getSlotRollTimes: protectedProcedure.input(z.object({})).query(async ({}) => {
+    return await service.getSlotRollTimes();
+  }),
 });

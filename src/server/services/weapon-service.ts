@@ -3,12 +3,16 @@ import type {
   Slot,
   WarriorEquipment,
 } from "server/database/models/equipped-weapon.model";
-import warriorEquipmentModel from "server/database/models/equipped-weapon.model";
-import paymentService from "./payment-service";
+import {
+  default as WarriorEquipmentModel,
+  default as warriorEquipmentModel,
+} from "server/database/models/equipped-weapon.model";
+import type { RollSlotTimes } from "server/database/models/settings.model";
 import type { Weapon, WeaponRarity } from "server/database/models/weapon.model";
 import WeaponModel from "server/database/models/weapon.model";
-import WarriorEquipmentModel from "server/database/models/equipped-weapon.model";
+import ConfigurationService from "./configuration-service";
 import { getUserNFTbyMint } from "./nfts-service";
+import paymentService from "./payment-service";
 
 export interface RandomWeaponRequest {
   mintAddress: string;
@@ -19,44 +23,7 @@ export interface RandomWeaponRequest {
   slot: number;
 }
 
-const rarityPerSlotTable: Record<number, Record<WeaponRarity, number>> = {
-  1: {
-    NONE: 0,
-    COMMON: 37.5,
-    RARE: 30,
-    EPIC: 17.5,
-    LEGENDARY: 10,
-    MYTHIC: 5,
-    SECRET: 0,
-  },
-  2: {
-    NONE: 0,
-    COMMON: 30,
-    RARE: 25,
-    EPIC: 20,
-    LEGENDARY: 15,
-    MYTHIC: 10,
-    SECRET: 0,
-  },
-  3: {
-    NONE: 0,
-    COMMON: 45,
-    RARE: 25,
-    EPIC: 15,
-    LEGENDARY: 10,
-    MYTHIC: 4,
-    SECRET: 1,
-  },
-  4: {
-    NONE: 0,
-    COMMON: 35,
-    RARE: 25,
-    EPIC: 20,
-    LEGENDARY: 10,
-    MYTHIC: 7.5,
-    SECRET: 2.5,
-  },
-};
+type RarityTable = Record<number, Record<WeaponRarity, number>>;
 
 export const confirmAndSave = async (req: RandomWeaponRequest) => {
   const result = paymentService.proccessPayment<WarriorEquipment>(
@@ -78,8 +45,9 @@ export const saveWeaponEquipped = async (req: RandomWeaponRequest): Promise<Warr
   if (!req) throw "req is required";
 
   const nft = await getUserNFTbyMint(req.wallet, req.mintAddress);
+  const rarityTable = await getRarityTable();
   // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-  const rolledRarity = rollRarity(rarityPerSlotTable[req.slot]!);
+  const rolledRarity = rollRarity(rarityTable[req.slot]!);
 
   const rolledWeapon = await WeaponModel().findOne({
     slotNumber: req.slot,
@@ -244,10 +212,52 @@ const rollRarity = (slotProbabilities: Record<WeaponRarity, number>): WeaponRari
   return rolledRarity;
 };
 
+const getRarityTable = async (): Promise<RarityTable> => {
+  const weapons: Weapon[] = await WeaponModel().find().lean().exec();
+
+  const rarityPerSlotTable: RarityTable = {};
+
+  weapons.forEach((weapon) => {
+    const { slotNumber, rarity, dropRate } = weapon;
+
+    if (slotNumber !== undefined) {
+      rarityPerSlotTable[slotNumber] = rarityPerSlotTable[slotNumber] || {
+        NONE: 0,
+        COMMON: 0,
+        RARE: 0,
+        EPIC: 0,
+        LEGENDARY: 0,
+        MYTHIC: 0,
+        SECRET: 0,
+      };
+
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+      rarityPerSlotTable[slotNumber]![rarity] = dropRate;
+    }
+  });
+
+  return rarityPerSlotTable;
+};
+
+const getSlotRollTimes = async (): Promise<number[] | null> => {
+  const defaultTimes = [1, 86400, 172800, 43200];
+  const configService = new ConfigurationService();
+  const rollSettings = await configService.getConfigByName<RollSlotTimes>("RollSlotTimes");
+  if (rollSettings) {
+    const orderKeys = Object.keys(rollSettings).map(Number);
+    orderKeys.sort((a, b) => a - b);
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+    const resultArray = orderKeys.map((key) => rollSettings[key] ?? defaultTimes[key]!);
+    return resultArray;
+  }
+  return null;
+};
+
 const service = {
   confirmAndSave,
   saveWeaponEquipped,
   getWeaponsEquipped,
+  getSlotRollTimes,
 };
 
 export default service;

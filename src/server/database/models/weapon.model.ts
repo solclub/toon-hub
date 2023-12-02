@@ -21,6 +21,7 @@ export interface Weapon {
   powerType: PowerType;
   powerValue: number;
   slotNumber: number;
+  dropRate: number;
 }
 
 const weaponSchema: Schema = new Schema({
@@ -34,6 +35,7 @@ const weaponSchema: Schema = new Schema({
   powerType: { type: String, enum: PowerTypes, required: true },
   powerValue: { type: Number, required: true },
   slotNumber: { type: Number, required: true },
+  dropRate: { type: Number, required: true },
 });
 
 const weaponModel = () => {

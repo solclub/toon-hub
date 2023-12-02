@@ -1,30 +1,30 @@
-import React, { useEffect, useRef, useState } from "react";
-import Image from "next/image";
+import WeaponChest from "assets/weapons/weapon-chest.png";
 import classNames from "classnames";
 import FrameBox from "components/common/FrameBox";
+import Image from "next/image";
+import React, { useEffect, useRef, useState } from "react";
 import type { WeaponRarity } from "server/database/models/weapon.model";
-import WeaponChest from "assets/weapons/weapon-chest.png";
 
+import { useWallet } from "@solana/wallet-adapter-react";
+import bs58 from "bs58";
+import CountdownTimer from "components/common/CountdownTimer";
 import { Modal } from "components/common/Modal";
 import PaymentMethodSelector from "components/common/PaymentMethodSelector";
+import { useNFTManager } from "contexts/NFTManagerContext";
 import { motion } from "framer-motion";
+import { getCsrfToken } from "next-auth/react";
 import { title } from "process";
 import {
   ProductType,
   type PaymentOption,
   type ProductOption,
 } from "server/database/models/catalog.model";
-import { showPromisedToast } from "utils/toast-utils";
-import { trpc } from "utils/trpc";
-import { useWallet } from "@solana/wallet-adapter-react";
-import bs58 from "bs58";
-import { useNFTManager } from "contexts/NFTManagerContext";
-import { getCsrfToken } from "next-auth/react";
-import { SigninMessage } from "utils/signin-message";
+import type { ItemMetadata } from "server/database/models/equipped-weapon.model";
 import type { RudeNFT } from "server/database/models/nft.model";
 import type { UserNFT } from "server/database/models/user-nfts.model";
-import type { ItemMetadata } from "server/database/models/equipped-weapon.model";
-import CountdownTimer from "components/common/CountdownTimer";
+import { SigninMessage } from "utils/signin-message";
+import { showPromisedToast } from "utils/toast-utils";
+import { trpc } from "utils/trpc";
 
 type NFTInfo = RudeNFT & {
   user: UserNFT | undefined;
@@ -73,11 +73,11 @@ export const EquipmentRarityLabels: Record<WeaponRarity, string> = {
   SECRET: "Secret",
 };
 
-const rollDays = [7, 14, 21, 14];
+const defaultRollTimes = [1, 86400, 172800, 43200];
 
 const BuyEquipment = (equipment: Props) => {
   const { className, height, price, product, nft, weaponMetadata, revealed, updatedAt } = equipment;
-
+  const { data: rollDays } = trpc.weapons.getSlotRollTimes.useQuery({});
   const { publicKey, signMessage, signTransaction } = useWallet();
   const { prepTransaction, notifyPayment } = useNFTManager();
   const toastRef = useRef("");
@@ -95,8 +95,8 @@ const BuyEquipment = (equipment: Props) => {
       setpaymentOption(paymentOption);
     }
     if (updatedAt) {
-      const slotDays = rollDays[(weaponMetadata?.slotNumber ?? 0) - 1] ?? 0;
-      const targetDate = new Date(updatedAt.getTime() + slotDays * 24 * 60 * 60 * 1000);
+      const slotDays = (rollDays || defaultRollTimes)[(weaponMetadata?.slotNumber ?? 0) - 1] ?? 0;
+      const targetDate = new Date(updatedAt.getTime() + slotDays * 1000);
       setTargetRollDate(targetDate);
     } else {
       setTargetRollDate(undefined);

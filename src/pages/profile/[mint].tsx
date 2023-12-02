@@ -59,7 +59,7 @@ const Profile: NextPage = () => {
   });
 
   const { data: equippedWeapons } = trpc.weapons.equippedWeapons.useQuery({
-    mint: mint as string,
+    mint: (mint || "") as string,
   });
 
   const { data: userMints } = trpc.nfts.getUserMints.useQuery();
@@ -245,7 +245,7 @@ const Profile: NextPage = () => {
                             </button>
                           </>
                         ) : (
-                          <button className="btn-rude btn disabled cursor-default font-thin  ">
+                          <button className="btn-rude disabled btn cursor-default font-thin  ">
                             🚀 In Queue!{" "}
                           </button>
                         )}
