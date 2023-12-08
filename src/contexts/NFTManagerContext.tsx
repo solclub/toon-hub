@@ -152,9 +152,9 @@ const buildButterflyInstructions = async (
     const butterfly = butterflies[index];
     if (!butterfly) throw "invalid butterfly";
 
-    const userButterflyMint = butterfly.mintAddress;
+    const userButterflyMint = new PublicKey(butterfly.mint);
     const userButterflyTokenAccount = await getAssociatedTokenAddress(
-      userButterflyMint,
+      new PublicKey(userButterflyMint),
       userWallet
     );
 

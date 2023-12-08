@@ -172,7 +172,7 @@ export const getWeaponsEquipped = async (mint: string, owner: string) => {
     })
     .lean();
 
-  const currentSlots: Slot[] = equippedWeapons?.slots;
+  const currentSlots: Slot[] = equippedWeapons?.slots || [];
   const mergedSlots: Slot[] = await Promise.all(
     defaultSlots.map(async (defaultSlot) => {
       const existingSlot = currentSlots?.find(

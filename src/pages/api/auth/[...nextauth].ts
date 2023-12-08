@@ -4,7 +4,7 @@ import DiscordProvider from "next-auth/providers/discord";
 import TwitterProvider from "next-auth/providers/twitter";
 import CredentialsProvider from "next-auth/providers/credentials";
 import { env } from "env/server.mjs";
-import { getCsrfToken, getSession } from "next-auth/react";
+import { getSession, getCsrfToken } from "next-auth/react";
 import { SigninMessage } from "utils/signin-message";
 import type { NextApiRequest, NextApiResponse } from "next";
 import userModel from "server/database/models/user.model";
@@ -109,6 +109,7 @@ export const createOptions = async (
           try {
             const { message, signature } = credentials ?? {};
             const nonce = await getCsrfToken({ req });
+            console.log(req, nonce);
 
             if (!message || !signature) {
               throw new Error("Could not validate the signed message");
