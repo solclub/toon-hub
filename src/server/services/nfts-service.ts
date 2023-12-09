@@ -174,11 +174,8 @@ export const getNFTsByWalletId = async (
     tokenStrategy: "getProgramAccounts",
     tokenAmountFilter: (amount) => amount == BigInt(1),
   });
-  console.log(walletNfts);
-  const stakedUserNfts = getInTrainingNfts(wallet);
 
-  console.log("ok3");
-  console.log(walletNfts);
+  const stakedUserNfts = getInTrainingNfts(wallet);
   const trainingMints: NFTDictionary = {};
   const mints: NFTDictionary = walletNfts
     .filter((i) => i.metadata.updateAuthority == env.UPDATE_AUTHORITY_ADDRESS)

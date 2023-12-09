@@ -122,8 +122,6 @@ const BuyEquipment = (equipment: Props) => {
     e.stopPropagation();
     console.log("started trans");
     const csrf = await getCsrfToken();
-    console.log(!publicKey, !csrf, !signMessage, !signTransaction, !paymentOption);
-    console.log(publicKey, csrf, signMessage, signTransaction, paymentOption);
     if (!publicKey || !csrf || !signMessage || !signTransaction || !paymentOption) return;
     try {
       showPromisedToast(toastRef, "Initating Roll Weapon: Sign message...", false);
@@ -161,7 +159,7 @@ const BuyEquipment = (equipment: Props) => {
     } catch (error) {
       showPromisedToast(
         toastRef,
-        "Error featuring the NFT, try again or contact support!",
+        "Error buyinh the weapon, try again or contact support!",
         true,
         "ERROR"
       );

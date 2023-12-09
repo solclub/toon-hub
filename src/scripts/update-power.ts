@@ -89,7 +89,5 @@ mongoose
   });
 
 mongoose.connection.once("open", async () => {
-  console.log("Connected to database.");
-
   await updateAllNFTs();
 });

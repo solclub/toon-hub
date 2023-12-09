@@ -47,7 +47,6 @@ const NftVersion: React.FC<{
   }, []);
 
   const handlePaymentSuccess = (type: ProductType) => {
-    console.log("emmiter: ", type);
     switch (type) {
       case ProductType.NFT_ART_SWAP:
         setSwapArtModalOpen(false);
