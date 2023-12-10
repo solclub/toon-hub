@@ -31,11 +31,11 @@ export const getUserNFTs = async (wallet: string) => {
   ]);
 
   const nfts = golems.concat(demons);
-  // await syncUserNFTs(
-  //   wallet,
-  //   nfts,
-  //   (nft) => (nft.type && result.trainingMints[nft.type]?.includes(nft.mint)) ?? false
-  // );
+  await syncUserNFTs(
+    wallet,
+    nfts,
+    (nft) => (nft.type && result.trainingMints[nft.type]?.includes(nft.mint)) ?? false
+  );
   return nfts;
 };
 
@@ -125,47 +125,6 @@ export const getUserNFTbyMint = async (
 
   return {} as RudeNFT & { user: UserNFT | undefined };
 };
-
-// export const getNFTsByWalletIdOld = async (
-//   wallet: string
-// ): Promise<{ inWalletMints: NFTDictionary; trainingMints: NFTDictionary }> => {
-//   const walletPubKey = new Web3PublicKey(wallet);
-//   const stakedUserNfts = getInTrainingNfts(wallet);
-//   console.log("assets");
-//   const assets = await fetchAllDigitalAssetByOwner(umi, wallet as PublicKey);
-//   console.log(assets);
-
-//   const walletNfts = await metaplex.nfts().findAllByOwner({
-//     owner: walletPubKey,
-//   });
-//   console.log("ok3");
-//   console.log(walletNfts);
-//   const trainingMints: NFTDictionary = {};
-//   const mints: NFTDictionary = walletNfts
-//     .filter((i) => i.updateAuthorityAddress.toBase58() == env.UPDATE_AUTHORITY_ADDRESS)
-//     .reduce((acc: NFTDictionary, nft: NFT) => {
-//       if (isNFTValid(nft)) {
-//         const item = nft as Metadata;
-//         const type = getCollectionType(nft.name);
-//         if (!acc[type]) {
-//           acc[type] = [];
-//         }
-//         acc[type]?.push(item.mintAddress.toBase58());
-//       }
-//       return acc;
-//     }, {});
-
-//   const stakedMints = await stakedUserNfts;
-//   stakedMints?.forEach((item) => {
-//     const type = item.rudeType === 1 ? NFTType.GOLEM : NFTType.DEMON;
-//     if (!trainingMints[type]) {
-//       trainingMints[type] = [];
-//     }
-//     trainingMints[type]?.push(item["rudeMintkey"].toString());
-//   });
-
-//   return { inWalletMints: mints, trainingMints };
-// };
 
 export const getNFTsByWalletId = async (
   wallet: string

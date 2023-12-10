@@ -159,7 +159,7 @@ const BuyEquipment = (equipment: Props) => {
     } catch (error) {
       showPromisedToast(
         toastRef,
-        "Error buyinh the weapon, try again or contact support!",
+        "Error buying the weapon, try again or contact support!",
         true,
         "ERROR"
       );
@@ -171,7 +171,7 @@ const BuyEquipment = (equipment: Props) => {
     <div
       className={classNames(RarityColors[weaponMetadata?.rarity ?? "NONE"], className, "w-full")}
     >
-      <div className={classNames("card-compact card bg-base-100 font-medieval-sharp shadow-xl")}>
+      <div className={classNames("card card-compact bg-base-100 font-medieval-sharp shadow-xl")}>
         <figure>
           <Image
             src={weaponMetadata?.image || WeaponChest}
