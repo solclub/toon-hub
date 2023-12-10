@@ -4,19 +4,15 @@ import DiscordProvider from "next-auth/providers/discord";
 import TwitterProvider from "next-auth/providers/twitter";
 import CredentialsProvider from "next-auth/providers/credentials";
 import { env } from "env/server.mjs";
-import { getCsrfToken, getSession } from "next-auth/react";
+import { getSession, getCsrfToken } from "next-auth/react";
 import { SigninMessage } from "utils/signin-message";
 import type { NextApiRequest, NextApiResponse } from "next";
 import userModel from "server/database/models/user.model";
 
-export const createOptions = async (
-  req: NextApiRequest,
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  res: NextApiResponse
-): Promise<NextAuthOptions> => {
+export const getOptions = (req: NextApiRequest): NextAuthOptions => {
   return {
     callbacks: {
-      jwt: ({ token, user, account, profile }) => {
+      jwt: async ({ token, user, account, profile }) => {
         if (!user) {
           return token;
         }
@@ -108,7 +104,7 @@ export const createOptions = async (
         async authorize(credentials) {
           try {
             const { message, signature } = credentials ?? {};
-            const nonce = await getCsrfToken({ req });
+            const nonce = await getCsrfToken({ req: { headers: req.headers } });
 
             if (!message || !signature) {
               throw new Error("Could not validate the signed message");
@@ -208,5 +204,5 @@ const saveProviderData = async (provider: string, id: string, profile: any) => {
 };
 
 export default async function auth(req: NextApiRequest, res: NextApiResponse) {
-  return await NextAuth(req, res, await createOptions(req, res));
+  return await NextAuth(req, res, getOptions(req));
 }

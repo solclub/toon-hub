@@ -122,8 +122,6 @@ const BuyEquipment = (equipment: Props) => {
     e.stopPropagation();
     console.log("started trans");
     const csrf = await getCsrfToken();
-    console.log(!publicKey, !csrf, !signMessage, !signTransaction, !paymentOption);
-    console.log(publicKey, csrf, signMessage, signTransaction, paymentOption);
     if (!publicKey || !csrf || !signMessage || !signTransaction || !paymentOption) return;
     try {
       showPromisedToast(toastRef, "Initating Roll Weapon: Sign message...", false);
@@ -161,7 +159,7 @@ const BuyEquipment = (equipment: Props) => {
     } catch (error) {
       showPromisedToast(
         toastRef,
-        "Error featuring the NFT, try again or contact support!",
+        "Error buying the weapon, try again or contact support!",
         true,
         "ERROR"
       );
@@ -173,7 +171,7 @@ const BuyEquipment = (equipment: Props) => {
     <div
       className={classNames(RarityColors[weaponMetadata?.rarity ?? "NONE"], className, "w-full")}
     >
-      <div className={classNames("card-compact card bg-base-100 font-medieval-sharp shadow-xl")}>
+      <div className={classNames("card card-compact bg-base-100 font-medieval-sharp shadow-xl")}>
         <figure>
           <Image
             src={weaponMetadata?.image || WeaponChest}

@@ -1,30 +1,22 @@
+import type { DigitalAsset } from "@metaplex-foundation/mpl-token-metadata";
+import {
+  fetchAllDigitalAssetByOwner,
+  fetchDigitalAsset,
+} from "@metaplex-foundation/mpl-token-metadata";
+import type { PublicKey } from "@metaplex-foundation/umi";
+import { env } from "env/server.mjs";
+import type { Model } from "mongoose";
 import type { RudeNFT } from "../database/models/nft.model";
-import { NFTType } from "../database/models/nft.model";
-import rudeNFTModels from "../database/models/nft.model";
+import rudeNFTModels, { NFTType } from "../database/models/nft.model";
 import type { UserNFT } from "../database/models/user-nfts.model";
 import usernfts from "../database/models/user-nfts.model";
-import { PublicKey } from "@solana/web3.js";
-import { getInTrainingNfts } from "./war-service";
+import { umi } from "./connections/web3-public";
 import { getButterfliesBalance, getRudeTokenBalance, getSolBalance } from "./onchain-service";
-import type {
-  Metadata,
-  JsonMetadata,
-  Nft,
-  Sft,
-  NftWithToken,
-  SftWithToken,
-} from "@metaplex-foundation/js";
-import { Metaplex } from "@metaplex-foundation/js";
-import type { Model } from "mongoose";
-import { env } from "env/server.mjs";
-import { connection } from "./connections/web3-public";
+import { getInTrainingNfts } from "./war-service";
 
-type NFT = Metadata<JsonMetadata<string>> | Nft | Sft;
 interface NFTDictionary {
   [name: string]: string[];
 }
-
-const metaplex = new Metaplex(connection);
 
 export const getUserNFTs = async (wallet: string) => {
   const result = await getNFTsByWalletId(wallet);
@@ -137,22 +129,22 @@ export const getUserNFTbyMint = async (
 export const getNFTsByWalletId = async (
   wallet: string
 ): Promise<{ inWalletMints: NFTDictionary; trainingMints: NFTDictionary }> => {
-  const walletPubKey = new PublicKey(wallet);
-  const stakedUserNfts = getInTrainingNfts(wallet);
-  const walletNfts = await metaplex.nfts().findAllByOwner({
-    owner: walletPubKey,
+  const walletNfts = await fetchAllDigitalAssetByOwner(umi, wallet as PublicKey, {
+    tokenStrategy: "getProgramAccounts",
+    tokenAmountFilter: (amount) => amount == BigInt(1),
   });
+
+  const stakedUserNfts = getInTrainingNfts(wallet);
   const trainingMints: NFTDictionary = {};
   const mints: NFTDictionary = walletNfts
-    .filter((i) => i.updateAuthorityAddress.toBase58() == env.UPDATE_AUTHORITY_ADDRESS)
-    .reduce((acc: NFTDictionary, nft: NFT) => {
+    .filter((i) => i.metadata.updateAuthority == env.UPDATE_AUTHORITY_ADDRESS)
+    .reduce((acc: NFTDictionary, nft: DigitalAsset) => {
       if (isNFTValid(nft)) {
-        const item = nft as Metadata;
-        const type = getCollectionType(nft.name);
+        const type = getCollectionType(nft.metadata.name);
         if (!acc[type]) {
           acc[type] = [];
         }
-        acc[type]?.push(item.mintAddress.toBase58());
+        acc[type]?.push(nft.publicKey);
       }
       return acc;
     }, {});
@@ -169,11 +161,9 @@ export const getNFTsByWalletId = async (
   return { inWalletMints: mints, trainingMints };
 };
 
-export const getNFTsByMint = async (
-  mintAddress: string
-): Promise<Nft | Sft | SftWithToken | NftWithToken> => {
-  const mint = new PublicKey(mintAddress);
-  const nft = await metaplex.nfts().findByMint({ mintAddress: mint });
+export const getNFTsByMint = async (mintAddress: string): Promise<DigitalAsset> => {
+  const mint = mintAddress as PublicKey;
+  const nft = await fetchDigitalAsset(umi, mint);
   return nft;
 };
 
@@ -195,9 +185,11 @@ const getNFTDocuments = async (nftType: NFTType, nftModel: Model<RudeNFT>, mintA
   return nftDocuments.map((nft) => ({ ...nft.toObject(), type: nftType }));
 };
 
-const isNFTValid = (nft: NFT): nft is Metadata => {
+const isNFTValid = (nft: DigitalAsset) => {
   return (
-    /Golem|Demon/.test(nft.name) || golemGods.includes(nft.name) || demonGods.includes(nft.name)
+    /Golem|Demon/.test(nft.metadata.name) ||
+    golemGods.includes(nft.metadata.name) ||
+    demonGods.includes(nft.metadata.name)
   );
 };
 

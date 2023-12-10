@@ -34,7 +34,7 @@ export const createContext = async (opts: CreateNextContextOptions) => {
 
   // Get the session from the server using the unstable_getServerSession wrapper function
   const session = await getServerAuthSession({ req, res });
-  const csrf = await getCsrfToken({ req });
+  const csrf = await getCsrfToken({ req: { headers: req.headers } });
 
   return await createContextInner({
     session,

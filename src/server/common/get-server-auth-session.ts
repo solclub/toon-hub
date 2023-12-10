@@ -2,7 +2,7 @@ import type { NextApiRequest, NextApiResponse } from "next";
 import type { Session } from "next-auth";
 import { getServerSession } from "next-auth";
 
-import { createOptions } from "../../pages/api/auth/[...nextauth]";
+import { getOptions } from "../../pages/api/auth/[...nextauth]";
 
 /**
  * Wrapper for unstable_getServerSession https://next-auth.js.org/configuration/nextjs
@@ -12,9 +12,5 @@ export const getServerAuthSession = async (ctx: {
   req: NextApiRequest;
   res: NextApiResponse;
 }): Promise<Session | null> => {
-  return await getServerSession(
-    ctx.req,
-    ctx.res,
-    await createOptions(ctx.req, ctx.res)
-  );
+  return await getServerSession(ctx.req, ctx.res, getOptions(ctx.req));
 };

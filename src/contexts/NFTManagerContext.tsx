@@ -1,18 +1,14 @@
-// NFTManagerContext.ts
 import {
   createAssociatedTokenAccountInstruction,
   createTransferInstruction,
   getAssociatedTokenAddress,
 } from "@solana/spl-token";
 import type { TransactionInstruction, VersionedTransaction } from "@solana/web3.js";
-import { SystemProgram } from "@solana/web3.js";
-import { LAMPORTS_PER_SOL, PublicKey, Transaction } from "@solana/web3.js";
+import { LAMPORTS_PER_SOL, PublicKey, SystemProgram, Transaction } from "@solana/web3.js";
 import { env } from "env/client.mjs";
+import { EventEmitter } from "events";
 import { useSession } from "next-auth/react";
-import { useEffect } from "react";
-import { createContext, useContext, useState } from "react";
-import { connection } from "server/services/connections/web3-public";
-import { getButterflies } from "server/services/onchain-service";
+import { createContext, useContext, useEffect, useState } from "react";
 import type {
   Amount,
   PaymentOption,
@@ -20,8 +16,9 @@ import type {
   ProductType,
 } from "server/database/models/catalog.model";
 import { PaymentToken } from "server/database/models/catalog.model";
+import { connection } from "server/services/connections/web3-public";
+import { getButterflies } from "server/services/onchain-service";
 import { trpc } from "utils/trpc";
-import { EventEmitter } from "events";
 
 const LAMPORTS_PER_RUDE = LAMPORTS_PER_SOL;
 const RUDE_SINK_KEY = new PublicKey(env.NEXT_PUBLIC_RUDE_SINK_KEY);
@@ -152,7 +149,7 @@ const buildButterflyInstructions = async (
     const butterfly = butterflies[index];
     if (!butterfly) throw "invalid butterfly";
 
-    const userButterflyMint = butterfly.mintAddress;
+    const userButterflyMint = new PublicKey(butterfly.mint);
     const userButterflyTokenAccount = await getAssociatedTokenAddress(
       userButterflyMint,
       userWallet
