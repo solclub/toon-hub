@@ -1,9 +1,9 @@
 {
   "name": "rude-the-hub",
-  "version": "0.1.0",
+  "version": "1.1.1",
   "private": true,
   "scripts": {
-    "version": "npm version patch && git add . && git commit -m 'Bump version' && git push --follow-tags",
+    "version": "npm version patch",
     "build": "next build",
     "dev": "cp .env.development .env.local && next dev",
     "dev:prod": "cp .env .env.local && next dev",
