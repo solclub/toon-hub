@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "version": "npm version patch && git push --follow-tags",
+    "version": "npm version patch && git add . && git commit -m 'Bump version' && git push --follow-tags",
     "build": "next build",
     "dev": "cp .env.development .env.local && next dev",
     "dev:prod": "cp .env .env.local && next dev",
