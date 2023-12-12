@@ -25,7 +25,7 @@ export interface RandomWeaponRequest {
   slot: SlotNumber;
 }
 
-type SlotNumber = 1 | 2 | 3 | 4;
+export type SlotNumber = 1 | 2 | 3 | 4;
 type RarityTable = Record<SlotNumber, Record<WeaponRarity, number>>;
 type DbWeapon = Weapon & {
   _id: Types.ObjectId;

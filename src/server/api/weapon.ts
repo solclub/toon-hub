@@ -1,5 +1,5 @@
 import { TRPCError } from "@trpc/server";
-import type { RandomWeaponRequest } from "server/services/weapon-service";
+import type { RandomWeaponRequest, SlotNumber } from "server/services/weapon-service";
 import service from "server/services/weapon-service";
 import { z } from "zod";
 import { protectedProcedure, router } from "./trpc/trpc-context";
@@ -28,7 +28,7 @@ export const weaponsRouter = router({
         verifiedOwner: wallet,
         serializedTx,
         nftType: nftType,
-        slot: slot,
+        slot: slot as SlotNumber,
       };
       const result = await service.confirmAndSave(request);
 
