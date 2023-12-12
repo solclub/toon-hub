@@ -125,7 +125,7 @@ const BuyEquipment = (equipment: Props) => {
     if (!publicKey || !csrf || !signMessage || !signTransaction || !paymentOption) return;
     try {
       showPromisedToast(toastRef, "Initating Roll Weapon: Sign message...", false);
-      const signatureMessage = `Do you wish to buy a weapon for your warrio? Do you wish to continue?`;
+      const signatureMessage = `Do you wish to buy a weapon for your warrior? Do you wish to continue?`;
 
       const message = new SigninMessage({
         domain: window.location.host,
@@ -191,7 +191,10 @@ const BuyEquipment = (equipment: Props) => {
             <>
               <span>
                 {"Power: "}
-                {(weaponMetadata?.computedPowerValue || weaponMetadata?.powerValue)?.toFixed(2)}
+                {(weaponMetadata?.computedPowerValue??0) > 0 ? weaponMetadata?.computedPowerValue?.toFixed(2):
+                `x ${weaponMetadata?.powerValue}`
+                }
+                
               </span>
               <span
                 className={classNames(
@@ -224,7 +227,10 @@ const BuyEquipment = (equipment: Props) => {
                   >
                     Roll Now 🎲
                   </motion.button>
-                  <div className="absolute top-4 left-0 mx-auto w-full text-green-400">{price}</div>
+                  <div className={classNames("absolute top-4 left-0 mx-auto w-full", 
+                      {"text-green-400":!revealed}, 
+                      {"hidden":revealed} )
+                  }>{price}</div>
                 </>
               )}
           </div>
