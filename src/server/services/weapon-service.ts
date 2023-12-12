@@ -1,3 +1,4 @@
+import type { Types } from "mongoose";
 import type {
   ItemMetadata,
   Slot,
@@ -7,6 +8,7 @@ import {
   default as WarriorEquipmentModel,
   default as warriorEquipmentModel,
 } from "server/database/models/equipped-weapon.model";
+import type { RudeNFT } from "server/database/models/nft.model";
 import type { RollSlotTimes } from "server/database/models/settings.model";
 import type { Weapon, WeaponRarity } from "server/database/models/weapon.model";
 import WeaponModel from "server/database/models/weapon.model";
@@ -20,10 +22,14 @@ export interface RandomWeaponRequest {
   verifiedOwner: string;
   serializedTx: string;
   nftType: string;
-  slot: number;
+  slot: SlotNumber;
 }
 
-type RarityTable = Record<number, Record<WeaponRarity, number>>;
+type SlotNumber = 1 | 2 | 3 | 4;
+type RarityTable = Record<SlotNumber, Record<WeaponRarity, number>>;
+type DbWeapon = Weapon & {
+  _id: Types.ObjectId;
+};
 
 export const confirmAndSave = async (req: RandomWeaponRequest) => {
   const result = paymentService.proccessPayment<WarriorEquipment>(
@@ -42,107 +48,154 @@ export const confirmAndSave = async (req: RandomWeaponRequest) => {
 };
 
 export const saveWeaponEquipped = async (req: RandomWeaponRequest): Promise<WarriorEquipment> => {
-  if (!req) throw "req is required";
-
+  if (!req) throw new Error("req is required");
   const nft = await getUserNFTbyMint(req.wallet, req.mintAddress);
   const rarityTable = await getRarityTable();
-  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-  const rolledRarity = rollRarity(rarityTable[req.slot]!);
-
-  const rolledWeapon = await WeaponModel().findOne({
-    slotNumber: req.slot,
-    rarity: { $regex: rolledRarity, $options: "i" },
-  });
-
-  if (!req) throw "req is required";
-
+  const rolledRarity = rollRarity(rarityTable[req.slot]);
+  const rolledWeapon = await getRolledWeapon(req.slot, rolledRarity);
   const filters = { warriorId: req.mintAddress, ownerId: req.wallet };
-  const options = { upsert: true, new: true, setDefaultsOnInsert: true };
-
-  const existingEquipment = await WarriorEquipmentModel().findOne(filters);
+  const existingEquipment = await WarriorEquipmentModel().findOne(filters).lean();
 
   if (existingEquipment) {
-    const updatedSlots = existingEquipment.slots.map((slot) =>
-      slot.itemMetadata?.slotNumber === req.slot
-        ? ({
-            status: "unlocked",
-            itemId: rolledWeapon?._id.toString(),
-            itemMetadata: rolledWeapon as ItemMetadata,
-            updatedAt: new Date(),
-          } as Slot)
-        : slot
-    );
-
-    // Check if the slot needs to be added
-    const existingSlotNumbers = existingEquipment.slots.map(
-      (slot) => slot.itemMetadata?.slotNumber
-    );
-    if (!existingSlotNumbers.includes(req.slot)) {
-      updatedSlots.push({
-        status: "unlocked",
-        itemId: rolledWeapon?._id.toString(),
-        itemMetadata: rolledWeapon?.toObject() as ItemMetadata,
-        updatedAt: new Date(),
-      });
-    }
-
-    let warriorWeaponsPower = 0;
-
-    for (const slot of updatedSlots) {
-      if (slot.itemMetadata?.powerType === "fixed") {
-        warriorWeaponsPower += slot.itemMetadata.powerValue ?? 0;
-        slot.itemMetadata.computedPowerValue = slot.itemMetadata.powerValue ?? 0;
-      } else if (slot.itemMetadata?.powerType === "multiplier") {
-        const fixedWeaponPowers = updatedSlots
-          .filter((s) => s.itemMetadata?.powerType === "fixed")
-          .reduce((total, s) => total + (s.itemMetadata?.powerValue ?? 0), 0);
-
-        const multiplier = slot.itemMetadata.powerValue ?? 1;
-        const computedValue = Math.round(fixedWeaponPowers * multiplier * 100) / 100;
-        slot.itemMetadata.computedPowerValue = computedValue;
-        warriorWeaponsPower += computedValue;
-      }
-    }
-
-    const warriorTotalPower = (nft.power ?? 0) + warriorWeaponsPower;
-    const newItemData: WarriorEquipment = {
-      ...filters,
-      slots: updatedSlots,
-      warriorWeaponsPower,
-      warriorTotalPower,
-    };
-
-    const updatedItem = await WarriorEquipmentModel().findOneAndUpdate(
-      filters,
-      newItemData,
-      options
-    );
-
-    return updatedItem as WarriorEquipment;
+    return updateExistingEquipment(filters, existingEquipment, rolledWeapon, req.slot, nft);
   } else {
-    const castedWeapon = rolledWeapon as Weapon;
-    const warriorWeaponsPower = castedWeapon.powerType === "fixed" ? castedWeapon.powerValue : 0;
-    const warriorTotalPower = (nft.power ?? 0) + warriorWeaponsPower;
-
-    const newItemData: WarriorEquipment = {
-      ...filters,
-      slots: [
-        {
-          status: "unlocked",
-          itemMetadata: {
-            ...(rolledWeapon?.toObject<Weapon>() as ItemMetadata),
-            computedPowerValue: warriorWeaponsPower,
-          },
-          updatedAt: new Date(),
-          itemId: rolledWeapon?._id.toString(),
-        },
-      ],
-      warriorWeaponsPower,
-      warriorTotalPower,
-    };
-    const savedItem = await WarriorEquipmentModel().create(newItemData);
-    return savedItem.toObject<WarriorEquipment>();
+    return createNewEquipment(filters, rolledWeapon, nft);
   }
+};
+
+const updateExistingEquipment = async (
+  filters: { warriorId: string; ownerId: string },
+  existingEquipment: WarriorEquipment,
+  rolledWeapon: DbWeapon,
+  slot: number,
+  nft: RudeNFT
+): Promise<WarriorEquipment> => {
+  const updatedSlots = updateSlots(existingEquipment.slots, slot, rolledWeapon);
+  const warriorWeaponsPower = calculateWarriorWeaponsPower(updatedSlots);
+  const warriorTotalPower = calculateWarriorTotalPower(nft?.power ?? 0, warriorWeaponsPower);
+
+  const newItemData: WarriorEquipment = {
+    ...filters,
+    slots: updatedSlots,
+    warriorWeaponsPower,
+    warriorTotalPower,
+  };
+
+  const updatedItem = await WarriorEquipmentModel().findOneAndUpdate(filters, newItemData, {
+    upsert: true,
+    new: true,
+    setDefaultsOnInsert: true,
+  });
+
+  return updatedItem as WarriorEquipment;
+};
+
+const createNewEquipment = async (
+  filters: { warriorId: string; ownerId: string },
+  rolledWeapon: DbWeapon,
+  nft: RudeNFT
+): Promise<WarriorEquipment> => {
+  const { warriorWeaponsPower, warriorTotalPower } = calculateFirstTimeValues(
+    rolledWeapon,
+    nft.power ?? 0
+  );
+
+  const newItemData: WarriorEquipment = {
+    ...filters,
+    slots: [
+      {
+        status: "unlocked",
+        itemMetadata: {
+          ...(rolledWeapon as ItemMetadata),
+          computedPowerValue: warriorWeaponsPower,
+        },
+        updatedAt: new Date(),
+        itemId: rolledWeapon?._id.toString(),
+      },
+    ],
+    warriorWeaponsPower,
+    warriorTotalPower,
+  };
+
+  const savedItem = await WarriorEquipmentModel().create(newItemData);
+  return savedItem.toObject<WarriorEquipment>();
+};
+
+const getRolledWeapon = async (slot: number, rolledRarity: string): Promise<DbWeapon> => {
+  return await WeaponModel().findOne({ slotNumber: slot, rarity: rolledRarity }).lean();
+};
+
+const updateSlots = (slots: Slot[], slotNumber: number, rolledWeapon: DbWeapon) => {
+  const updatedSlots = slots.map((dbSlot) =>
+    dbSlot.itemMetadata?.slotNumber === slotNumber
+      ? ({
+          status: "unlocked",
+          itemId: rolledWeapon._id.toString(),
+          itemMetadata: rolledWeapon as ItemMetadata,
+          updatedAt: new Date(),
+        } as Slot)
+      : dbSlot
+  );
+
+  const existingSlotNumbers = updatedSlots.map(
+    (existingSlot) => existingSlot.itemMetadata?.slotNumber
+  );
+
+  if (!existingSlotNumbers.includes(slotNumber)) {
+    updatedSlots.push({
+      status: "unlocked",
+      itemId: rolledWeapon?._id.toString(),
+      itemMetadata: rolledWeapon as ItemMetadata,
+      updatedAt: new Date(),
+    });
+  }
+  return updatedSlots;
+};
+
+const calculateWarriorWeaponsPower = (slots: Slot[]): number => {
+  let warriorWeaponsPower = 0;
+  const fixedSlots = slots.filter((s) => s.itemMetadata?.powerType === "fixed");
+  const multiplierSlots = slots.filter((s) => s.itemMetadata?.powerType === "multiplier");
+
+  const fixedWeaponPowerSum = fixedSlots.reduce(
+    (total, s) => total + (s.itemMetadata?.powerValue ?? 0),
+    0
+  );
+
+  const multiplierWeaponPowerSum = multiplierSlots.reduce(
+    (total, s) => total + (s.itemMetadata?.powerValue ?? 0),
+    0
+  );
+
+  for (const slot of fixedSlots) {
+    if (slot.itemMetadata) {
+      slot.itemMetadata.computedPowerValue = slot.itemMetadata.powerValue ?? 0;
+    } else {
+      throw "slot.itemMetadata cannot be null";
+    }
+  }
+
+  for (const slot of multiplierSlots) {
+    if (slot.itemMetadata) {
+      const multiplier = slot.itemMetadata.powerValue ?? 1;
+      const computedValue = Math.round(fixedWeaponPowerSum * multiplier * 100) / 100;
+      slot.itemMetadata.computedPowerValue = computedValue;
+    } else {
+      throw "slot.itemMetadata cannot be null";
+    }
+  }
+  warriorWeaponsPower = fixedWeaponPowerSum * (1 + (multiplierWeaponPowerSum * 100) / 100);
+  return warriorWeaponsPower;
+};
+
+const calculateWarriorTotalPower = (nftPower: number, warriorWeaponsPower: number) => {
+  return nftPower + warriorWeaponsPower;
+};
+
+const calculateFirstTimeValues = (rolledWeapon: DbWeapon, nftPower: number) => {
+  const warriorWeaponsPower = rolledWeapon.powerType === "fixed" ? rolledWeapon.powerValue : 0;
+  const warriorTotalPower = nftPower + (warriorWeaponsPower ?? 0);
+  return { warriorWeaponsPower, warriorTotalPower };
 };
 
 export const getWeaponsEquipped = async (mint: string, owner: string) => {
@@ -213,26 +266,22 @@ const rollRarity = (slotProbabilities: Record<WeaponRarity, number>): WeaponRari
 };
 
 const getRarityTable = async (): Promise<RarityTable> => {
-  const weapons: Weapon[] = await WeaponModel().find().lean().exec();
+  const weapons: Weapon[] = await WeaponModel().find().lean();
 
-  const rarityPerSlotTable: RarityTable = {};
+  const rarityPerSlotTable: RarityTable = {
+    1: { NONE: 0, COMMON: 0, RARE: 0, EPIC: 0, LEGENDARY: 0, MYTHIC: 0, SECRET: 0 },
+    2: { NONE: 0, COMMON: 0, RARE: 0, EPIC: 0, LEGENDARY: 0, MYTHIC: 0, SECRET: 0 },
+    3: { NONE: 0, COMMON: 0, RARE: 0, EPIC: 0, LEGENDARY: 0, MYTHIC: 0, SECRET: 0 },
+    4: { NONE: 0, COMMON: 0, RARE: 0, EPIC: 0, LEGENDARY: 0, MYTHIC: 0, SECRET: 0 },
+  };
 
   weapons.forEach((weapon) => {
     const { slotNumber, rarity, dropRate } = weapon;
-
-    if (slotNumber !== undefined) {
-      rarityPerSlotTable[slotNumber] = rarityPerSlotTable[slotNumber] || {
-        NONE: 0,
-        COMMON: 0,
-        RARE: 0,
-        EPIC: 0,
-        LEGENDARY: 0,
-        MYTHIC: 0,
-        SECRET: 0,
-      };
-
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      rarityPerSlotTable[slotNumber]![rarity] = dropRate;
+    if (slotNumber <= 4 && rarity) {
+      const slot = slotNumber as SlotNumber;
+      rarityPerSlotTable[slot][rarity] = dropRate;
+    } else {
+      throw "invalid slot number";
     }
   });
 
