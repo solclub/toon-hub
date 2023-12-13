@@ -10,7 +10,12 @@ import { toPascalCase } from "utils/string-utils";
 
 const Profile = () => {
   const [selectedCollection, setSelectedCollection] = useState<NFTType | "ALL">("ALL");
-  const { isLoading, data } = trpc.nfts.getUserNFTs.useQuery({ collection: selectedCollection });
+  const { isLoading, data } = trpc.nfts.getUserNFTs.useQuery(
+    { collection: selectedCollection },
+    {
+      refetchOnWindowFocus: false,
+    }
+  );
   const featuredItems = trpc.featureNft.userFeaturedNfts.useQuery();
   const utils = trpc.useContext();
 

@@ -6,6 +6,7 @@ import {
 import type { PublicKey } from "@metaplex-foundation/umi";
 import { env } from "env/server.mjs";
 import type { Model } from "mongoose";
+import logWithTimestamp from "utils/logs";
 import type { RudeNFT } from "../database/models/nft.model";
 import rudeNFTModels, { NFTType } from "../database/models/nft.model";
 import type { UserNFT } from "../database/models/user-nfts.model";
@@ -133,7 +134,7 @@ export const getNFTsByWalletId = async (
     tokenStrategy: "getProgramAccounts",
     tokenAmountFilter: (amount) => amount == BigInt(1),
   });
-
+  logWithTimestamp("fetchAllDigitalAssetByOwner");
   const stakedUserNfts = getInTrainingNfts(wallet);
   const trainingMints: NFTDictionary = {};
   const mints: NFTDictionary = walletNfts
@@ -164,6 +165,8 @@ export const getNFTsByWalletId = async (
 export const getNFTsByMint = async (mintAddress: string): Promise<DigitalAsset> => {
   const mint = mintAddress as PublicKey;
   const nft = await fetchDigitalAsset(umi, mint);
+  logWithTimestamp("fetchDigitalAsset");
+
   return nft;
 };
 

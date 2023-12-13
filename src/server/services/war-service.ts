@@ -12,6 +12,7 @@ import { connection } from "./connections/web3-public";
 import dbConnect from "server/database/mongoose";
 
 import warriorEquipmentModel from "server/database/models/equipped-weapon.model";
+import logWithTimestamp from "utils/logs";
 
 export interface WarriorPowerType {
   warriorId: string;
@@ -45,7 +46,7 @@ export const getUserPDAKey = async (wallet: string) => {
     [TRAINING_SEED, warProgramSettings.key.toBuffer(), userMemberAccount.key.toBuffer()],
     WAR_PROGRAM_ID
   );
-
+  logWithTimestamp("findProgramAddressSync");
   return player1pda.toString();
 };
 
