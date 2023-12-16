@@ -56,11 +56,15 @@ export const saveWeaponEquipped = async (req: RandomWeaponRequest): Promise<Warr
   const filters = { warriorId: req.mintAddress, ownerId: req.wallet };
   const existingEquipment = await WarriorEquipmentModel().findOne(filters).lean();
 
-  if (existingEquipment) {
-    return updateExistingEquipment(filters, existingEquipment, rolledWeapon, req.slot, nft);
-  } else {
-    return createNewEquipment(filters, rolledWeapon, nft);
+  if (rolledWeapon) {
+    if (existingEquipment) {
+      return updateExistingEquipment(filters, existingEquipment, rolledWeapon, req.slot, nft);
+    } else {
+      return createNewEquipment(filters, rolledWeapon, nft);
+    }
   }
+
+  throw "Error while roll a weapon";
 };
 
 const updateExistingEquipment = async (
@@ -121,8 +125,9 @@ const createNewEquipment = async (
   return savedItem.toObject<WarriorEquipment>();
 };
 
-const getRolledWeapon = async (slot: number, rolledRarity: string): Promise<DbWeapon> => {
-  return await WeaponModel().findOne({ slotNumber: slot, rarity: rolledRarity }).lean();
+const getRolledWeapon = async (slot: number, rolledRarity: string): Promise<DbWeapon | null> => {
+  const weapon = await WeaponModel().findOne({ slotNumber: slot, rarity: rolledRarity }).lean();
+  return weapon;
 };
 
 const updateSlots = (slots: Slot[], slotNumber: number, rolledWeapon: DbWeapon) => {

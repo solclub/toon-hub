@@ -1,10 +1,11 @@
-import { getAssociatedTokenAddress } from "@solana/spl-token";
-import { LAMPORTS_PER_SOL, PublicKey as Web3PublicKey } from "@solana/web3.js";
-import { env } from "env/client.mjs";
-import { connection, umi } from "./connections/web3-public";
 import type { DigitalAsset } from "@metaplex-foundation/mpl-token-metadata";
 import { fetchAllDigitalAssetByOwner } from "@metaplex-foundation/mpl-token-metadata";
 import type { PublicKey } from "@metaplex-foundation/umi";
+import { getAssociatedTokenAddress } from "@solana/spl-token";
+import { LAMPORTS_PER_SOL, PublicKey as Web3PublicKey } from "@solana/web3.js";
+import { env } from "env/client.mjs";
+import logWithTimestamp from "utils/logs";
+import { connection, umi } from "./connections/web3-public";
 
 export const getRudeTokenBalance = async (wallet: string): Promise<number> => {
   try {
@@ -13,7 +14,8 @@ export const getRudeTokenBalance = async (wallet: string): Promise<number> => {
     const rudeAta = await getAssociatedTokenAddress(rudeMintKey, walletPubKey);
     const balance = await connection.getTokenAccountBalance(rudeAta);
     const balanceValue = balance.value.uiAmount?.toFixed(2);
-
+    logWithTimestamp("getAssociatedTokenAddress");
+    logWithTimestamp("getTokenAccountBalance");
     return Number(balanceValue || 0);
   } catch (error) {
     console.error(error);
@@ -26,6 +28,7 @@ export const getSolBalance = async (wallet: string): Promise<number> => {
     const walletPubKey = new Web3PublicKey(wallet);
     const solBal = await connection.getBalance(walletPubKey);
     const balanceValue = (solBal / LAMPORTS_PER_SOL).toFixed(2);
+    logWithTimestamp("getBalance");
 
     return Number(balanceValue || 0);
   } catch (error) {
@@ -36,6 +39,7 @@ export const getSolBalance = async (wallet: string): Promise<number> => {
 
 export const getButterflies = async (wallet: string): Promise<DigitalAsset[]> => {
   const walletNfts = await fetchAllDigitalAssetByOwner(umi, wallet as PublicKey);
+  logWithTimestamp("fetchAllDigitalAssetByOwner");
 
   const filteredNfts = walletNfts.filter(
     (nft) =>

@@ -6,7 +6,9 @@ import classNames from "classnames";
 import { trpc } from "../../utils/trpc";
 
 const Balance: React.FC<{ className?: string }> = ({ className }) => {
-  const { isLoading, data } = trpc.nfts.getWalletBalance.useQuery();
+  const { isLoading, data } = trpc.nfts.getWalletBalance.useQuery(undefined, {
+    refetchOnWindowFocus: false,
+  });
 
   return (
     <div
