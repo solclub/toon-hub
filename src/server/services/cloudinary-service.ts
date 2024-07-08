@@ -52,7 +52,8 @@ export const getUrlFile = (
   trait: string,
   traitName: string
 ) => {
-  return `https://res.cloudinary.com/${env.CLOUDINARY_CLOUD_NAME}/image/upload/collections/${colletionName}/art/${upgradeType}/${trait}/${traitName}.png`;
+  const upgradeTypeName = upgradeType === "CARTOON" ? "toons_art" : upgradeType;
+  return `https://res.cloudinary.com/${env.CLOUDINARY_CLOUD_NAME}/image/upload/collections/${colletionName}/art/${upgradeTypeName}/${trait}/${traitName}.png`;
 };
 
 const service = {

@@ -25,6 +25,8 @@ import VideoView from "./components/VideoView";
 import type { Product } from "server/database/models/catalog.model";
 import type { WarriorEquipment } from "server/database/models/equipped-weapon.model";
 import BuyEquipment from "./components/BuyEquipment";
+import { isGiblatoonsLive } from "utils/giblatoons";
+import GiblatoonBanner from "./components/GiblatoonsBanner";
 
 type NFTInfo = RudeNFT & {
   user: UserNFT | undefined;
@@ -205,7 +207,7 @@ const Profile: NextPage = () => {
                     </label>
                     <div
                       tabIndex={0}
-                      className="card dropdown-content card-compact w-72 bg-black bg-opacity-30 backdrop-blur-sm backdrop-filter"
+                      className="card-compact card dropdown-content w-72 bg-black bg-opacity-30 backdrop-blur-sm backdrop-filter"
                     >
                       <div className="card-body">
                         <h3 className="card-title">Want to Feature your NFT?</h3>
@@ -224,7 +226,9 @@ const Profile: NextPage = () => {
                       {toPascalCase(profileNFT?.type ?? "")}
                     </div>
                     <div className=" font-medieval-sharp text-4xl text-amber-100">
-                      {getRudeNftName(profileNFT?.name) || "Unknow"}
+                      {isProfileLoading
+                        ? "Loading..."
+                        : getRudeNftName(profileNFT?.name) || "Unknown"}
                     </div>
                   </div>
 
@@ -244,7 +248,7 @@ const Profile: NextPage = () => {
                             </button>
                           </>
                         ) : (
-                          <button className="btn-rude disabled btn cursor-default font-thin  ">
+                          <button className="btn-rude btn disabled cursor-default font-thin  ">
                             🚀 In Queue!{" "}
                           </button>
                         )}
@@ -425,8 +429,13 @@ const CustomizePanel = ({
   return (
     <>
       <div className="flex flex-wrap justify-center gap-x-5 gap-y-3 text-center">
-        <h2 className="block w-full text-xl">Select your alternative version</h2>
+        <h2 className="block w-full text-xl">
+          {isGiblatoonsLive
+            ? "Bring your character to the NEW WORLD!"
+            : "Select your alternative version"}
+        </h2>
         {upgradeOpts &&
+          !isGiblatoonsLive &&
           upgradeOpts
             .filter((x) =>
               nft?.attributes.find((x) => x.name === "Background")?.value == "God"
@@ -440,6 +449,13 @@ const CustomizePanel = ({
                 swapArtOpt={swapArtOpts?.filter((x) => x.key == opt.key)?.[0]}
                 nft={nft}
               ></NftVersion>
+            ))}
+        {upgradeOpts &&
+          isGiblatoonsLive &&
+          upgradeOpts
+            .filter((x) => x.key === "CARTOON")
+            .map((opt) => (
+              <GiblatoonBanner key={opt.name} upgradeOpt={opt} nft={nft}></GiblatoonBanner>
             ))}
       </div>
 

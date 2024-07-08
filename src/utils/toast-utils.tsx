@@ -48,7 +48,7 @@ export const showPromisedToast = (
   status: ToastStatus = "UPDATE"
 ) => {
   const options: ToastOptions = {
-    autoClose: status === "SUCCESS" ? 1000 : 3000,
+    autoClose: status === "SUCCESS" ? 1000 : false,
     position: TOAST_POSITION,
   };
 

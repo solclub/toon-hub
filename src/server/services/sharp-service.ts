@@ -26,7 +26,7 @@ const mergeImages = async ({
   const images = await Promise.all(
     sources.map(async (source) => {
       const { src, ...data } = typeof source === "string" ? { src: source } : source;
-      console.log("iamgeurl: ", src);
+      console.log("imageUrl: ", src);
       const buffer = Buffer.from(
         (await axios.get(src, { responseType: "arraybuffer" })).data,
         "binary"
@@ -35,6 +35,7 @@ const mergeImages = async ({
 
       const metadata = await image.metadata();
 
+      console.log("image processed ✅: ", src);
       return {
         buffer: buffer,
         width: metadata.width || 0,

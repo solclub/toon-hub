@@ -12,7 +12,12 @@ import rudeNFTModels, { NFTType } from "../database/models/nft.model";
 import type { UserNFT } from "../database/models/user-nfts.model";
 import usernfts from "../database/models/user-nfts.model";
 import { umi } from "./connections/web3-public";
-import { getButterfliesBalance, getRudeTokenBalance, getSolBalance } from "./onchain-service";
+import {
+  getButterfliesBalance,
+  getCrayonsBalance,
+  getRudeTokenBalance,
+  getSolBalance,
+} from "./onchain-service";
 import { getInTrainingNfts } from "./war-service";
 
 interface NFTDictionary {
@@ -21,7 +26,6 @@ interface NFTDictionary {
 
 export const getUserNFTs = async (wallet: string) => {
   const result = await getNFTsByWalletId(wallet);
-
   const golems = await getNFTDocuments(NFTType.GOLEM, rudeNFTModels.GolemModel(), [
     ...(result.inWalletMints[NFTType.GOLEM] ?? []),
     ...(result.trainingMints[NFTType.GOLEM] ?? []),
@@ -30,6 +34,7 @@ export const getUserNFTs = async (wallet: string) => {
     ...(result.inWalletMints[NFTType.DEMON] ?? []),
     ...(result.trainingMints[NFTType.DEMON] ?? []),
   ]);
+  console.log("demons", result, demons);
 
   const nfts = golems.concat(demons);
   await syncUserNFTs(
@@ -49,6 +54,7 @@ export const syncUserNFTs = async (
     const saved = (await usernfts.UserNFTsModel().find({ wallet, active: true })).map(
       (x) => x.mint
     );
+    console.log("saved", saved);
     const current = nfts.map((x) => x.mint);
     const removedItems = saved.filter((val) => !current.includes(val));
     const newItems = current.filter((val) => !saved.includes(val));
@@ -80,9 +86,14 @@ export const addUpgradedImage = async (
   imageUrl: string,
   isCurrent = true
 ) => {
-  const update = { $set: { [`images.${upgradeType}`]: imageUrl } };
+  const update: { $set: object; $push?: object } = {
+    $set: { [`images.${upgradeType}`]: imageUrl },
+  };
   if (isCurrent) {
     update.$set = { current: upgradeType, ...update.$set };
+  }
+  if (upgradeType === "CARTOON") {
+    update.$push = { attributes: { name: "Giblatoons", value: true, rank: 0 } };
   }
   const filter = { mint: mint };
 
@@ -134,6 +145,7 @@ export const getNFTsByWalletId = async (
     tokenStrategy: "getProgramAccounts",
     tokenAmountFilter: (amount) => amount == BigInt(1),
   });
+
   logWithTimestamp("fetchAllDigitalAssetByOwner");
   const stakedUserNfts = getInTrainingNfts(wallet);
   const trainingMints: NFTDictionary = {};
@@ -158,7 +170,6 @@ export const getNFTsByWalletId = async (
     }
     trainingMints[type]?.push(item["rudeMintkey"].toString());
   });
-
   return { inWalletMints: mints, trainingMints };
 };
 
@@ -174,11 +185,13 @@ export const getWalletBalanceTokens = async (wallet: string): Promise<Map<string
   const solBalance = await getSolBalance(wallet);
   const rudeBalance = await getRudeTokenBalance(wallet);
   const butterfliesBalance = await getButterfliesBalance(wallet);
+  const crayonsBalance = await getCrayonsBalance(wallet);
 
   const balanceMap = new Map<string, number>();
   balanceMap.set("SOL", solBalance);
   balanceMap.set("RUDE", rudeBalance);
   balanceMap.set("RGBF", butterfliesBalance);
+  balanceMap.set("CRAYON", crayonsBalance);
 
   return balanceMap;
 };
@@ -186,6 +199,48 @@ export const getWalletBalanceTokens = async (wallet: string): Promise<Map<string
 const getNFTDocuments = async (nftType: NFTType, nftModel: Model<RudeNFT>, mintArray: string[]) => {
   const nftDocuments = await nftModel.find({ mint: { $in: mintArray } });
   return nftDocuments.map((nft) => ({ ...nft.toObject(), type: nftType }));
+};
+
+export const getAndUpdatePatoArmor = async (nftModel: Model<RudeNFT>, mintArray: string[]) => {
+  const patoAttribute = {
+    name: "Cosmetic Armor",
+    value: "Pato Armor",
+    rarity: 0,
+  };
+  for (const mint of mintArray) {
+    console.log("updating mint: ", mint);
+    const demonData = await nftModel.findOne({
+      mint,
+    });
+    const demonAttrinbutes = demonData?.attributes;
+    const attIndex = demonAttrinbutes?.findIndex((x) => x.name === "Attribute count");
+    if (!demonAttrinbutes || !attIndex || !demonAttrinbutes[attIndex] || attIndex < 0) {
+      return;
+    }
+
+    // @ts-ignore: Unreachable code error
+    const newCount = parseInt(demonAttrinbutes[attIndex].value) + 1;
+    await nftModel.updateOne(
+      {
+        mint,
+        "attributes.name": "Attribute count",
+      },
+      {
+        $set: { "attributes.$.value": newCount.toString() },
+      }
+    );
+    await nftModel.updateOne(
+      {
+        mint,
+      },
+      {
+        $push: {
+          attributes: patoAttribute,
+        },
+      }
+    );
+    console.log("updating mint: ", mint, " Done ✅");
+  }
 };
 
 const isNFTValid = (nft: DigitalAsset) => {
@@ -208,7 +263,7 @@ const getCollectionType = (name: string): string => {
   if (demonGods.includes(name)) {
     return NFTType.DEMON;
   }
-  return "Unknow";
+  return "Unknown";
 };
 
 const golemGods = [

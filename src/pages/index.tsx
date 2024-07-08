@@ -123,9 +123,9 @@ const Home: NextPage = () => {
                         >
                           {featuredNFT?.user?.twitterDetails?.username
                             .replace("@", "")
-                            .toLowerCase() ?? "Unknow"}
+                            .toLowerCase() ?? "Unknown"}
                         </Link>
-                      ) || "Unknow"}
+                      ) || "Unknown"}
                     </div>
                     <div className="mt-2 overflow-hidden overflow-ellipsis text-xs font-thin">
                       <Image
@@ -402,16 +402,16 @@ const LeaderBoard = () => {
       </div>
       <div className="btn-group-horizontal btn-group mx-auto self-start pb-2 font-medieval-sharp">
         <button
-          className="btn-sm btn  "
+          className="btn btn-sm  "
           disabled={page[nftTypeTab] == 0}
           onClick={handleFetchPreviousPage}
         >
           «
         </button>
-        <button className="btn-sm btn ">Page {(page[nftTypeTab] ?? 0) + 1}</button>
+        <button className="btn btn-sm ">Page {(page[nftTypeTab] ?? 0) + 1}</button>
 
         <button
-          className=" btn-sm  btn "
+          className=" btn  btn-sm "
           disabled={(data?.pages[page[nftTypeTab] ?? 0]?.items?.length ?? 0) < queryLimit}
           onClick={handleFetchNextPage}
         >

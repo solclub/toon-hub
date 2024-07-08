@@ -19,11 +19,45 @@ const PaymentMethodSelector: React.FC<{
   paymentOptions: PaymentOption[];
   selected?: PaymentOption;
   onChange: (otp: PaymentOption) => void;
-}> = ({ paymentOptions, selected, onChange }) => {
+  overridePaymentOption?: PaymentOption;
+}> = ({ paymentOptions, selected, onChange, overridePaymentOption }) => {
   const onButtonClick = (otp: PaymentOption) => {
     onChange(otp);
   };
 
+  if (overridePaymentOption) {
+    return (
+      <div className="flex w-full font-mono">
+        <div className="flex w-full flex-wrap justify-evenly px-5 text-start font-mono text-xl">
+          <React.Fragment key={overridePaymentOption.type}>
+            <motion.button
+              onClick={() => onButtonClick(overridePaymentOption)}
+              className={classNames(
+                "flex w-full items-center rounded-xl border-4  bg-slate-900 p-3 text-2xl lg:w-1/4",
+                selected?.type == overridePaymentOption.type
+                  ? "border-orange-400"
+                  : "border-gray-400"
+              )}
+              whileHover={{ scale: 1.1 }}
+              whileTap={{ scale: 0.9 }}
+            >
+              {overridePaymentOption.amounts.map(({ token, amount }, j) => (
+                <React.Fragment key={j}>
+                  <div className="flex w-full grow items-center text-center">
+                    <div className="w-full">
+                      <div>{amount}</div>
+                      <div className="items-center">{balanceIcons[token]}</div>
+                    </div>
+                  </div>
+                  {j < overridePaymentOption.amounts.length - 1 && <span className="">+</span>}
+                </React.Fragment>
+              ))}
+            </motion.button>
+          </React.Fragment>
+        </div>
+      </div>
+    );
+  }
   return (
     <div className="flex w-full font-mono">
       <div className="flex w-full flex-wrap justify-evenly px-5 text-start font-mono text-xl">
@@ -35,8 +69,8 @@ const PaymentMethodSelector: React.FC<{
               <motion.button
                 onClick={() => onButtonClick(opt)}
                 className={classNames(
-                  "flex w-full items-center rounded-xl border-4 border-[#605031] bg-slate-900 p-3 text-2xl lg:w-1/4",
-                  { "bg-amber-600": selected?.type == opt.type }
+                  "flex w-full items-center rounded-xl border-4  bg-slate-900 p-3 text-2xl lg:w-1/4",
+                  selected?.type == opt.type ? "border-orange-400" : "border-gray-400"
                 )}
                 whileHover={{ scale: 1.1 }}
                 whileTap={{ scale: 0.9 }}

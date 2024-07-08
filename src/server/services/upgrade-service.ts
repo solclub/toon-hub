@@ -8,16 +8,32 @@ import { DemonUpgrades, GolemUpgrades } from "server/database/models/nft.model";
 import axios from "axios";
 import { env } from "env/server.mjs";
 import paymentService from "./payment-service";
+import { godsData } from "server/data/gods";
+import { VersionedTransaction } from "@solana/web3.js";
 
 const UpgradeServerUrl = env.METADATA_UPGRADE_SERVER_URL;
 const UpgradeServerToken = env.METADATA_UPGRADE_ACCESS_TOKEN;
 
-const rebelUrl: Record<string, string> = {
-  "2RvZ76hT5uSe7URDnWDwjnGJhisSPHxJyEi9rdrCAYEh":
-    "https://res.cloudinary.com/dfniu7jks/image/upload/v1669889195/rudeGolems/golemUpgrades/2RvZ76hT5uSe7URDnWDwjnGJhisSPHxJyEi9rdrCAYEh.png",
-  "8eN83ygKCGpkbkSh61Ajzxzv9aUTqTCMnu6NpffwGrMH":
-    "https://res.cloudinary.com/dfniu7jks/image/upload/v1669889241/rudeGolems/golemUpgrades/8eN83ygKCGpkbkSh61Ajzxzv9aUTqTCMnu6NpffwGrMH.png",
-};
+// const rebelUrl: Record<string, string> = {
+//   "2RvZ76hT5uSe7URDnWDwjnGJhisSPHxJyEi9rdrCAYEh":
+//     "https://res.cloudinary.com/dfniu7jks/image/upload/v1669889195/rudeGolems/golemUpgrades/2RvZ76hT5uSe7URDnWDwjnGJhisSPHxJyEi9rdrCAYEh.png",
+//   "8eN83ygKCGpkbkSh61Ajzxzv9aUTqTCMnu6NpffwGrMH":
+//     "https://res.cloudinary.com/dfniu7jks/image/upload/v1669889241/rudeGolems/golemUpgrades/8eN83ygKCGpkbkSh61Ajzxzv9aUTqTCMnu6NpffwGrMH.png",
+// };
+
+// const rebelCartoonUrl: Record<string, string> = {
+//   "2RvZ76hT5uSe7URDnWDwjnGJhisSPHxJyEi9rdrCAYEh":
+//     "https://res.cloudinary.com/dfniu7jks/image/upload/v1669889195/rudeGolems/golemUpgrades/2RvZ76hT5uSe7URDnWDwjnGJhisSPHxJyEi9rdrCAYEh.png",
+//   "8eN83ygKCGpkbkSh61Ajzxzv9aUTqTCMnu6NpffwGrMH":
+//     "https://res.cloudinary.com/dfniu7jks/image/upload/v1669889241/rudeGolems/golemUpgrades/8eN83ygKCGpkbkSh61Ajzxzv9aUTqTCMnu6NpffwGrMH.png",
+// };
+
+// const godsCartoonUrl: Record<string, string> = {
+//   "2RvZ76hT5uSe7URDnWDwjnGJhisSPHxJyEi9rdrCAYEh":
+//     "https://res.cloudinary.com/dfniu7jks/image/upload/v1669889195/rudeGolems/golemUpgrades/2RvZ76hT5uSe7URDnWDwjnGJhisSPHxJyEi9rdrCAYEh.png",
+//   "8eN83ygKCGpkbkSh61Ajzxzv9aUTqTCMnu6NpffwGrMH":
+//     "https://res.cloudinary.com/dfniu7jks/image/upload/v1669889241/rudeGolems/golemUpgrades/8eN83ygKCGpkbkSh61Ajzxzv9aUTqTCMnu6NpffwGrMH.png",
+// };
 
 interface NFTLayer {
   [trait: string]: {
@@ -49,7 +65,11 @@ export interface SwapArtMetadataRequest {
 }
 
 export const confirmAndUpgradeMetadata = async (req: UpdateMetadataRequest) => {
-  const result = paymentService.proccessPayment<{ signature: string; image: string }>(
+  const result = paymentService.proccessPayment<{
+    signature: string;
+    image: string;
+    crayonTx?: string;
+  }>(
     {
       mint: req.mintAddress,
       serializedTx: req.serializedTx,
@@ -95,6 +115,7 @@ export const upgradeMetadata = async (req: UpdateMetadataRequest, txId: string) 
 
   const tempImgUrl = await cloudinaryService.uploadImageBuffer(newArt, req.mintAddress, folder);
   const upgradeEndpoint = getMetadataUpdater(req.upgradeType, req.collection);
+
   const headers = {
     "access-token": UpgradeServerToken,
   };
@@ -120,11 +141,11 @@ export const upgradeMetadata = async (req: UpdateMetadataRequest, txId: string) 
     upgradeEndpoint,
     JSON.stringify(reqBody, null, 2)
   );
-  const upgradeResult = await axios.post<{ signature: string; image: string }>(
-    upgradeEndpoint,
-    reqBody,
-    { headers }
-  );
+  const upgradeResult = await axios.post<{
+    signature: string;
+    image: string;
+    crayonSerializedSignature?: string;
+  }>(upgradeEndpoint, reqBody, { headers });
 
   console.log("Updating db", upgradeResult.data);
   await addUpgradedImage(
@@ -133,8 +154,18 @@ export const upgradeMetadata = async (req: UpdateMetadataRequest, txId: string) 
     req.upgradeType,
     upgradeResult.data.image
   );
-  console.log("done");
-  return upgradeResult.data;
+
+  if (req.upgradeType === "CARTOON" && upgradeResult.data.crayonSerializedSignature) {
+    const serializedTxn = upgradeResult.data.crayonSerializedSignature;
+
+    console.log("crayon TX", serializedTxn);
+    return {
+      ...upgradeResult.data,
+      crayonTx: serializedTxn,
+    };
+  } else {
+    return upgradeResult.data;
+  }
 };
 
 export const swapArtMetadata = async (req: SwapArtMetadataRequest, txId: string) => {
@@ -187,7 +218,6 @@ export const swapArtMetadata = async (req: SwapArtMetadataRequest, txId: string)
     req.upgradeType,
     upgradeResult.data.image
   );
-  console.log("done");
   return upgradeResult.data;
 };
 
@@ -199,10 +229,12 @@ export const buildUpgradeImage = async (
 ): Promise<Buffer> => {
   const collection =
     collectionsSchemas[collectionType.toString() as keyof typeof collectionsSchemas];
-
-  if (Object.keys(rebelUrl).includes(mint)) {
+  const godsImages = godsData[collectionType][upgradeType as "ORIGINAL" | "CARTOON" | "REWORK"];
+  const gotImageIndex = godsImages.findIndex((god) => god.mint === mint);
+  if (gotImageIndex > -1) {
     const data = Buffer.from(
-      (await axios.get(rebelUrl[mint] ?? "", { responseType: "arraybuffer" })).data
+      (await axios.get(godsImages[gotImageIndex]?.image ?? "", { responseType: "arraybuffer" }))
+        .data
     );
     return data;
   }
@@ -214,21 +246,49 @@ export const buildUpgradeImage = async (
     },
     {}
   );
-
+  console.log(formattedTraits);
   const nftLayers: NFTLayer = collection.traitsOrder.reduce((carry: NFTLayer, trait) => {
-    carry[trait] = {
-      src: getTraitFile(collection?.path, upgradeType, trait, formattedTraits),
-      x: 0,
-      y: 0,
-      label: formattedTraits[trait],
-      trait,
-      addon: false,
-    };
+    if (!!formattedTraits[trait]) {
+      carry[trait] = {
+        src: getTraitFile(collection?.path, upgradeType, trait, formattedTraits),
+        x: 0,
+        y: 0,
+        label: formattedTraits[trait],
+        trait,
+        addon: false,
+      };
+    }
     return carry;
   }, {});
 
-  const layers = Object.values(nftLayers).filter((x) => x.label !== "none");
-  const resultBuffer = await mergeImages({ sources: layers });
+  const layers = Object.values(nftLayers).filter((x) => {
+    if (upgradeType !== "CARTOON" && x.label !== "none") {
+      return true;
+    } else if (upgradeType === "CARTOON") {
+      if (x.trait === "eyes" || x.trait === "mouth") {
+        return true;
+      } else if (x.label !== "none") {
+        return true;
+      } else {
+        return false;
+      }
+    } else {
+      return false;
+    }
+  });
+  console.log(layers);
+  const filteredLayers = layers.filter((nft) => {
+    if (layers.some((x) => x.trait === "cosmetic_armor")) {
+      if (nft.trait === "armor") {
+        return false;
+      } else {
+        return true;
+      }
+    } else {
+      return true;
+    }
+  });
+  const resultBuffer = await mergeImages({ sources: filteredLayers });
   return resultBuffer;
 };
 
@@ -248,11 +308,11 @@ const getMetadataUpdater = (
     [NFTType.GOLEM]: {
       [GolemUpgrades.ORIGINAL.toString()]: `${UpgradeServerUrl}/update-golem-metadata`,
       [GolemUpgrades.REWORK.toString()]: `${UpgradeServerUrl}/update-golem-metadata`,
-      [GolemUpgrades.CARTOON.toString()]: null,
+      [GolemUpgrades.CARTOON.toString()]: `${UpgradeServerUrl}/update-golem-metadata`,
     },
     [NFTType.DEMON]: {
       [DemonUpgrades.ORIGINAL.toString()]: null,
-      [DemonUpgrades.CARTOON.toString()]: null,
+      [DemonUpgrades.CARTOON.toString()]: `${UpgradeServerUrl}/update-demon-metadata`,
     },
   };
   return updaters[collection][upgradeType];

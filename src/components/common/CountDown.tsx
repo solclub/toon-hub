@@ -5,9 +5,10 @@ type Props = {
   date: Date;
   finishedCallback?: () => void;
   className?: string;
+  isLongForm?: boolean;
 };
 
-const CountDown = ({ date, finishedCallback, className }: Props) => {
+const CountDown = ({ date, finishedCallback, className, isLongForm }: Props) => {
   const { seconds, minutes, hours, days, restart } = useTimer({
     expiryTimestamp: date,
     onExpire: finishedCallback,
@@ -19,9 +20,12 @@ const CountDown = ({ date, finishedCallback, className }: Props) => {
   }, [date]);
 
   const padStart = (value: number) => ("00" + value).slice(-2);
-  const format = `${days}:${padStart(hours)}:${padStart(minutes)}:${padStart(
-    seconds
-  )}`;
+  let format = "";
+
+  format += days > 0 ? (isLongForm ? `${days} days, ` : `${days}:`) : "";
+  format += hours > 0 ? (isLongForm ? `${padStart(hours)} hrs ` : `${padStart(hours)}:`) : "";
+  format += minutes > 0 ? (isLongForm ? `${padStart(minutes)}m : ` : `${padStart(minutes)}:`) : "";
+  format += seconds > 0 ? (isLongForm ? `${padStart(seconds)}s` : `${padStart(seconds)}`) : "";
 
   return <div className={className}>{format}</div>;
 };
@@ -35,9 +39,7 @@ const StopWatch = ({ date }: Props) => {
   }, [date]);
 
   const padStart = (value: number) => ("00" + value).slice(-2);
-  const format = `${days}:${padStart(hours)}:${padStart(minutes)}:${padStart(
-    seconds
-  )}`;
+  const format = `${days}:${padStart(hours)}:${padStart(minutes)}:${padStart(seconds)}`;
 
   return <div>{format}</div>;
 };

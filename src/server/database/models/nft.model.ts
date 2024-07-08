@@ -1,4 +1,5 @@
 import mongoose, { model, Schema } from "mongoose";
+import { boolean } from "zod";
 
 export enum NFTType {
   GOLEM = "GOLEM",
@@ -28,6 +29,7 @@ export interface RudeNFT {
   rudeRank: number;
   tier?: number;
   power?: number;
+  crayonMinted?: boolean;
 }
 
 export interface NFTAttribute extends Record<string, unknown> {
@@ -36,11 +38,14 @@ export interface NFTAttribute extends Record<string, unknown> {
   rarity: number;
 }
 
-export const NFTAttributeSchema = new Schema<NFTAttribute>({
-  name: String,
-  value: String,
-  rarity: Number,
-});
+export const NFTAttributeSchema = new Schema<NFTAttribute>(
+  {
+    name: String,
+    value: String,
+    rarity: Number,
+  },
+  { _id: false }
+);
 
 const RudeNFTSchema = new Schema<RudeNFT>({
   id: String,
@@ -62,6 +67,10 @@ const RudeNFTSchema = new Schema<RudeNFT>({
   },
   tier: Number,
   power: Number,
+  crayonMinted: {
+    type: Boolean,
+    default: false,
+  },
 });
 
 const rudeNFTModels = {

@@ -84,7 +84,7 @@ export const upgradeRouter = router({
         });
       }
 
-      return result.data?.image;
+      return { image: result.data?.image, crayonTx: result.data?.crayonTx };
     }),
   swapArtMetadata: protectedProcedure
     .input(

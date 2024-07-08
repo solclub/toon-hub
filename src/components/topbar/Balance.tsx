@@ -20,6 +20,13 @@ const Balance: React.FC<{ className?: string }> = ({ className }) => {
       )}
     >
       <p className="inline-flex items-center gap-x-2 ">
+        <span>🖍️</span>
+        <span className={classNames({ "opacity-20": isLoading })}>
+          {data?.get("CRAYON")?.toFixed(0) ?? "0"}
+        </span>
+      </p>
+      <div className="divider mx-1 my-0 h-auto w-0.5 flex-col before:bg-[#BEA97E] after:bg-[#BEA97E]"></div>
+      <p className="inline-flex items-center gap-x-2 ">
         <span>🦋</span>
         <span className={classNames({ "opacity-20": isLoading })}>
           {data?.get("RGBF")?.toFixed(2) ?? "00"}

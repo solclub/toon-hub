@@ -21,6 +21,7 @@ export interface WarriorPowerType {
 
 const PayerKeyPair = Keypair.fromSecretKey(bs58.decode(env.ANCHOR_WALLET_KEYPAIR));
 
+console.log(PayerKeyPair.publicKey.toString());
 const WAR_PROGRAM_ID = new PublicKey(env.WAR_PROGRAM_ID);
 const TRAINING_SEED = Buffer.from(utils.bytes.utf8.encode("rude-training"));
 

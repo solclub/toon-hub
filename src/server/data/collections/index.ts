@@ -82,6 +82,7 @@ export const collectionsSchemas = {
       "head",
       "horns",
       "special",
+      "cosmetic_armor",
     ],
   },
 };

@@ -4,6 +4,7 @@ export interface GeneralConfiguration {
   configName: string;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   settings: Record<string, any>;
+  totalCrayons: number;
 }
 
 const generalConfigurationSchema = new Schema({
@@ -14,6 +15,10 @@ const generalConfigurationSchema = new Schema({
   settings: {
     type: Schema.Types.Mixed,
     required: true,
+  },
+  totalCrayons: {
+    type: Number,
+    default: 0,
   },
 });
 
