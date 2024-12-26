@@ -2,10 +2,21 @@
 @tailwind components;
 @tailwind utilities;
 
+@font-face {
+  font-family: 'Clarence Pro';
+  src: local('Clarence Pro 006'), local('Clarence-Pro-006'),
+      url('../assets/fonts/ClarencePro-006.woff2') format('woff2'),
+      url('../assets/fonts/ClarencePro-006.woff') format('woff'),
+      url('../assets/fonts/ClarencePro-006.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+}
+
 body {
-  background: #0a0e15;
-  font-family: Inknut Antiqua;
-  color: whitesmoke;
+  font-family: 'Clarence Pro', sans-serif;
+  color: white;
+  letter-spacing: 1px;
+  background: black;
   background-image: url(../assets/images/bg.png);
   background-size: cover;
   background-repeat: no-repeat;

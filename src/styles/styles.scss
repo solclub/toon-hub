@@ -56,11 +56,6 @@
   background-image: url(../assets/images/button-secondary.png);
 }
 
-.wallet-adapter-button-trigger {
-  @extend .btn-rude;
-  z-index: 1000;
-}
-
 .clip-wrap {
   display: inline-block;
   vertical-align: middle;

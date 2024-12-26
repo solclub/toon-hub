@@ -67,6 +67,9 @@ const config = {
 
     return config;
   },
+  compiler: {
+    styledComponents: true
+  }
 };
 
 export default config;

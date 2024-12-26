@@ -1,34 +1,37 @@
 import Link from "next/link";
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { useWallet } from "@solana/wallet-adapter-react";
 import classNames from "classnames";
 import { Connect } from "./Connect";
 import SVGIcon from "assets/svg/SVGIcon";
 import { useRouter } from "next/router";
-import warimage from "assets/images/war_banner_small.png";
-import rankImage from "assets/images/rarity_banner_small.png";
-import nftToysImage from "assets/images/nfttoys_banner_small.png";
-import rewardsImage from "assets/images/rewards_banner_small.png";
-import Image from "next/image";
+import MainButton from "components/common/MainButton";
+import styled from "styled-components";
 
-type Props = {
+interface Props {
   children: JSX.Element;
-};
+}
 
 export const Drawer = ({ children }: Props) => {
   const { connected } = useWallet();
   const [isDrawerOpen, setDrawerOpen] = useState(false);
-  const [currentPath, setCurrentPath] = useState("/");
   const toggle = () => setDrawerOpen(!isDrawerOpen);
   const router = useRouter();
 
-  useEffect(() => {
-    setCurrentPath(router.pathname);
-  }, [router.pathname]);
-
   const menuItems = [
-    { name: "Home", path: "/", isPrivate: false },
-    { name: "My Collection", path: "/list", isPrivate: true },
+    {
+      name: "The Hub", children: [
+        { name: "Home", path: "/", isPrivate: false },
+        { name: "My Collection", path: "/list", isPrivate: true },
+      ]
+    },
+    {
+      name: "The Cartoon Clash", children: [
+        { name: "Battle", path: "/battle", isPrivate: true },
+        { name: "Leaderboard", path: "/leaderboard", isPrivate: false },
+      ]
+    },
+    { name: "Toon of the Ladder", path: "/toon-of-ladder", isPrivate: false },
   ];
 
   return (
@@ -41,97 +44,98 @@ export const Drawer = ({ children }: Props) => {
         checked={isDrawerOpen}
       />
 
-      <div className="drawer-content pt-7">
-        <div className="relative flex flex-wrap">
-          <div className="absolute flex h-4 w-full items-center justify-center lg:h-auto">
-            <Link href={"/"}>
-              <SVGIcon.thehub></SVGIcon.thehub>
-            </Link>
-          </div>
-          <div className="flex justify-start pl-8 align-middle lg:w-1/2">
-            <label htmlFor="main-drawer" className="drawer-button z-40 mr-4 inline cursor-pointer">
-              <SVGIcon.menui></SVGIcon.menui>
+      <div className="drawer-content">
+        <div className="flex py-6 px-32 justify-between items-center">
+          <div className="flex items-center gap-4">
+            <label htmlFor="main-drawer" className="cursor-pointer">
+              <SVGIcon.menu />
             </label>
             <div className="hidden w-44 lg:block">
-              <SVGIcon.rudeverse />
+              <SVGIcon.giblatoons />
             </div>
           </div>
-          <div className="mx-8 flex justify-end align-middle lg:mx-0 lg:w-1/2 lg:pr-8">
-            <Connect></Connect>
-          </div>
+          <Link href={"/"}>
+            {router.pathname === "/toon-of-ladder" ? <SVGIcon.toon_of_ladder /> : <SVGIcon.thehub />}
+          </Link>
+          <ConnectButton color={connected ? "blue" : "yellow"}>
+            <Connect />
+          </ConnectButton>
         </div>
-        <div className="container m-auto lg:px-8">{children}</div>
+        <div className="container m-auto">{children}</div>
       </div>
 
       <div className="drawer-side">
         <label htmlFor="main-drawer" className="drawer-overlay"></label>
 
-        <ul className="panel menu flex w-80 flex-col justify-start p-4 text-base-content">
-          <div className="mx-auto mt-4 w-56">
-            <SVGIcon.rudeverse />
+        <ul className="
+        bg-black 
+        menu 
+        flex 
+        w-80 
+        h-[80vh]
+        flex-col 
+        justify-start 
+        p-4
+        rounded-2xl
+        border-b-4 
+        border-[#fcec76]
+        ">
+          <div className="mx-auto my-10 w-56">
+            <SVGIcon.giblatoons />
           </div>
-          <div className="divider col-span-2"></div>
-          <div className="">
+          <div>
             {menuItems.map((item) => {
-              return (
-                <li key={item.name} className="text-white">
+              const TheItem = ({ item }: {
+                item: {
+                  name: string;
+                  path: string;
+                  isPrivate: boolean
+                }
+              }) => (
+                <li key={item.name}>
                   <Link
                     onClick={toggle}
                     href={item.path}
                     className={classNames(
-                      "mt-4 text-white",
+                      "mt-4 text-2xl",
                       {
-                        "bg-[#362f2e]": item.path == currentPath,
+                        "bg-[#362f2e]": item.path == router.pathname,
                       },
                       {
                         "disabled pointer-events-none text-gray-500": !connected && item.isPrivate,
                       }
                     )}
                   >
-                    <SVGIcon.hubRock />
                     {item.name}
                   </Link>
                 </li>
-              );
+              )
+              return item.children ? (
+                <li key={item.name}>
+                  <details className="flex flex-col items-start">
+                    <summary className="mt-4 text-2xl">{item.name}</summary>
+                    <ul className="flex flex-col gap-2">
+                      {item.children.map((child) => <TheItem key={item.name} item={child} />)}
+                    </ul>
+                  </details>
+                </li>
+              ) : <TheItem item={item} />;
             })}
-          </div>
-          <div className="mt-auto grid grid-cols-2 gap-3 justify-self-end">
-            <div className="divider col-span-2"></div>
-            <a
-              className="hover:scale-105 hover:transition-transform"
-              href="https://app.rudegolems.com/connect"
-              target={"_blank"}
-              rel="noreferrer"
-            >
-              <Image alt="War staking app" src={warimage} />
-            </a>
-            <a
-              className="hover:scale-105 hover:transition-transform"
-              href="https://rudegolems.com/ranking/"
-              target={"_blank"}
-              rel="noreferrer"
-            >
-              <Image alt="Rarity tool" src={rankImage} />
-            </a>
-            <a
-              className="hover:scale-105 hover:transition-transform"
-              href="https://rewards.creadorestudios.io/"
-              target={"_blank"}
-              rel="noreferrer"
-            >
-              <Image alt="Rewards" src={rewardsImage} />
-            </a>
-            <a
-              className="hover:scale-105 hover:transition-transform"
-              href="https://nftoys.site/"
-              target={"_blank"}
-              rel="noreferrer"
-            >
-              <Image alt="NFT Toys" src={nftToysImage} />
-            </a>
           </div>
         </ul>
       </div>
     </div>
   );
 };
+
+const ConnectButton = styled(MainButton)`
+  .wallet-adapter-button-trigger, .wallet-adapter-dropdown {
+    height: 100%;
+  }
+  .wallet-adapter-button-trigger {
+    padding: 0 1rem;
+    &:hover {
+      background-color: unset;
+    }
+  }
+`;
