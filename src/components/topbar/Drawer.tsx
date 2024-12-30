@@ -8,11 +8,7 @@ import { useRouter } from "next/router";
 import MainButton from "components/common/MainButton";
 import styled from "styled-components";
 
-interface Props {
-  children: JSX.Element;
-}
-
-export const Drawer = ({ children }: Props) => {
+export const Drawer = ({ children }: { children: JSX.Element; }) => {
   const { connected } = useWallet();
   const [isDrawerOpen, setDrawerOpen] = useState(false);
   const toggle = () => setDrawerOpen(!isDrawerOpen);
@@ -23,15 +19,17 @@ export const Drawer = ({ children }: Props) => {
       name: "The Hub", children: [
         { name: "Home", path: "/", isPrivate: false },
         { name: "My Collection", path: "/list", isPrivate: true },
-      ]
+      ],
+      icon: <SVGIcon.the_hub_icon />
     },
     {
       name: "The Cartoon Clash", children: [
         { name: "Battle", path: "/battle", isPrivate: true },
         { name: "Leaderboard", path: "/leaderboard", isPrivate: false },
-      ]
+      ],
+      icon: <SVGIcon.the_cartoon_clash_icon />
     },
-    { name: "Toon of the Ladder", path: "/toon-of-ladder", isPrivate: false },
+    { name: "Toon of the Ladder", path: "/toon-of-ladder", isPrivate: false, icon: <SVGIcon.the_toon_of_ladder_icon /> },
   ];
 
   return (
@@ -45,7 +43,7 @@ export const Drawer = ({ children }: Props) => {
       />
 
       <div className="drawer-content">
-        <div className="flex py-6 px-32 justify-between items-center">
+        <div className="relative flex py-6 px-4 lg:px-32 justify-between items-center flex-wrap">
           <div className="flex items-center gap-4">
             <label htmlFor="main-drawer" className="cursor-pointer">
               <SVGIcon.menu />
@@ -54,12 +52,16 @@ export const Drawer = ({ children }: Props) => {
               <SVGIcon.giblatoons />
             </div>
           </div>
-          <Link href={"/"}>
-            {router.pathname === "/toon-of-ladder" ? <SVGIcon.toon_of_ladder /> : <SVGIcon.thehub />}
-          </Link>
-          <ConnectButton color={connected ? "blue" : "yellow"}>
-            <Connect />
-          </ConnectButton>
+          <div className="w-full lg:w-auto flex justify-center top-2">
+            <Link href={router.pathname === "/toon-of-ladder" ? "" : "/"} >
+              {router.pathname === "/toon-of-ladder" ? <SVGIcon.toon_of_ladder /> : <SVGIcon.thehub />}
+            </Link>
+          </div>
+          <div className="w-full lg:w-auto flex justify-center mt-8 lg:mt-0">
+            <ConnectButton color={connected ? "blue" : "yellow"} className="w-fit">
+              <Connect />
+            </ConnectButton>
+          </div>
         </div>
         <div className="container m-auto">{children}</div>
       </div>
@@ -67,62 +69,65 @@ export const Drawer = ({ children }: Props) => {
       <div className="drawer-side">
         <label htmlFor="main-drawer" className="drawer-overlay"></label>
 
-        <ul className="
-        bg-black 
-        menu 
-        flex 
-        w-80 
-        h-[80vh]
-        flex-col 
-        justify-start 
-        p-4
-        rounded-2xl
-        border-b-4 
-        border-[#fcec76]
-        ">
-          <div className="mx-auto my-10 w-56">
-            <SVGIcon.giblatoons />
-          </div>
+        <Menu className="menu" $isOpen={isDrawerOpen}>
           <div>
-            {menuItems.map((item) => {
-              const TheItem = ({ item }: {
-                item: {
-                  name: string;
-                  path: string;
-                  isPrivate: boolean
-                }
-              }) => (
-                <li key={item.name}>
-                  <Link
-                    onClick={toggle}
-                    href={item.path}
-                    className={classNames(
-                      "mt-4 text-2xl",
-                      {
-                        "bg-[#362f2e]": item.path == router.pathname,
-                      },
-                      {
-                        "disabled pointer-events-none text-gray-500": !connected && item.isPrivate,
-                      }
-                    )}
-                  >
-                    {item.name}
-                  </Link>
-                </li>
-              )
-              return item.children ? (
-                <li key={item.name}>
-                  <details className="flex flex-col items-start">
-                    <summary className="mt-4 text-2xl">{item.name}</summary>
-                    <ul className="flex flex-col gap-2">
-                      {item.children.map((child) => <TheItem key={item.name} item={child} />)}
-                    </ul>
-                  </details>
-                </li>
-              ) : <TheItem item={item} />;
-            })}
+            <div className="absolute top-4 right-4 cursor-pointer" onClick={toggle}>
+              <SVGIcon.close_menu />
+            </div>
+            <div className="mx-auto my-10 w-56">
+              <SVGIcon.giblatoons />
+            </div>
+            <ul>
+              {menuItems.map((item) => {
+                const TheItem = ({ item, className }: {
+                  item: {
+                    name: string;
+                    path: string;
+                    isPrivate: boolean;
+                    icon?: JSX.Element;
+                  },
+                  className?: string;
+                }) => (
+                  <li className={(item.icon ? "" : "itemsMenu") + ` ${className}`}>
+                    <div className="gap-1 p-0">
+                      {item.icon}
+                      <Link
+                        onClick={toggle}
+                        href={item.path}
+                        className={classNames(
+                          { "text-[#FDD112]": item.path == router.pathname },
+                          { "text-xl": item.icon },
+                          { "disabled pointer-events-none text-gray-500": !connected && item.isPrivate },
+                          { "text-lg": !item.icon },
+                          "links"
+                        )}
+                      >
+                        {item.name}
+                      </Link>
+                    </div>
+                  </li>
+                )
+                return item.children ? (
+                  <li key={item.name}>
+                    <details className="flex flex-col items-start p-0">
+                      <summary className="text-xl flex items-center gap-1">
+                        <SVGIcon.arrowMarker className="arrow_marker" />
+                        {item.icon}
+                        <span>{item.name}</span>
+                      </summary>
+                      <ul className="sub-menu">
+                        {item.children.map((child) => <TheItem key={child.name} item={child} />)}
+                      </ul>
+                    </details>
+                  </li>
+                ) : <TheItem key={item.name} item={item} className="pl-3" />;
+              })}
+            </ul>
           </div>
-        </ul>
+          <button className="justify-self-end w-full py-4 text-xl bg-[#ffe865] rounded-lg text-black">
+            Visit Website
+          </button>
+        </Menu>
       </div>
     </div>
   );
@@ -136,6 +141,84 @@ const ConnectButton = styled(MainButton)`
     padding: 0 1rem;
     &:hover {
       background-color: unset;
+    }
+  }
+`;
+
+const Menu = styled.div<{ $isOpen: boolean }>`
+  background-color: black;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem;
+  border-bottom: 4px solid #fcec76;
+  
+  @media screen and (min-width: 1024px) {
+    width: 20rem;
+    height: 80vh;
+    border-radius: 1rem;
+    ${({ $isOpen }) => $isOpen && "transform: translateX(2rem) translateY(2rem) !important;"};
+  }
+
+  & *:active, & *:hover {
+    background-color: unset;
+    color: unset
+  }
+
+  .arrow_marker, .arrow_marker path {
+    transition: .2s;
+  }
+
+  details[open] .arrow_marker {
+    transform: rotate(90deg);
+    path {
+      stroke: #FDD112;
+    }
+  }
+
+  summary {
+    &::marker {
+      content: none;
+    }
+  }
+
+  .sub-menu {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    font-size: 1.25rem;
+    line-height: 1.75rem;
+    margin-left: 2rem;
+    margin-bottom: 1.5rem;
+    border-left: 1px solid #FDD112;
+  }
+
+  .itemsMenu {
+    flex-direction: row;
+    align-items: center;
+    margin-left: 1.25rem;
+
+    &::before {
+      content: "";
+      display: inline-block;
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      margin-right: 10px;
+      background-color: white;
+      transition: .2s;
+    }
+
+    &:hover::before {
+      background-color: #FDD112;
+    }
+  }
+
+  .links {
+    transition: .5s;
+    &:hover {
+      color: #FDD112;
     }
   }
 `;

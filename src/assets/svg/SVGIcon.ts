@@ -10,6 +10,11 @@ import open from "assets/svg/open.svg";
 import close from "assets/svg/close.svg";
 import hubRock from "assets/svg/hub-rock.svg";
 import toon_of_ladder from "assets/svg/toon-of-ladder.svg";
+import arrowMarker from "assets/svg/menuItemMarker.svg";
+import the_toon_of_ladder_icon from "assets/svg/the_toon_of_ladder_icon.svg";
+import the_hub_icon from "assets/svg/the_hub_icon.svg";
+import the_cartoon_clash_icon from "assets/svg/the_cartoon_clash_icon.svg";
+import close_menu from "assets/svg/closeMenu.svg";
 
 export default {
     thehub,
@@ -22,5 +27,10 @@ export default {
     open,
     close,
     hubRock,
-    toon_of_ladder
+    toon_of_ladder,
+    arrowMarker,
+    the_toon_of_ladder_icon,
+    the_hub_icon,
+    the_cartoon_clash_icon,
+    close_menu
 };
