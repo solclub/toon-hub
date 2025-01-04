@@ -69,7 +69,19 @@ const config = {
   },
   compiler: {
     styledComponents: true
-  }
+  },
+  transpilePackages: [
+    "antd",
+    "rc-util",
+    "rc-input",
+    "@ant-design/icons",
+    "@ant-design/icons-svg",
+    "rc-pagination",
+    "rc-picker",
+    "rc-tree",
+    "rc-table",
+    "reac-tweet"
+  ]
 };
 
 export default config;

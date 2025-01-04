@@ -5,8 +5,8 @@ import classNames from "classnames";
 import { Connect } from "./Connect";
 import SVGIcon from "assets/svg/SVGIcon";
 import { useRouter } from "next/router";
-import MainButton from "components/common/MainButton";
 import styled from "styled-components";
+import { ButtonContainerMixin, ButtonMixin } from "components/common/MainButton";
 
 export const Drawer = ({ children }: { children: JSX.Element; }) => {
   const { connected } = useWallet();
@@ -43,7 +43,7 @@ export const Drawer = ({ children }: { children: JSX.Element; }) => {
       />
 
       <div className="drawer-content">
-        <div className="relative flex py-6 px-4 lg:px-32 justify-between items-center flex-wrap">
+        <Header>
           <div className="flex items-center gap-4">
             <label htmlFor="main-drawer" className="cursor-pointer">
               <SVGIcon.menu />
@@ -57,13 +57,11 @@ export const Drawer = ({ children }: { children: JSX.Element; }) => {
               {router.pathname === "/toon-of-ladder" ? <SVGIcon.toon_of_ladder /> : <SVGIcon.thehub />}
             </Link>
           </div>
-          <div className="w-full lg:w-auto flex justify-center mt-8 lg:mt-0">
-            <ConnectButton color={connected ? "blue" : "yellow"} className="w-fit">
-              <Connect />
-            </ConnectButton>
-          </div>
-        </div>
-        <div className="container m-auto">{children}</div>
+          <ConnectButtonContainer $color={connected ? "blue" : "yellow"} className=" my-0 mx-auto mt-8 lg:m-0">
+            <Connect />
+          </ConnectButtonContainer>
+        </Header>
+        <div className="container m-auto p-4 pt-32">{children}</div>
       </div>
 
       <div className="drawer-side">
@@ -133,11 +131,27 @@ export const Drawer = ({ children }: { children: JSX.Element; }) => {
   );
 };
 
-const ConnectButton = styled(MainButton)`
-  .wallet-adapter-button-trigger, .wallet-adapter-dropdown {
-    height: 100%;
+const Header = styled.div`
+  position: relative;
+  display: flex;
+  padding: 1.5rem 1rem;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  border-bottom: 1px solid rgba(253, 209, 18, .3);
+
+  @media screen and (min-width: 1024px) {
+    padding: 1.5rem 8rem;
   }
-  .wallet-adapter-button-trigger {
+`;
+
+const ConnectButtonContainer = styled.div<{ $color: "yellow" | "blue" | "red" }>`
+  & .wallet-adapter-dropdown {
+    ${ButtonContainerMixin}
+    width: fit-content;
+  }
+  & .wallet-adapter-button-trigger {
+    ${ButtonMixin}
     padding: 0 1rem;
     &:hover {
       background-color: unset;

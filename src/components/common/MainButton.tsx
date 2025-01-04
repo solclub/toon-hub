@@ -1,27 +1,11 @@
 import type { MouseEventHandler, ReactNode } from "react";
-import styled from "styled-components";
+import styled, { css } from "styled-components";
 
-type Color = "yellow" | "blue" | "red";
+export type ButtonColor = "yellow" | "blue" | "red" | "black";
 
-const Button = styled.button<{ $color: Color }>`
-    min-width: 40px;
-    height: 35px;
-    border-radius: 10px;
-    box-shadow: 0px -1.67px 1.67px 0px rgba(0, 0, 0, 0.1) inset;
-    border-bottom: 2px solid ${({ $color }) => ({
-        yellow: "#d7a534",
-        blue: "#746ec1",
-        red: "#df6d80"
-    }[$color])};
-    background: ${({ $color }) => ({
-        yellow: "linear-gradient(180deg, #FDD112 0%, #CC8D02 100%)",
-        blue: "linear-gradient(180deg, #551ef5 0%, #5348b5 100%)",
-        red: "linear-gradient(180deg, #fd173d 0%, #db455d 100%)"
-    }[$color])};
-`;
-
-const ButtonContainer = styled.div<{ $color: Color }>`
+export const ButtonContainerMixin = css<{ $color: ButtonColor }>`
     display: flex;
+    min-width: 40px;
     height: 40px;
     border-radius: 10px;
     box-shadow: 0px 2.5px 1.67px 0px rgba(0, 0, 0, 0.25);
@@ -30,7 +14,8 @@ const ButtonContainer = styled.div<{ $color: Color }>`
     background-color: ${({ $color }) => ({
         yellow: "#9f6f02",
         blue: "#58529a",
-        red: "#c1334b"
+        red: "#c1334b",
+        black: "black"
     }[$color])};
 
     &:hover {
@@ -44,17 +29,45 @@ const ButtonContainer = styled.div<{ $color: Color }>`
     }
 `;
 
+export const ButtonMixin = css<{ $color: ButtonColor }>`
+    width: 100%;
+    height: 35px;
+    border-radius: 10px;
+    box-shadow: 0px -1.67px 1.67px 0px rgba(0, 0, 0, 0.1) inset;
+    border-bottom: 2px solid ${({ $color }) => ({
+        yellow: "#d7a534",
+        blue: "#746ec1",
+        red: "#df6d80",
+        black: "#7c8087"
+    }[$color])};
+    background: ${({ $color }) => ({
+        yellow: "linear-gradient(180deg, #FDD112 0%, #CC8D02 100%)",
+        blue: "linear-gradient(180deg, #551ef5 0%, #5348b5 100%)",
+        red: "linear-gradient(180deg, #fd173d 0%, #db455d 100%)",
+        black: "black"
+    }[$color])};
+`;
+
+const Button = styled.button<{ $color: ButtonColor }>`
+    ${ButtonMixin}
+`;
+
+export const ButtonContainer = styled.div<{ $color: ButtonColor }>`
+    ${ButtonContainerMixin}
+`;
+
 interface MainButtonProps {
     children: ReactNode
     onClick?: MouseEventHandler<HTMLButtonElement>
     className?: string,
-    color: Color
+    buttonClassName?: string,
+    color: ButtonColor
 }
 
-const MainButton: React.FC<MainButtonProps> = ({ children, onClick, className, color }) => {
+const MainButton: React.FC<MainButtonProps> = ({ children, onClick, className, color, buttonClassName }) => {
     return (
         <ButtonContainer id="button-container" className={className} $color={color}>
-            <Button onClick={onClick} $color={color}>
+            <Button onClick={onClick} $color={color} className={buttonClassName}>
                 {children}
             </Button>
         </ButtonContainer>

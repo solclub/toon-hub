@@ -32,5 +32,5 @@ export default {
     the_toon_of_ladder_icon,
     the_hub_icon,
     the_cartoon_clash_icon,
-    close_menu
+    close_menu,
 };
