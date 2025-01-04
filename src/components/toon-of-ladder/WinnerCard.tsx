@@ -109,7 +109,6 @@ export const Rank = styled.div`
 
 const ScoreContainer = styled.div`
   width: 100%;
-  min-height: 8rem;
   display: flex;
   justify-content: center;
   align-items: start;
@@ -117,7 +116,7 @@ const ScoreContainer = styled.div`
   margin-top: 2.5rem;
   background-color: white;
   flex-grow: 1;
-  clip-path: polygon(0% 0%, 100% 0%, 100% 60%, 50% 90%, 0% 60%);
+  clip-path: polygon(0% 0%, 100% 0%, 100% 50%, 50% 90%, 0% 50%);
   border-radius: 1rem;
 
   & > * {
@@ -130,6 +129,11 @@ const ScoreContainer = styled.div`
 
     &:first-child {
       border-right: 1px solid lightgray
+    }
+
+    @media screen and (max-width: 1024px) {
+      min-height: 8rem;
+      clip-path: polygon(0% 0%, 100% 0%, 100% 60%, 50% 90%, 0% 60%);
     }
   }
 `;
