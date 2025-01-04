@@ -3,6 +3,7 @@ import Image from 'next/image'
 
 const Container = styled.div`
     width: 96px;
+    user-select: none;
     position: relative;
     height: auto;
     aspect-ratio: 1 / 1;
