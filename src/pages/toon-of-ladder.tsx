@@ -42,7 +42,12 @@ const Page = () => {
       <ToonCard key={2} bgImageUrl={bgImageUrl2} className='rounded-md w-full' />,
       <ToonCard key={3} bgImageUrl={bgImageUrl3} className='rounded-md w-full' />,
       <ToonCard key={4} bgImageUrl={bgImageUrl4} className='rounded-md w-full' />,
-      <ToonCard key={5} bgImageUrl={bgImageUrl5} className='rounded-md w-full' />
+      <ToonCard key={5} bgImageUrl={bgImageUrl5} className='rounded-md w-full' />,
+      <ToonCard key={6} bgImageUrl={bgImageUrl1} className='rounded-md w-full' />,
+      <ToonCard key={7} bgImageUrl={bgImageUrl2} className='rounded-md w-full' />,
+      <ToonCard key={8} bgImageUrl={bgImageUrl3} className='rounded-md w-full' />,
+      <ToonCard key={9} bgImageUrl={bgImageUrl4} className='rounded-md w-full' />,
+      <ToonCard key={10} bgImageUrl={bgImageUrl5} className='rounded-md w-full' />,
     ]
   }
 
