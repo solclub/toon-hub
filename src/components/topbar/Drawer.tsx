@@ -24,8 +24,8 @@ export const Drawer = ({ children }: { children: JSX.Element; }) => {
     },
     {
       name: "The Cartoon Clash", children: [
-        { name: "Battle", path: "/battle", isPrivate: true },
-        { name: "Leaderboard", path: "/leaderboard", isPrivate: false },
+        { name: "Training camp", path: "/training-camp", isPrivate: true },
+        { name: "Battlefield", path: "/bettlefield", isPrivate: false },
       ],
       icon: <SVGIcon.the_cartoon_clash_icon />
     },
