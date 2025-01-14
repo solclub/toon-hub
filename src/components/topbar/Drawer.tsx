@@ -33,7 +33,7 @@ export const Drawer = ({ children }: { children: JSX.Element; }) => {
   ];
 
   return (
-    <div className="drawer">
+    <div className="drawer h-auto">
       <input
         id="main-drawer"
         type="checkbox"

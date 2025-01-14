@@ -3,6 +3,10 @@ import { Drawer } from "components/topbar/Drawer";
 import "react-toastify/dist/ReactToastify.css";
 import { ToastContainer } from "react-toastify";
 import { useRouter } from "next/router";
+import styled from "styled-components";
+import GiblatoonsLogo from '../assets/images/footerGiblatoonsLogo.svg'
+import footerbg from '../assets/images/footerbg.png'
+import mainbg from "../assets/images/mainbg.png";
 
 type Props = {
   children: JSX.Element;
@@ -20,7 +24,7 @@ const Layout = ({ children }: Props) => {
         <meta name="description" content="The Hub" />
         <link rel="icon" href="/favicon.ico" />
       </Head>
-      <main className="mx-auto h-screen w-screen">
+      <MainComponent>
         <Drawer>{children}</Drawer>
         <ToastContainer
           position="bottom-right"
@@ -34,7 +38,14 @@ const Layout = ({ children }: Props) => {
           pauseOnHover
           theme="dark"
         />
-      </main>
+      </MainComponent>
+      <FooterStyled>
+        <div>
+          <GiblatoonsLogo />
+          <span className="text-[#ffe75c]">All rights reserved 2024 &copy;</span>
+          <p className="font-sans text-xs text-gray-500">I have read the terms and conditions and i hereby accept and agree to the terms and conditions as stated in <a className="text-[#ffe75c]" href="">here.</a></p>
+        </div>
+      </FooterStyled>
       {/* Rounded filter */}
       <svg className='invisible absolute' width="0" height="0" xmlns="http://www.w3.org/2000/svg" version="1.1">
         <defs>
@@ -47,5 +58,27 @@ const Layout = ({ children }: Props) => {
     </>
   );
 };
+
+const MainComponent = styled.main`
+  background: url(${mainbg.src}) bottom/cover no-repeat;
+`;
+
+const FooterStyled = styled.footer`
+  background: url(${footerbg.src}) center no-repeat;
+  @media (max-width: 1024px) {
+    background-size: contain;
+  }
+  padding-top: 24rem;
+  padding-bottom: 8rem;
+  & > div {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: end;
+    text-align: center;
+    gap: 1rem;    
+  }
+`;
 
 export default Layout;
