@@ -33,7 +33,7 @@ export const Drawer = ({ children }: { children: JSX.Element; }) => {
   ];
 
   return (
-    <div className="drawer h-auto">
+    <div className="drawer min-h-screen h-auto">
       <input
         id="main-drawer"
         type="checkbox"
@@ -152,7 +152,6 @@ const ConnectButtonContainer = styled.div<{ $color: "yellow" | "blue" | "red" }>
   }
   & .wallet-adapter-button-trigger {
     ${ButtonMixin}
-    padding: 0 1rem;
     &:hover {
       background-color: unset;
     }

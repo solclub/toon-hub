@@ -1,6 +1,6 @@
 import React from 'react'
 import styled from 'styled-components';
-import ToonCard from './ToonCard';
+import ToonCard from '../common/ToonCard';
 import winnerbg from '../../assets/images/toon-of-ladder/winnerbg.png'
 import MedalImage from '../../assets/images/toon-of-ladder/medal.svg'
 import TwitterIcon from '../../assets/images/twitter.svg'

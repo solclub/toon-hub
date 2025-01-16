@@ -7,6 +7,9 @@ import FrameBox from "../components/common/FrameBox";
 import Loader from "../components/common/Loader";
 import { NFTType } from "server/database/models/nft.model";
 import { toPascalCase } from "utils/string-utils";
+import MainButton from "components/common/MainButton";
+import golemsFilterIcon from "../assets/images/golemsFilterIcon.png";
+import demonsFilterIcon from "../assets/images/demonsFilterIcon.png";
 
 const Profile = () => {
   const [selectedCollection, setSelectedCollection] = useState<NFTType | "ALL">("ALL");
@@ -28,59 +31,57 @@ const Profile = () => {
   };
 
   return (
-    <div className="mt-8 flex flex-wrap">
+    <div>
       <div className="w-full text-2xl">
-        <div className="flex justify-between">
-          <div className="flex w-full items-center justify-between">
-            <div className="flex items-center">My Collection</div>
-            <div className="flex items-center">
-              <div className="dropdown">
-                <label tabIndex={0} className="btn m-1">
-                  {selectedCollection === "ALL"
-                    ? "All collections"
-                    : `Rude ${toPascalCase(selectedCollection)}s`}
-                </label>
-                <ul
-                  tabIndex={0}
-                  className="dropdown-content menu rounded-box w-52 bg-base-100 p-2 shadow"
-                >
-                  <li
-                    className="cursor-pointer px-4 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-700"
-                    onClick={() => handleCollectionChange("ALL")}
-                  >
-                    All collections
-                  </li>
-                  {Object.keys(NFTType).map((collection) => (
-                    <li
-                      key={collection}
-                      className={`cursor-pointer px-4 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-700 ${
-                        selectedCollection === collection ? "bg-gray-100 dark:bg-gray-700" : ""
-                      }`}
-                      onClick={() => handleCollectionChange(collection.toUpperCase() as NFTType)}
-                    >
-                      {`Rude ${toPascalCase(collection)}s`}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-              <button className="btn-square btn" onClick={handleRefresh}>
-                <svg
-                  className="p-1"
-                  xmlns="http://www.w3.org/2000/svg"
-                  viewBox="0 0 24 24"
-                  id="redo"
-                  fill="#AB9F3A"
-                >
-                  <path d="M21,11a1,1,0,0,0-1,1,8.05,8.05,0,1,1-2.22-5.5h-2.4a1,1,0,0,0,0,2h4.53a1,1,0,0,0,1-1V3a1,1,0,0,0-2,0V4.77A10,10,0,1,0,22,12,1,1,0,0,0,21,11Z"></path>
-                </svg>
-              </button>
-            </div>
+        <div className="flex w-full items-center justify-between">
+          <h2>My Collection</h2>
+          <div className="flex items-center gap-4">
+            <MainButton
+              color="black"
+              className={`text-base border-[#7c8087aa] border-t-[1px] ${selectedCollection === "ALL" && "bg-gray-700"}`}
+              onClick={() => handleCollectionChange("ALL")}
+            >
+              All collections
+            </MainButton>
+            {Object.keys(NFTType).map((collection) => (
+              <MainButton
+                color="black"
+                key={collection}
+                buttonClassName="flex items-center gap-2"
+                className={`text-base border-[#7c8087aa] border-t-[1px] ${selectedCollection === collection && "bg-gray-700"}`}
+                onClick={() => handleCollectionChange(collection.toUpperCase() as NFTType)}
+              >
+                {collection !== "ALL" && (
+                  <Image
+                    src={{
+                      "GOLEM": golemsFilterIcon,
+                      "DEMON": demonsFilterIcon
+                    }[collection]}
+                    width={20}
+                    height={20}
+                    alt={"filter icon"}
+                  />
+                )}
+                {toPascalCase(collection)}s
+              </MainButton>
+            ))}
+            <button className="w-8 h-8" onClick={handleRefresh}>
+              <svg
+                className="p-1"
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24"
+                id="redo"
+                fill="#ffe75c"
+              >
+                <path d="M21,11a1,1,0,0,0-1,1,8.05,8.05,0,1,1-2.22-5.5h-2.4a1,1,0,0,0,0,2h4.53a1,1,0,0,0,1-1V3a1,1,0,0,0-2,0V4.77A10,10,0,1,0,22,12,1,1,0,0,0,21,11Z"></path>
+              </svg>
+            </button>
           </div>
         </div>
       </div>
-      <div className="w-full font-thin">Select the characters to customize</div>
+      <p className="font-sans text-gray-400">The portal is open click on one of your characters to toonify them!</p>
 
-      <div className="flex w-full flex-wrap justify-center gap-y-6 gap-x-4 pt-8 pb-20">
+      <div className="flex w-full flex-wrap justify-center gap-4 pt-8 pb-20">
         {isLoading && (
           <div>
             <Loader></Loader>

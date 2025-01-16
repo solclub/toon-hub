@@ -1,4 +1,4 @@
-import ToonCard from 'components/toon-of-ladder/ToonCard'
+import ToonCard from 'components/common/ToonCard'
 import React, { useMemo } from 'react'
 import styled from 'styled-components'
 import bgImageUrl from '../assets/images/toon-of-ladder/card-bg.png'

@@ -13,7 +13,7 @@ import ImgSolScan from "../assets/images/solscan.png";
 import Panel from "../components/common/Panel";
 import { trpc } from "utils/trpc";
 import Loader from "components/common/Loader";
-import ToonCard from "components/toon-of-ladder/ToonCard";
+import ToonCard from "components/common/ToonCard";
 
 import loot1 from "assets/images/loot1.png";
 import loot2 from "assets/images/loot2.png";
@@ -339,7 +339,7 @@ const LeaderBoard = () => {
                     </div>
                     <WalletLink name={name} wallet={owner} tabActive={tabActive}></WalletLink>
                   </div>
-                  <div className="flex items-center gap-2 text-xl lg:text-4xl">
+                  <div className="flex items-center gap-2 text-xl lg:text-2xl">
                     <Image
                       className="inline"
                       src={ImgPowerRating}

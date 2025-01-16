@@ -4,9 +4,8 @@ import styled, { css } from "styled-components";
 export type ButtonColor = "yellow" | "blue" | "red" | "black";
 
 export const ButtonContainerMixin = css<{ $color: ButtonColor }>`
-    display: flex;
     min-width: 40px;
-    height: 40px;
+    padding-bottom: 5px;
     border-radius: 10px;
     box-shadow: 0px 2.5px 1.67px 0px rgba(0, 0, 0, 0.25);
     transition: transform 0.2s ease, box-shadow 0.2s ease;
@@ -31,7 +30,7 @@ export const ButtonContainerMixin = css<{ $color: ButtonColor }>`
 
 export const ButtonMixin = css<{ $color: ButtonColor }>`
     width: 100%;
-    height: 35px;
+    padding: 5px 10px;
     border-radius: 10px;
     box-shadow: 0px -1.67px 1.67px 0px rgba(0, 0, 0, 0.1) inset;
     border-bottom: 2px solid ${({ $color }) => ({
