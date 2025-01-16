@@ -21,7 +21,6 @@ interface NFTDictionary {
 
 export const getUserNFTs = async (wallet: string) => {
   const result = await getNFTsByWalletId(wallet);
-
   const golems = await getNFTDocuments(NFTType.GOLEM, rudeNFTModels.GolemModel(), [
     ...(result.inWalletMints[NFTType.GOLEM] ?? []),
     ...(result.trainingMints[NFTType.GOLEM] ?? []),
@@ -30,7 +29,6 @@ export const getUserNFTs = async (wallet: string) => {
     ...(result.inWalletMints[NFTType.DEMON] ?? []),
     ...(result.trainingMints[NFTType.DEMON] ?? []),
   ]);
-
   const nfts = golems.concat(demons);
   await syncUserNFTs(
     wallet,
@@ -131,7 +129,6 @@ export const getNFTsByWalletId = async (
   wallet: string
 ): Promise<{ inWalletMints: NFTDictionary; trainingMints: NFTDictionary }> => {
   const walletNfts = await fetchAllDigitalAssetByOwner(umi, wallet as PublicKey, {
-    tokenStrategy: "getProgramAccounts",
     tokenAmountFilter: (amount) => amount == BigInt(1),
   });
   logWithTimestamp("fetchAllDigitalAssetByOwner");
@@ -149,7 +146,6 @@ export const getNFTsByWalletId = async (
       }
       return acc;
     }, {});
-
   const stakedMints = await stakedUserNfts;
   stakedMints?.forEach((item) => {
     const type = item.rudeType === 1 ? NFTType.GOLEM : NFTType.DEMON;
@@ -158,7 +154,6 @@ export const getNFTsByWalletId = async (
     }
     trainingMints[type]?.push(item["rudeMintkey"].toString());
   });
-
   return { inWalletMints: mints, trainingMints };
 };
 
