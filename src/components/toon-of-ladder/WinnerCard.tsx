@@ -85,7 +85,7 @@ const WinnerContainer = styled.div<{ $order: number }>`
   }
 `;
 
-const ClippedToonCardContainer = styled.div`
+export const ClippedToonCardContainer = styled.div`
   width: 50%;
   clip-path: polygon(50% 0%, 100% 15%, 100% 85%, 50% 100%, 0% 85%, 0% 15%);
   padding-bottom: .5rem;

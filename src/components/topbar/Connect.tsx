@@ -8,6 +8,7 @@ import { trpc } from "../../utils/trpc";
 import bs58 from "bs58";
 import { SigninMessage } from "../../utils/signin-message";
 import SVGIcon from "assets/svg/SVGIcon";
+import styled from "styled-components";
 
 const WalletMultiButtonDynamic = dynamic(
   async () => (await import("@solana/wallet-adapter-react-ui")).WalletMultiButton,
@@ -74,13 +75,13 @@ export const Connect = () => {
     <>
       {status == "unauthenticated" && <WalletMultiButtonDynamic />}
       {status == "authenticated" && (
-        <div className="dropdown dropdown-end mt-3 lg:mt-0">
-          <div className="flex flex-wrap items-center lg:items-end lg:text-right">
+        <div className="dropdown dropdown-end">
+          <div className="flex flex-wrap items-center flex-col lg:flex-row">
             <BalancePanel className="w-fit"></BalancePanel>
-            <div className="mt-3 flex w-full flex-1 px-3 lg:mt-0 lg:w-1/4">
-              <div tabIndex={0} className="lg:w-fit">
-                <div className="inline lg:block lg:text-xs">Hello</div>
-                <div className="indicator inline text-[#BEA97E] lg:block">
+            <div className="mt-4 lg:mt-0 flex justify-center px-3 gap-4">
+              <div tabIndex={0} className="flex flex-row lg:flex-col gap-1">
+                <div className="lg:text-xs">Hello</div>
+                <div className="indicator text-[#ffe75c]">
                   <span
                     className={classNames("badge-error badge badge-xs indicator-item", {
                       "mt-2 hidden": user?.twitterVerified || user?.discordVerified,
@@ -89,7 +90,7 @@ export const Connect = () => {
                   <span>{user?.twitterDetails?.username || "Connect"}</span>
                 </div>
               </div>
-              <div className="w-1 flex-1 pl-2 ">
+              <div>
                 <label className="swap-rotate swap">
                   <input type="checkbox" />
                   <div className="swap-on">
@@ -105,7 +106,7 @@ export const Connect = () => {
           </div>
           <ul
             tabIndex={0}
-            className="panel dropdown-content menu mt-3 w-60 rounded-2xl p-2 pt-5 text-xs shadow"
+            className="panel dropdown-content menu mt-3 w-60 rounded-2xl p-2 pt-5 text-xs shadow font-sans"
           >
             <li>
               <label
@@ -205,12 +206,21 @@ export const Connect = () => {
                 Sign Out
               </button>
             </li>
-            <li>
-              <WalletMultiButtonDynamic />
-            </li>
+            <ButtonContainer>
+              <WalletMultiButtonDynamic/>
+            </ButtonContainer>
           </ul>
         </div>
       )}
     </>
   );
 };
+
+const ButtonContainer = styled.li`
+
+  & > .wallet-adapter-dropdown {
+    padding: 0 !important;
+    padding-bottom: 5px;
+    margin: 0 auto;
+  }
+`;

@@ -42,8 +42,10 @@ const Layout = ({ children }: Props) => {
       <FooterStyled>
         <div>
           <GiblatoonsLogo />
-          <span className="text-[#ffe75c]">All rights reserved 2024 &copy;</span>
-          <p className="font-sans text-xs text-gray-500">I have read the terms and conditions and i hereby accept and agree to the terms and conditions as stated in <a className="text-[#ffe75c]" href="">here.</a></p>
+          <span className="text-[#ffe75c]">
+            All rights reserved {new Date().getFullYear()} &copy;
+          </span>
+          <p className="font-sans text-xs text-gray-500">I have read the terms and conditions and i here by accept and agree to the terms and conditions as stated in <a className="text-[#ffe75c]" href="">here.</a></p>
         </div>
       </FooterStyled>
       {/* Rounded filter */}

@@ -1,5 +1,5 @@
 import Link from "next/link";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useWallet } from "@solana/wallet-adapter-react";
 import classNames from "classnames";
 import { Connect } from "./Connect";
@@ -14,6 +14,14 @@ export const Drawer = ({ children }: { children: JSX.Element; }) => {
   const toggle = () => setDrawerOpen(!isDrawerOpen);
   const router = useRouter();
 
+  useEffect(() => {
+    isDrawerOpen && (document.body.style.overflow = "hidden");
+
+    return () => {
+      document.body.style.overflow = "unset";
+    };
+  }, [isDrawerOpen]);
+
   const menuItems = [
     {
       name: "The Hub", children: [
@@ -24,8 +32,8 @@ export const Drawer = ({ children }: { children: JSX.Element; }) => {
     },
     {
       name: "The Cartoon Clash", children: [
-        { name: "Training camp", path: "/training-camp", isPrivate: true },
-        { name: "Battlefield", path: "/bettlefield", isPrivate: false },
+        { name: "Training camp", path: "https://app.rudegolems.com/training", isPrivate: true },
+        { name: "Battlefield", path: "https://app.rudegolems.com/war", isPrivate: true },
       ],
       icon: <SVGIcon.the_cartoon_clash_icon />
     },
@@ -48,7 +56,7 @@ export const Drawer = ({ children }: { children: JSX.Element; }) => {
             <label htmlFor="main-drawer" className="cursor-pointer">
               <SVGIcon.menu />
             </label>
-            <div className="hidden w-44 lg:block">
+            <div className={classNames("w-44 lg:block", { "hidden": !isDrawerOpen })}>
               <SVGIcon.giblatoons />
             </div>
           </div>
@@ -57,7 +65,7 @@ export const Drawer = ({ children }: { children: JSX.Element; }) => {
               {router.pathname === "/toon-of-ladder" ? <SVGIcon.toon_of_ladder /> : <SVGIcon.thehub />}
             </Link>
           </div>
-          <ConnectButtonContainer $color={connected ? "blue" : "yellow"} className=" my-0 mx-auto mt-8 lg:m-0">
+          <ConnectButtonContainer $color={connected ? "blue" : "yellow"} className=" my-0 mt-8 mx-auto lg:m-0 w-full lg:w-auto flex justify-center">
             <Connect />
           </ConnectButtonContainer>
         </Header>
@@ -92,6 +100,7 @@ export const Drawer = ({ children }: { children: JSX.Element; }) => {
                       <Link
                         onClick={toggle}
                         href={item.path}
+                        target={item.path.includes("rude") ? "_blank" : ""}
                         className={classNames(
                           { "text-[#FDD112]": item.path == router.pathname },
                           { "text-xl": item.icon },
@@ -123,7 +132,7 @@ export const Drawer = ({ children }: { children: JSX.Element; }) => {
             </ul>
           </div>
           <button className="justify-self-end w-full py-4 text-xl bg-[#ffe865] rounded-lg text-black">
-            Visit Website
+            <a href="https://rudegolems.com/" target="_blank">Visit Website</a>
           </button>
         </Menu>
       </div>
@@ -141,7 +150,7 @@ const Header = styled.div`
   border-bottom: 1px solid rgba(253, 209, 18, .3);
 
   @media screen and (min-width: 1024px) {
-    padding: 1.5rem 8rem;
+    padding: 1.5rem 2rem;
   }
 `;
 

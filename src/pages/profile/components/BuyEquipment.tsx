@@ -25,6 +25,8 @@ import type { UserNFT } from "server/database/models/user-nfts.model";
 import { SigninMessage } from "utils/signin-message";
 import { showPromisedToast } from "utils/toast-utils";
 import { trpc } from "utils/trpc";
+import MainButton from "components/common/MainButton";
+import { ClippedToonCard, ClippedToonCardContainer } from "components/toon-of-ladder/WinnerCard";
 
 type NFTInfo = RudeNFT & {
   user: UserNFT | undefined;
@@ -41,16 +43,6 @@ type Props = {
   nft: NFTInfo;
   revealed: boolean;
   updatedAt: Date | undefined;
-};
-
-const RarityColors: Record<WeaponRarity, string> = {
-  NONE: "drop-shadow-none rounded-2xl border border-none border-[3px]",
-  COMMON: "drop-shadow-common rounded-2xl border border-common border-[3px]",
-  RARE: "drop-shadow-rare rounded-2xl border border-rare border-[3px]",
-  EPIC: "drop-shadow-epic rounded-2xl border border-common border-[3px]",
-  LEGENDARY: "drop-shadow-legendary rounded-2xl border border-legendary border-[3px]",
-  MYTHIC: "drop-shadow-mythic rounded-2xl border border-mythic border-[3px]",
-  SECRET: "drop-shadow-secret rounded-2xl border border-secret border-[3px]",
 };
 
 const TextRarityColors: Record<WeaponRarity, string> = {
@@ -169,9 +161,9 @@ const BuyEquipment = (equipment: Props) => {
 
   return (
     <div
-      className={classNames(RarityColors[weaponMetadata?.rarity ?? "NONE"], className, "w-full")}
+      className={classNames(className, "w-full pb-2 card bg-gray-900", revealed && "!bg-[#ffe75c] border-[#ffe75c] border-[1px]")}
     >
-      <div className={classNames("card card-compact bg-base-100 font-medieval-sharp shadow-xl")}>
+      <div className={classNames("card card-compact bg-gray-950 shadow-xl border-b-[1px] border-gray-700")}>
         <figure>
           <Image
             src={weaponMetadata?.image || WeaponChest}
@@ -189,17 +181,18 @@ const BuyEquipment = (equipment: Props) => {
 
           {revealed && (
             <>
-              <span>
-                {"Power: "}
-                {(weaponMetadata?.computedPowerValue??0) > 0 ? weaponMetadata?.computedPowerValue?.toFixed(2):
-                `x ${weaponMetadata?.powerValue}`
-                }
-                
+              <span className="text-left">
+                {"Powerhan: "}
+                <span className="text-[#ffe75c]">
+                  {(weaponMetadata?.computedPowerValue ?? 0) > 0 ? weaponMetadata?.computedPowerValue?.toFixed(2) :
+                    `x ${weaponMetadata?.powerValue}`
+                  }
+                </span>
               </span>
               <span
                 className={classNames(
                   TextRarityColors[weaponMetadata?.rarity ?? "NONE"],
-                  "text-base font-bold"
+                  "text-base font-bold text-left"
                 )}
               >
                 {EquipmentRarityLabels[weaponMetadata?.rarity ?? "NONE"]}
@@ -218,20 +211,16 @@ const BuyEquipment = (equipment: Props) => {
             )}
             {(!revealed || (updatedAt && targetRollDate && targetRollDate <= new Date())) &&
               nft?.user?.wallet == publicKey?.toBase58() && (
-                <>
-                  <motion.button
-                    onClick={() => {
-                      setWeaponModalOpen(!isWeaponModalOpen);
-                    }}
-                    className="btn-rude btn w-full"
-                  >
-                    Roll Now 🎲
-                  </motion.button>
-                  <div className={classNames("absolute top-4 left-0 mx-auto w-full", 
-                      {"text-green-400":!revealed}, 
-                      {"hidden":revealed} )
-                  }>{price}</div>
-                </>
+                <MainButton
+                  color="yellow"
+                  onClick={() => {
+                    setWeaponModalOpen(!isWeaponModalOpen);
+                  }}
+                  className="w-full"
+                  buttonClassName="py-2 font-sans font-bold text-base"
+                >
+                  ROLL NOW
+                </MainButton>
               )}
           </div>
         </div>
@@ -245,51 +234,41 @@ const BuyEquipment = (equipment: Props) => {
       {/* </FrameBox> */}
 
       <Modal
-        className={classNames({ "lg:w-full": true })}
+        className="lg:w-full"
         isOpen={isWeaponModalOpen}
         backdropDismiss={true}
         handleClose={() => setWeaponModalOpen(false)}
       >
-        <div className="flex flex-wrap items-center justify-center">
-          <div className="mt-10 mb-10 w-full ">
-            <div className="mx-4 flex flex-wrap items-center justify-between">
-              <div className="w-full lg:w-1/2">
-                <FrameBox className="w-full">
-                  <Image
-                    className="w-full rounded-3xl"
-                    src={weaponMetadata?.image ?? WeaponChest}
-                    alt={title}
-                    width={800}
-                    height={800}
-                  ></Image>
-                </FrameBox>
-              </div>
-              <div className="flex flex-wrap items-center lg:w-1/2">
-                <div className="mb-5 w-full p-5 sm:p-0">
-                  <div className="w-full text-center sm:w-auto">
-                    <p className="titles-color textStroke mb-4 text-2xl">Current Slot Price:</p>
-                    {paymentOptions && (
-                      <PaymentMethodSelector
-                        paymentOptions={paymentOptions}
-                        selected={paymentOption}
-                        onChange={(opt) => {
-                          setpaymentOption(opt);
-                        }}
-                      ></PaymentMethodSelector>
-                    )}
-                  </div>
-                </div>
-                <div className="mx-auto flex w-full flex-wrap">
-                  <motion.button
-                    className="btn-rude btn mx-auto mb-5"
-                    onClick={buyWeapon}
-                    disabled={isLoading}
-                  >
-                    {isLoading ? "Loading..." : "Buy Weapon"}
-                  </motion.button>
-                </div>
+        <div className="w-full flex flex-col lg:flex-row items-center justify-between gap-4">
+          <ClippedToonCardContainer className="w-full lg:w-[500px]">
+            <ClippedToonCard
+              bgImageUrl={weaponMetadata?.image ?? WeaponChest}
+            />
+          </ClippedToonCardContainer>
+          <div className="flex flex-wrap items-center lg:w-1/2">
+            <div className="mb-5 w-full p-5 sm:p-0">
+              <div className="w-full text-center sm:w-auto">
+                <p className="titles-color textStroke mb-4 text-2xl">Current Slot Price:</p>
+                {paymentOptions && (
+                  <PaymentMethodSelector
+                    paymentOptions={paymentOptions}
+                    selected={paymentOption}
+                    onChange={(opt) => {
+                      setpaymentOption(opt);
+                    }}
+                  ></PaymentMethodSelector>
+                )}
               </div>
             </div>
+            <MainButton
+              color="yellow"
+              className="mx-auto font-sans font-bold"
+              buttonClassName="px-8"
+              onClick={buyWeapon}
+              disabled={isLoading}
+            >
+              {isLoading ? "Loading..." : "BUY WEAPON"}
+            </MainButton>
           </div>
         </div>
       </Modal>

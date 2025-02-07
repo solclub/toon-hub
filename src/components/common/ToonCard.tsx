@@ -10,6 +10,7 @@ const Container = styled.div`
     border-bottom: 6px solid #fcec76;
     border-radius: 16px;
     box-shadow: 0px 2px 0px 0px rgba(0, 0, 0, 0.25);
+    overflow: hidden;
 
     & > img:first-child {
         left: 0;
@@ -18,7 +19,6 @@ const Container = styled.div`
         object-fit: cover;
         width: 100%;
         height: 100%;
-        border-radius: 16px;
         z-index: -1;
     }
 `;

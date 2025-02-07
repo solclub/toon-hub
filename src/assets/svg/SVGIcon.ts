@@ -3,7 +3,8 @@ import thehub from "assets/svg/thehub.svg";
 import menuitem from "assets/svg/menuitem.svg";
 import giblatoons from "assets/svg/giblatoons.svg";
 import menu from "assets/svg/menu.svg";
-import Sol from "assets/svg/sol";
+import Sol from "assets/svg/sol.svg";
+import Rude from "assets/svg/rude.svg";
 import twitter from "assets/svg/twitter.svg";
 import discord from "assets/svg/discord.svg";
 import open from "assets/svg/open.svg";
@@ -33,4 +34,5 @@ export default {
     the_hub_icon,
     the_cartoon_clash_icon,
     close_menu,
+    Rude
 };

@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import FocusLock from "react-focus-lock";
 import { usePortal } from "utils/modalutils";
+import MainButton from "./MainButton";
 
 const effect = {
   hidden: {
@@ -48,7 +49,7 @@ const ModalContent = ({ className, children, handleClose, ariaLabel }: ModalCont
     role="dialog"
     aria-modal={true}
     aria-label={ariaLabel}
-    className={`relative mx-auto rounded-2xl ${className || "w-fit rounded-lg shadow-lg"}`}
+    className={`relative mx-auto rounded-2xl ${className || "w-fit rounded-lg shadow-lg p-4"}`}
     variants={effect}
     initial="hidden"
     animate="visible"
@@ -57,8 +58,9 @@ const ModalContent = ({ className, children, handleClose, ariaLabel }: ModalCont
   >
     {children}
     {handleClose && (
-      <button
-        className="absolute top-1 right-1 rounded-2xl bg-slate-800 p-2"
+      <MainButton
+        color="yellow"
+        className="absolute top-2 right-2"
         onClick={handleClose}
         aria-label={`Close ${ariaLabel || "dialog"}`}
       >
@@ -70,7 +72,7 @@ const ModalContent = ({ className, children, handleClose, ariaLabel }: ModalCont
         >
           <path d="M289.94 256l95-95A24 24 0 00351 127l-95 95-95-95a24 24 0 00-34 34l95 95-95 95a24 24 0 1034 34l95-95 95 95a24 24 0 0034-34z" />
         </svg>
-      </button>
+      </MainButton>
     )}
   </motion.div>
 );

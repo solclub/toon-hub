@@ -1,11 +1,8 @@
-import { motion } from "framer-motion";
-import Image from "next/image";
 import React, { useEffect, useRef, useState } from "react";
 import type { PaymentOption, ProductOption } from "server/database/models/catalog.model";
 import { ProductType } from "server/database/models/catalog.model";
 import PaymentMethodSelector from "../../../components/common/PaymentMethodSelector";
 import NftHidden from "assets/images/skin.png";
-import FrameBox from "../../../components/common/FrameBox";
 import type { UserNFT } from "server/database/models/user-nfts.model";
 import { showPromisedToast } from "utils/toast-utils";
 import { trpc } from "utils/trpc";
@@ -15,6 +12,8 @@ import { useNFTManager } from "contexts/NFTManagerContext";
 import { SigninMessage } from "utils/signin-message";
 import { getCsrfToken } from "next-auth/react";
 import bs58 from "bs58";
+import { ClippedToonCard, ClippedToonCardContainer } from "components/toon-of-ladder/WinnerCard";
+import MainButton from "components/common/MainButton";
 
 interface BuyProperties {
   title: string;
@@ -102,52 +101,42 @@ const FeatureNFT: React.FC<BuyProperties> = ({ title, featureOption, sourceImage
   };
 
   return (
-    <div className="flex flex-wrap items-center justify-center">
-      <div className="mt-10 mb-10 w-full ">
-        <div className="mx-4 flex flex-wrap items-center justify-between">
-          <div className="w-full lg:w-1/2">
-            <FrameBox className="w-full">
-              <Image
-                className="w-full rounded-3xl"
-                src={sourceImageUrl ?? NftHidden}
-                alt={title}
-                width={500}
-                height={500}
-              ></Image>
-            </FrameBox>
-          </div>
-          <div className="flex flex-wrap items-center lg:w-1/2">
-            <div className="mb-5 w-full p-5 sm:p-0">
-              <div className="w-full text-center sm:w-auto">
-                <p className="titles-color textStroke mb-4 text-2xl">Current Feature Costs:</p>
-                {paymentOptions && (
-                  <PaymentMethodSelector
-                    paymentOptions={paymentOptions}
-                    selected={paymentOption}
-                    onChange={(opt) => {
-                      setpaymentOption(opt);
-                    }}
-                  ></PaymentMethodSelector>
-                )}
-              </div>
-            </div>
-            <div className="mx-auto flex w-full flex-wrap">
-              {!isSuccess ? (
-                <motion.button
-                  className="btn-rude btn mx-auto mb-5"
-                  onClick={featureNFT}
-                  disabled={isLoading}
-                >
-                  Feature NFT
-                </motion.button>
-              ) : (
-                <div className="text-stroke mx-auto text-2xl text-yellow-400">
-                  ¡Success! NFT will be featured soon 🚀
-                </div>
-              )}
-            </div>
+    <div className="w-full flex flex-col lg:flex-row items-center justify-between gap-4">
+      <ClippedToonCardContainer className="w-full lg:w-[500px]">
+        <ClippedToonCard
+          bgImageUrl={sourceImageUrl ?? NftHidden}
+        />
+      </ClippedToonCardContainer>
+      <div className="flex flex-wrap items-center lg:w-1/2">
+        <div className="mb-5 w-full p-5 sm:p-0">
+          <div className="w-full text-center sm:w-auto">
+            <p className="titles-color textStroke mb-4 text-2xl">Current feature costs:</p>
+            {paymentOptions && (
+              <PaymentMethodSelector
+                paymentOptions={paymentOptions}
+                selected={paymentOption}
+                onChange={(opt) => {
+                  setpaymentOption(opt);
+                }}
+              ></PaymentMethodSelector>
+            )}
           </div>
         </div>
+        {!isSuccess ? (
+          <MainButton
+            color="yellow"
+            buttonClassName="px-8"
+            className="mx-auto font-sans font-bold"
+            onClick={featureNFT}
+            disabled={isLoading}
+          >
+            FEATURE NFT
+          </MainButton>
+        ) : (
+          <div className="text-stroke mx-auto text-2xl text-yellow-400">
+            ¡Success! NFT will be featured soon 🚀
+          </div>
+        )}
       </div>
     </div>
   );

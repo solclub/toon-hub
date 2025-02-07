@@ -11,7 +11,7 @@
         cy="17"
         r="16"
         transform="matrix(1 0 0 -1 0 34)"
-        stroke="#BEA97E"
+        stroke="#ffe75c"
         strokeWidth="2"
     />
     <path d="M22.46 20L16.708 10.9998L11 20H22.46Z" fill="white" />
