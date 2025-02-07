@@ -1,0 +1,75 @@
+// @ts-check
+import { z } from "zod";
+
+/**
+ * Specify your server-side environment variables schema here.
+ * This way you can ensure the app isn't built with invalid env vars.
+ */
+export const serverSchema = z.object({
+  NODE_ENV: z.enum(["development", "test", "production"]),
+  NEXTAUTH_SECRET:
+    process.env.NODE_ENV === "production" ? z.string().min(1) : z.string().min(1).optional(),
+  NEXTAUTH_URL: z.preprocess(
+    // This makes Vercel deployments not fail if you don't set NEXTAUTH_URL
+    // Since NextAuth.js automatically uses the VERCEL_URL if present.
+    (str) => process.env.VERCEL_URL ?? str,
+    // VERCEL_URL doesn't include `https` so it cant be validated as a URL
+    process.env.VERCEL ? z.string() : z.string().url()
+  ),
+
+  //socials
+  DISCORD_CLIENT_ID: z.string(),
+  DISCORD_CLIENT_SECRET: z.string(),
+  TWITTER_CLIENT_ID: z.string(),
+  TWITTER_CLIENT_SECRET: z.string(),
+
+  // file storage
+  CLOUDINARY_CLOUD_NAME: z.string(),
+  CLOUDINARY_API_KEY: z.string(),
+  CLOUDINARY_API_SECRET: z.string(),
+
+  MONGODB_URI: z.string(),
+  MONGODB_DB_NAME: z.string(),
+
+  WAR_PROGRAM_ID: z.string(),
+  ANCHOR_WALLET_KEYPAIR: z.string(),
+  UPDATE_AUTHORITY_ADDRESS: z.string(),
+
+  METADATA_UPGRADE_SERVER_URL: z.string().url(),
+  METADATA_UPGRADE_ACCESS_TOKEN: z.string(),
+
+  GIBLATOONS_LIVE_DATE: z.string(),
+});
+
+/**
+ * Specify your client-side environment variables schema here.
+ * This way you can ensure the app isn't built with invalid env vars.
+ * To expose them to the client, prefix them with `NEXT_PUBLIC_`.
+ */
+export const clientSchema = z.object({
+  NEXT_PUBLIC_RUDE_TOKEN_KEY: z.string(),
+  NEXT_PUBLIC_RPC_NODE: z.string(),
+  NEXT_PUBLIC_RUDE_SINK_KEY: z.string(),
+  NEXT_PUBLIC_SOLANA_SINK_KEY: z.string(),
+  NEXT_PUBLIC_GIBATOONS_LIVE: z.string(),
+  NEXT_PUBLIC_GIBLATOONS_LIVE_DATE: z.string(),
+  NEXT_PUBLIC_GIBLATOONS_CRAYONS_MINT_KEY: z.string(),
+  NEXT_PUBLIC_GIBLATOONS_CRAYONS_PREMINT: z.string(),
+});
+
+/**
+ * You can't destruct `process.env` as a regular object, so you have to do
+ * it manually here. This is because Next.js evaluates this at build time,
+ * and only used environment variables are included in the build.
+ * @type {{ [k in keyof z.infer<typeof clientSchema>]: z.infer<typeof clientSchema>[k] | undefined }}
+ */
+export const clientEnv = {
+  NEXT_PUBLIC_RUDE_TOKEN_KEY: process.env.NEXT_PUBLIC_RUDE_TOKEN_KEY,
+  NEXT_PUBLIC_RPC_NODE: process.env.NEXT_PUBLIC_RPC_NODE,
+  NEXT_PUBLIC_RUDE_SINK_KEY: process.env.NEXT_PUBLIC_RUDE_SINK_KEY,
+  NEXT_PUBLIC_SOLANA_SINK_KEY: process.env.NEXT_PUBLIC_SOLANA_SINK_KEY,
+  NEXT_PUBLIC_GIBATOONS_LIVE: process.env.NEXT_PUBLIC_GIBATOONS_LIVE,
+  NEXT_PUBLIC_GIBLATOONS_LIVE_DATE: "1714514400000",
+  NEXT_PUBLIC_GIBLATOONS_CRAYONS_MINT_KEY: process.env.NEXT_PUBLIC_GIBLATOONS_CRAYONS_MINT_KEY,
+  NEXT_PUBLIC_GIBLATOONS_CRAYONS_PREMINT: process.env.NEXT_PUBLIC_GIBLATOONS_CRAYONS_PREMINT,
+};

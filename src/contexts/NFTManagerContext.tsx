@@ -1,0 +1,212 @@
+import {
+  createAssociatedTokenAccountInstruction,
+  createTransferInstruction,
+  getAssociatedTokenAddress,
+} from "@solana/spl-token";
+import type { TransactionInstruction, VersionedTransaction } from "@solana/web3.js";
+import { LAMPORTS_PER_SOL, PublicKey, SystemProgram, Transaction } from "@solana/web3.js";
+import { env } from "env/client.mjs";
+import { EventEmitter } from "events";
+import { useSession } from "next-auth/react";
+import { createContext, useContext, useEffect, useState } from "react";
+import type {
+  Amount,
+  PaymentOption,
+  Product,
+  ProductType,
+} from "server/database/models/catalog.model";
+import { PaymentToken } from "server/database/models/catalog.model";
+import { connection } from "server/services/connections/web3-public";
+import { getButterflies } from "server/services/onchain-service";
+import { trpc } from "utils/trpc";
+
+const LAMPORTS_PER_RUDE = LAMPORTS_PER_SOL;
+const RUDE_SINK_KEY = new PublicKey(env.NEXT_PUBLIC_RUDE_SINK_KEY);
+const RUDE_TOKEN_KEY = new PublicKey(env.NEXT_PUBLIC_RUDE_TOKEN_KEY);
+const SOLANA_SINK_KEY = new PublicKey(env.NEXT_PUBLIC_SOLANA_SINK_KEY);
+
+interface NFTManagerContextType {
+  prepTransaction: (
+    owner: PublicKey,
+    payment: PaymentOption,
+    txSigner: <T extends Transaction | VersionedTransaction>(transaction: T) => Promise<T>
+  ) => Promise<string>;
+  catalog: Product[] | undefined;
+  getProduct: (prodType: ProductType, collection?: string) => Product[] | undefined;
+  paymentChannel: EventEmitter;
+  notifyPayment: (type: ProductType, imageUrl?: string) => void;
+}
+
+const NFTManagerContext = createContext<NFTManagerContextType | null>(null);
+
+export const useNFTManager = (): NFTManagerContextType => {
+  const context = useContext(NFTManagerContext);
+  if (!context) {
+    throw new Error("useNFTManager must be inside of NFTManagerProvider");
+  }
+  return context;
+};
+
+const paymentChannel = new EventEmitter();
+
+export const NFTManagerProvider = (props: { children: React.ReactNode }) => {
+  const { status } = useSession();
+  const [catalog, setCatalog] = useState<Product[]>();
+
+  const { data: products, isSuccess: isCatalogSuccess } = trpc.catalog.getAll.useQuery(undefined, {
+    enabled: status === "authenticated",
+  });
+
+  useEffect(() => {
+    if (isCatalogSuccess) setCatalog(products);
+  }, [isCatalogSuccess, products]);
+
+  const getProduct = (prodType: ProductType, collection?: string) => {
+    const result = catalog?.filter(
+      (x) => x.type == prodType && x.collectionName == (collection ?? x.collectionName)
+    );
+    return result;
+  };
+
+  const notifyPayment = (type: ProductType, imageUrl?: string) => {
+    paymentChannel.emit(`payment_success`, type, imageUrl);
+  };
+
+  const value: NFTManagerContextType = {
+    prepTransaction,
+    catalog,
+    getProduct,
+    paymentChannel,
+    notifyPayment,
+  };
+
+  return <NFTManagerContext.Provider value={value} {...props} />;
+};
+
+const prepTransaction = async (
+  owner: PublicKey,
+  payment: PaymentOption,
+  txSigner: <T extends Transaction | VersionedTransaction>(transaction: T) => Promise<T>
+): Promise<string> => {
+  const instructions: TransactionInstruction[] = [];
+  for (const paymentAmount of payment.amounts) {
+    await buildTokenInstruction(owner, paymentAmount, instructions);
+  }
+
+  const txAll = new Transaction().add(...instructions);
+
+  const latestBlockhash = await connection.getLatestBlockhash();
+  txAll.recentBlockhash = latestBlockhash.blockhash;
+  txAll.lastValidBlockHeight = latestBlockhash.lastValidBlockHeight;
+  txAll.feePayer = owner;
+  const signedTx = await txSigner(txAll);
+  const wireTransaction = signedTx.serialize();
+  const base64 = wireTransaction.toString("base64");
+
+  return base64;
+};
+
+const buildTokenInstruction = async (
+  owner: PublicKey,
+  payment: Amount,
+  instructions: TransactionInstruction[]
+): Promise<void> => {
+  const tokenInstructionBuilder = {
+    [PaymentToken.BTF]: async () => {
+      const instruction = await buildButterflyInstructions(owner, payment.amount);
+      instructions.push(...instruction);
+    },
+    [PaymentToken.RUDE]: async () => {
+      const userRudeTokenAccount = await getAssociatedTokenAddress(RUDE_TOKEN_KEY, owner);
+      const rudeTokenSinkAccount = await getAssociatedTokenAddress(RUDE_TOKEN_KEY, RUDE_SINK_KEY);
+      const instruction = await buildRudeTokenInstruction(
+        userRudeTokenAccount,
+        rudeTokenSinkAccount,
+        owner,
+        payment.amount
+      );
+      instructions.push(...instruction);
+    },
+    [PaymentToken.SOL]: async () => {
+      const instruction = await buildSolanaInstruction(owner, payment.amount);
+      instructions.push(...instruction);
+    },
+  };
+
+  await tokenInstructionBuilder[payment.token]();
+};
+
+const buildButterflyInstructions = async (
+  userWallet: PublicKey,
+  amount: number
+): Promise<TransactionInstruction[]> => {
+  const instructions: TransactionInstruction[] = [];
+  const butterflies = await getButterflies(userWallet.toBase58());
+  if (butterflies.length < amount || butterflies.length == 0)
+    throw Error("The user does not have enough butterflies");
+
+  for (let index = 0; index < amount; index++) {
+    const butterfly = butterflies[index];
+    if (!butterfly) throw "invalid butterfly";
+
+    const userButterflyMint = new PublicKey(butterfly.mint);
+    const userButterflyTokenAccount = await getAssociatedTokenAddress(
+      userButterflyMint,
+      userWallet
+    );
+
+    const butterflyKeyAccount = await getAssociatedTokenAddress(userButterflyMint, RUDE_SINK_KEY);
+    const butterflyKeyAccountData = await connection.getAccountInfo(butterflyKeyAccount);
+
+    if (butterflyKeyAccountData === null) {
+      const Ix = createAssociatedTokenAccountInstruction(
+        userWallet,
+        butterflyKeyAccount,
+        RUDE_SINK_KEY,
+        userButterflyMint
+      );
+      instructions.push(Ix);
+    }
+
+    const Ix2 = createTransferInstruction(
+      userButterflyTokenAccount,
+      butterflyKeyAccount,
+      userWallet,
+      1
+    );
+    instructions.push(Ix2);
+  }
+
+  return instructions;
+};
+
+const buildRudeTokenInstruction = async (
+  rudeTokenAccount: PublicKey,
+  rudeSinkAccount: PublicKey,
+  userPublicKey: PublicKey,
+  amount: number
+): Promise<TransactionInstruction[]> => {
+  const instructions: TransactionInstruction[] = [];
+
+  const Ix3 = createTransferInstruction(
+    rudeTokenAccount,
+    rudeSinkAccount,
+    userPublicKey,
+    amount * LAMPORTS_PER_RUDE
+  );
+  instructions.push(Ix3);
+
+  return instructions;
+};
+
+const buildSolanaInstruction = async (userPublicKey: PublicKey, amount: number) => {
+  const instructions = new Transaction().add(
+    SystemProgram.transfer({
+      fromPubkey: userPublicKey,
+      toPubkey: SOLANA_SINK_KEY,
+      lamports: amount * LAMPORTS_PER_SOL,
+    })
+  ).instructions;
+
+  return instructions;
+};
