@@ -1,0 +1,850 @@
+{
+  "version": "0.1.0",
+  "name": "rudegolems_war",
+  "instructions": [
+    {
+      "name": "initializeWarProgram",
+      "accounts": [
+        {
+          "name": "warSettingAccount",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "warStatsAccount",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "rudeTokenMint",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "rudeProgramVault",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "authority",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": [
+        {
+          "name": "golemCreator",
+          "type": "publicKey"
+        },
+        {
+          "name": "demonCreator1",
+          "type": "publicKey"
+        },
+        {
+          "name": "demonCreator2",
+          "type": "publicKey"
+        },
+        {
+          "name": "baseTrainingRewards",
+          "type": "u8"
+        },
+        {
+          "name": "basePowerRating",
+          "type": "u64"
+        },
+        {
+          "name": "ustakeDuration",
+          "type": "u32"
+        },
+        {
+          "name": "golemsTrainingMul",
+          "type": {
+            "vec": "i16"
+          }
+        },
+        {
+          "name": "demonsTrainingMul",
+          "type": {
+            "vec": "i16"
+          }
+        },
+        {
+          "name": "golemsPowerMul",
+          "type": {
+            "vec": "i16"
+          }
+        },
+        {
+          "name": "demonsPowerMul",
+          "type": {
+            "vec": "i16"
+          }
+        }
+      ]
+    },
+    {
+      "name": "setupWar",
+      "accounts": [
+        {
+          "name": "warAccount",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "warSettingAccount",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "warStatsAccount",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "authority",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "clock",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": [
+        {
+          "name": "startTime",
+          "type": "i64"
+        },
+        {
+          "name": "enlistingDuration",
+          "type": "u32"
+        },
+        {
+          "name": "warDuration",
+          "type": "u32"
+        },
+        {
+          "name": "rewardDuration",
+          "type": "u32"
+        },
+        {
+          "name": "baseWarRewardMul",
+          "type": "u8"
+        },
+        {
+          "name": "winWarRewardsMul",
+          "type": "u8"
+        },
+        {
+          "name": "specialAttributeType",
+          "type": "string"
+        },
+        {
+          "name": "specialAttributeValue",
+          "type": "string"
+        },
+        {
+          "name": "specialAttributeMul",
+          "type": "u8"
+        }
+      ]
+    },
+    {
+      "name": "deleteWar",
+      "accounts": [
+        {
+          "name": "warAccount",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "authority",
+          "isMut": true,
+          "isSigner": true
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "createMember",
+      "accounts": [
+        {
+          "name": "player",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "memberAccount",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "warSettingAccount",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "warStatsAccount",
+          "isMut": true,
+          "isSigner": false
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "initiateTraining",
+      "accounts": [
+        {
+          "name": "player",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "trainingAccount",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "memberAccount",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "rudeAccount",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "rudeMintKey",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "rudeMetadataAccount",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "warSettingAccount",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "warStatsAccount",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "tokenProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "tokenMetadataProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "clock",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": [
+        {
+          "name": "tier",
+          "type": "u8"
+        }
+      ]
+    },
+    {
+      "name": "claimTrainingRewards",
+      "accounts": [
+        {
+          "name": "player",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "memberAccount",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "trainingAccount",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "playerRudeAccount",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "rudeProgramVault",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "programSettingSigner",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "warSettingAccount",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "warStatsAccount",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "tokenProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "clock",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "enlistWar",
+      "accounts": [
+        {
+          "name": "player",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "trainingAccount",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "memberAccount",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "warAccount",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "rudeMintKey",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "warSettingAccount",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "warStatsAccount",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "clock",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": [
+        {
+          "name": "attributeValue",
+          "type": "string"
+        }
+      ]
+    },
+    {
+      "name": "claimWarRewards",
+      "accounts": [
+        {
+          "name": "player",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "memberAccount",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "trainingAccount",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "warAccount",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "playerRudeAccount",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "rudeProgramVault",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "programSettingSigner",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "warSettingAccount",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "warStatsAccount",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "tokenProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "clock",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "withdraw",
+      "accounts": [
+        {
+          "name": "player",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "memberAccount",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "trainingAccount",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "programRudeSigner",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "rudeAccount",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "warSettingAccount",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "warStatsAccount",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "tokenProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "clock",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": []
+    }
+  ],
+  "accounts": [
+    {
+      "name": "WarSettingsAccount",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "authority",
+            "type": "publicKey"
+          },
+          {
+            "name": "warStatsAccount",
+            "type": "publicKey"
+          },
+          {
+            "name": "golemCreator",
+            "type": "publicKey"
+          },
+          {
+            "name": "demonCreator1",
+            "type": "publicKey"
+          },
+          {
+            "name": "demonCreator2",
+            "type": "publicKey"
+          },
+          {
+            "name": "rudeTokenMint",
+            "type": "publicKey"
+          },
+          {
+            "name": "rudeProgramVault",
+            "type": "publicKey"
+          },
+          {
+            "name": "baseTrainingRewards",
+            "type": "u8"
+          },
+          {
+            "name": "basePowerRating",
+            "type": "u64"
+          },
+          {
+            "name": "unstakeDuration",
+            "type": "u32"
+          },
+          {
+            "name": "golemsTrainingMul",
+            "type": {
+              "vec": "i16"
+            }
+          },
+          {
+            "name": "demonsTrainingMul",
+            "type": {
+              "vec": "i16"
+            }
+          },
+          {
+            "name": "golemsPowerMul",
+            "type": {
+              "vec": "i16"
+            }
+          },
+          {
+            "name": "demonsPowerMul",
+            "type": {
+              "vec": "i16"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "WarStatsAccount",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "authority",
+            "type": "publicKey"
+          },
+          {
+            "name": "warSettingAccount",
+            "type": "publicKey"
+          },
+          {
+            "name": "totalPlayers",
+            "type": "u32"
+          },
+          {
+            "name": "totalGolemsTraining",
+            "type": "u32"
+          },
+          {
+            "name": "totalDemonsTraining",
+            "type": "u32"
+          },
+          {
+            "name": "totalGolemsWar",
+            "type": "u32"
+          },
+          {
+            "name": "totalDemonsWar",
+            "type": "u32"
+          },
+          {
+            "name": "totalRudeRewardsClaimed",
+            "type": "u64"
+          },
+          {
+            "name": "totalWars",
+            "type": "u32"
+          }
+        ]
+      }
+    },
+    {
+      "name": "WarAccount",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "isActive",
+            "type": "u8"
+          },
+          {
+            "name": "authority",
+            "type": "publicKey"
+          },
+          {
+            "name": "warSettingAccount",
+            "type": "publicKey"
+          },
+          {
+            "name": "warStatsAccount",
+            "type": "publicKey"
+          },
+          {
+            "name": "startTs",
+            "type": "i64"
+          },
+          {
+            "name": "enlistingDuration",
+            "type": "u32"
+          },
+          {
+            "name": "warDuration",
+            "type": "u32"
+          },
+          {
+            "name": "rewardDuration",
+            "type": "u32"
+          },
+          {
+            "name": "baseWarRewardMul",
+            "type": "u8"
+          },
+          {
+            "name": "winWarRewardsMul",
+            "type": "u8"
+          },
+          {
+            "name": "winTeam",
+            "type": "u8"
+          },
+          {
+            "name": "golemsPower",
+            "type": "u64"
+          },
+          {
+            "name": "golemsEnlisted",
+            "type": "u32"
+          },
+          {
+            "name": "demonsPower",
+            "type": "u64"
+          },
+          {
+            "name": "demonsEnlisted",
+            "type": "u32"
+          },
+          {
+            "name": "specialAttributeType",
+            "type": "string"
+          },
+          {
+            "name": "specialAttributeValue",
+            "type": "string"
+          },
+          {
+            "name": "specialAttributeMul",
+            "type": "u8"
+          }
+        ]
+      }
+    },
+    {
+      "name": "MemberAccount",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "userKey",
+            "type": "publicKey"
+          },
+          {
+            "name": "warSettingAccount",
+            "type": "publicKey"
+          },
+          {
+            "name": "warStatsAccount",
+            "type": "publicKey"
+          },
+          {
+            "name": "totalInTraining",
+            "type": "u32"
+          },
+          {
+            "name": "totalInWar",
+            "type": "u32"
+          },
+          {
+            "name": "rudeClaimed",
+            "type": "u64"
+          },
+          {
+            "name": "totalPower",
+            "type": "u64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "TrainingAccount",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "userKey",
+            "type": "publicKey"
+          },
+          {
+            "name": "rudeAccount",
+            "type": "publicKey"
+          },
+          {
+            "name": "rudeMintkey",
+            "type": "publicKey"
+          },
+          {
+            "name": "rudeMetakey",
+            "type": "publicKey"
+          },
+          {
+            "name": "rudeType",
+            "type": "u8"
+          },
+          {
+            "name": "rudeTier",
+            "type": "u8"
+          },
+          {
+            "name": "startTs",
+            "type": "i64"
+          },
+          {
+            "name": "rewardClaimedTs",
+            "type": "i64"
+          },
+          {
+            "name": "powerRating",
+            "type": "u64"
+          },
+          {
+            "name": "isWarEnlisted",
+            "type": "u8"
+          },
+          {
+            "name": "warAccountEnlisted",
+            "type": "publicKey"
+          },
+          {
+            "name": "warEnlistedTs",
+            "type": "i64"
+          }
+        ]
+      }
+    }
+  ],
+  "types": [
+    {
+      "name": "ErrorCode",
+      "type": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "WrongPDAOwner"
+          },
+          {
+            "name": "InsufficientSolBal"
+          },
+          {
+            "name": "InsufficientSouloBal"
+          },
+          {
+            "name": "UnauthorizedInitiator"
+          },
+          {
+            "name": "WrongMetadataAccount"
+          },
+          {
+            "name": "SignedCreatorIsNotVerified"
+          },
+          {
+            "name": "WrongCreatorAccountsSize"
+          },
+          {
+            "name": "IncorrectCreatorFound"
+          },
+          {
+            "name": "IncorrectPowerTier"
+          },
+          {
+            "name": "NoRewardsFound"
+          },
+          {
+            "name": "InsufficientBalanceRudeVault"
+          },
+          {
+            "name": "MinimumTrainingPeriod"
+          },
+          {
+            "name": "StillWarEnlisted"
+          },
+          {
+            "name": "WarNotStarted"
+          },
+          {
+            "name": "EnlistDurationOver"
+          },
+          {
+            "name": "WarNotOver"
+          },
+          {
+            "name": "CollectWarRewardsFirst"
+          }
+        ]
+      }
+    }
+  ],
+  "metadata": {
+    "address": "8VvUEhfoqoHmdqcb6xFDZcW6gZPFHiYWRjDrTY9Dowjh"
+  }
+}
