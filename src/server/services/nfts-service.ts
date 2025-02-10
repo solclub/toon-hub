@@ -34,8 +34,6 @@ export const getUserNFTs = async (wallet: string) => {
     ...(result.inWalletMints[NFTType.DEMON] ?? []),
     ...(result.trainingMints[NFTType.DEMON] ?? []),
   ]);
-  console.log("demons", result, demons);
-
   const nfts = golems.concat(demons);
   await syncUserNFTs(
     wallet,
@@ -142,7 +140,6 @@ export const getNFTsByWalletId = async (
   wallet: string
 ): Promise<{ inWalletMints: NFTDictionary; trainingMints: NFTDictionary }> => {
   const walletNfts = await fetchAllDigitalAssetByOwner(umi, wallet as PublicKey, {
-    tokenStrategy: "getProgramAccounts",
     tokenAmountFilter: (amount) => amount == BigInt(1),
   });
 
@@ -161,7 +158,6 @@ export const getNFTsByWalletId = async (
       }
       return acc;
     }, {});
-
   const stakedMints = await stakedUserNfts;
   stakedMints?.forEach((item) => {
     const type = item.rudeType === 1 ? NFTType.GOLEM : NFTType.DEMON;
