@@ -22,6 +22,8 @@ import bs58 from "bs58";
 import Loader from "components/common/Loader";
 import { getMintCost } from "utils/giblatoons";
 import { confirmTransactionWithRetry } from "utils/txnRetryLogic";
+import { ClippedToonCard, ClippedToonCardContainer } from "components/toon-of-ladder/WinnerCard";
+import MainButton from "components/common/MainButton";
 
 interface BuyProperties {
   title: string;
@@ -86,7 +88,7 @@ const UpgradeToonNFT: React.FC<BuyProperties> = ({ title, upgradeOption, sourceI
             try {
               await confirmTransactionWithRetry(connection, txid);
               showPromisedToast(toastRef, "You Crayon was minted", true, "SUCCESS");
-            } catch (e) {}
+            } catch (e) { }
           } else {
             showPromisedToast(toastRef, "Warrior successfully upgraded!", true, "SUCCESS");
           }
@@ -158,71 +160,61 @@ const UpgradeToonNFT: React.FC<BuyProperties> = ({ title, upgradeOption, sourceI
   };
 
   return (
-    <div className="flex flex-wrap items-center justify-center p-4">
+    <div className="w-full flex flex-col items-center  p-4">
       <div className="mb-10 mt-10 w-full ">
         <div className="mx-4 flex flex-wrap items-center justify-between">
           <div className="w-full lg:w-2/6">
-            <FrameBox className="w-full">
-              <Image
-                className="w-full rounded-3xl"
-                src={
-                  sourceImageUrl
-                    ? sourceImageUrl
-                    : nft.type === NFTType.DEMON
+            <ClippedToonCardContainer className="w-full">
+              <ClippedToonCard
+                bgImageUrl={sourceImageUrl
+                  ? sourceImageUrl
+                  : nft.type === NFTType.DEMON
                     ? DemonToonHidden
                     : GolemToonHidden
                 }
-                alt={title}
-                width={500}
-                height={500}
-              ></Image>
-            </FrameBox>
+              />
+            </ClippedToonCardContainer>
           </div>
-          <div className="flex w-full flex-wrap items-center lg:w-2/6">
-            <div className="mx-auto my-4 flex w-full flex-wrap">
+          <div className="flex w-full items-center lg:w-2/6">
+            <div className="mx-auto my-4 flex justify-center w-full flex-wrap">
               {!isSuccess ? (
-                <motion.button
-                  className="btn-rude btn mx-auto"
+                <MainButton
+                  color="yellow"
+                  className="font-sans font-bold"
                   onClick={upgradeGolem}
                   disabled={isLoading}
                 >
-                  UPGRADE NFT
-                </motion.button>
+                  GET TOONIFIED!
+                </MainButton>
               ) : (
-                <div className="text-stroke mx-auto text-2xl text-yellow-400">NFT Upgraded!!</div>
+                <div className="text-stroke mx-auto text-2xl text-yellow-400">NFT TOONIFIED!!</div>
               )}
             </div>
           </div>
           <div className="w-full lg:w-2/6">
-            <FrameBox className="relative">
+            <ClippedToonCardContainer className="w-full">
               {isLoading && (
                 <div className="absolute top-1/2 z-50 w-full">
                   <Loader></Loader>
                 </div>
               )}
-              <Image
-                className="panel w-full items-center rounded-3xl"
-                src={
+              <ClippedToonCard
+                bgImageUrl={
                   upgradeResult
                     ? upgradeResult.image
                     : nft.type === NFTType.DEMON
-                    ? DemonToonHidden
-                    : GolemToonHidden
+                      ? DemonToonHidden
+                      : GolemToonHidden
                 }
-                alt={title}
-                width={500}
-                height={500}
-                unoptimized
-                priority
-              ></Image>
-            </FrameBox>
+              />
+            </ClippedToonCardContainer>
           </div>
         </div>
       </div>
       <div className="mb-5 p-5 sm:p-0 md:w-1/2">
         <div className="w-full text-center sm:w-auto">
           <Balance className="mb-2 w-fit md:mx-auto"></Balance>
-          <p className="titles-color textStroke mb-4 text-2xl">Current Upgrade Costs:</p>
+          <p className="titles-color textStroke mb-4 text-2xl">Current Toonification Cost:</p>
           {paymentOptions && (
             <PaymentMethodSelector
               paymentOptions={paymentOptions}
@@ -236,20 +228,23 @@ const UpgradeToonNFT: React.FC<BuyProperties> = ({ title, upgradeOption, sourceI
         </div>
       </div>
 
-      <div className="z-10 w-full max-w-max rounded-xl border border-gray-400 p-4 text-gray-400">
+      <div className="z-10 w-full max-w-max rounded-xl border border-[#ffe75c] p-4 font-sans text-sm">
         <div className="text-center">
           <ul>
             <li>
-              • The first <span className="text-white">1111</span> will get a guaranteed WL for the
-              new NFT
+              The first <span className="text-[#ffe75c]">1111</span> will guarantee you a Crayon Token, each of them useful to reveal a &quot;new character&quot;
             </li>
             <li>
-              • Price reduce every day by <span className="text-white">0.01</span> until it becomes{" "}
-              <span className="text-white">0.01</span> on mint day
+              The price will start at <span className="text-[#ffe75c]">0.01 $SOL</span> reducing every three days by
+              <span className="text-[#ffe75c]"> 0.01</span> until it becomes free on day <span className="text-[#ffe75c]">30</span> (only cover trensaction fees)
             </li>
             <li>
-              • After the first <span className="text-white">1111</span>, any upgrade give you a{" "}
-              <span className="text-white">1/7</span> odd of getting the new NFT
+              After the first <span className="text-[#ffe75c]">1111</span>, any new toonifications give you a
+              <span className="text-[#ffe75c]"> 1/7</span> odd of getting a &quot;new character&quot;
+            </li>
+            <li>
+              After <span className="text-[#ffe75c]">4</span> months since the start, all the remaining unrevealed <span className="text-[#ffe75c]">golems</span> or 
+              <span className="text-[#ffe75c]"> demons</span> will be revealed, defeating the opportunity of getting a &quot;new character&quot;
             </li>
           </ul>
         </div>

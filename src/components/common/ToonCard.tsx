@@ -32,7 +32,7 @@ interface ToonCardProps {
 const ToonCard: React.FC<ToonCardProps> = ({ bgImageUrl, children, className }) => {
     return (
         <Container className={className}>
-            <Image src={bgImageUrl} alt="toon card" fill/>
+            <Image src={bgImageUrl} alt="" fill/>
             {children}
         </Container>
     )

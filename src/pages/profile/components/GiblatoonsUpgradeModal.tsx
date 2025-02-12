@@ -36,37 +36,36 @@ export default function GiblatoonsUpgradeModal({
 
   return (
     <Modal
-      className="lg:w-2/3"
       isOpen={isModalOpen}
       backdropDismiss={true}
       handleClose={() => setModalOpen(false)}
     >
-      <div className="m-8 mr-16 mb-0 flex flex-col items-center justify-between md:flex-row">
+      <div className="w-full flex flex-col justify-between items-center lg:flex-row">
         <div>
           {!nft?.images.has(upgradeOpt.key) ? (
             <p className="mb-4 text-center text-3xl font-bold md:text-left">
-              Move to the NEW WORLD!
+              Move to the <span className="text-[#ffe75c]">NEW WORLD!</span>
             </p>
           ) : (
             <p className="mb-4 text-center text-3xl font-bold md:text-left">
-              Welcome to the NEW WORLD!
+              Welcome to the <span className="text-[#ffe75c]">NEW WORLD!</span>
             </p>
           )}
         </div>
         {!nft?.images.has(upgradeOpt.key) && (
-          <div className="flex flex-col items-center gap-4 md:flex-row md:gap-2">
-            <div className="flex max-w-max items-center gap-3 rounded-2xl border border-[#BEA97E] px-4 py-2 font-medieval-sharp font-bold">
+          <div className="flex flex-col items-center gap-4 md:flex-row md:gap-2 text-sm">
+            <div className="flex max-w-max items-center gap-3 rounded-2xl border border-b-2 border-[#ffe75c] px-4 py-2 font-sans font-bold">
               {totalCrayonSupply <= 1111 ? (
-                <p>🖍️ Crayons minted: {totalCrayonSupply}/1111</p>
+                <p>🖍️ CRAYONS LEFT: {totalCrayonSupply}/1111</p>
               ) : (
-                <p>🖍️ Crayons minted: {totalCrayonSupply}/2222</p>
+                <p>🖍️ CRAYONS LEFT: {totalCrayonSupply}/2222</p>
               )}
             </div>
-            <div className="flex max-w-max items-center gap-3 rounded-2xl border border-[#BEA97E] px-4 py-2 font-medieval-sharp font-bold">
+            <div className="flex max-w-max items-center gap-3 rounded-2xl border border-b-2 border-[#db455d] px-4 py-2 font-sans font-bold">
               {getDaysSinceStart() <= 30 ? (
-                <p>Portal Open: {getDaysSinceStart()}/30 Days</p>
+                <p>PORTAL OPEN: {getDaysSinceStart()}/30 Days</p>
               ) : (
-                <p>Portal Open for all!</p>
+                <p>PORTAL OPEN FOR ALL!</p>
               )}
             </div>
           </div>

@@ -276,7 +276,7 @@ const Profile: NextPage = () => {
                   className="mx-auto"
                   src={x.icon}
                   alt={x.title}
-                  width={40}
+                  width={x.title === "Weapons" ? 60 : 60}
                 />
                 <span className="text-[#ffe75c] font-sans font-bold">{x.value}</span>
               </div>

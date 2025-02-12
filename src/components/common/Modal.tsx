@@ -49,7 +49,7 @@ const ModalContent = ({ className, children, handleClose, ariaLabel }: ModalCont
     role="dialog"
     aria-modal={true}
     aria-label={ariaLabel}
-    className={`relative mx-auto rounded-2xl ${className || "w-fit rounded-lg shadow-lg p-4"}`}
+    className={`relative mx-auto rounded-2xl p-4 pt-12 overflow-hidden ${className || "w-fit rounded-lg shadow-lg"}`}
     variants={effect}
     initial="hidden"
     animate="visible"
@@ -60,7 +60,7 @@ const ModalContent = ({ className, children, handleClose, ariaLabel }: ModalCont
     {handleClose && (
       <MainButton
         color="yellow"
-        className="absolute top-2 right-2"
+        className="absolute top-2 lg:top-[-2rem] right-2"
         onClick={handleClose}
         aria-label={`Close ${ariaLabel || "dialog"}`}
       >
