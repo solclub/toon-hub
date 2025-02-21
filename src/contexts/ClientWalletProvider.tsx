@@ -1,44 +1,21 @@
 import type { WalletProviderProps } from "@solana/wallet-adapter-react";
 import { WalletProvider } from "@solana/wallet-adapter-react";
 
-import {
-  BitpieWalletAdapter,
-  CloverWalletAdapter,
-  Coin98WalletAdapter,
-  CoinhubWalletAdapter,
-  MathWalletAdapter,
-  TorusWalletAdapter,
-  LedgerWalletAdapter,
-  SolongWalletAdapter,
-  PhantomWalletAdapter,
-  SafePalWalletAdapter,
-  SolflareWalletAdapter,
-  TokenPocketWalletAdapter,
-  AlphaWalletAdapter,
-  BitgetWalletAdapter,
-  AvanaWalletAdapter,
-} from "@solana/wallet-adapter-wallets";
+import { PhantomWalletAdapter } from "@solana/wallet-adapter-phantom";
+import { SolflareWalletAdapter } from "@solana/wallet-adapter-solflare";
+import { BackpackWalletAdapter } from "@solana/wallet-adapter-backpack";
+import { GlowWalletAdapter } from "@solana/wallet-adapter-glow";
+
 import { useMemo } from "react";
 import { WalletModalProvider } from "@solana/wallet-adapter-react-ui";
 
 export function ClientWalletProvider(props: Omit<WalletProviderProps, "wallets">): JSX.Element {
   const wallets = useMemo(
     () => [
-      new AlphaWalletAdapter(),
-      new BitpieWalletAdapter(),
-      new BitgetWalletAdapter(),
-      new CloverWalletAdapter(),
-      new Coin98WalletAdapter(),
-      new CoinhubWalletAdapter(),
-      new AvanaWalletAdapter(),
-      new MathWalletAdapter(),
-      new TorusWalletAdapter(),
-      new SolongWalletAdapter(),
-      new LedgerWalletAdapter(),
       new PhantomWalletAdapter(),
-      new SafePalWalletAdapter(),
+      new BackpackWalletAdapter(),
       new SolflareWalletAdapter(),
-      new TokenPocketWalletAdapter(),
+      new GlowWalletAdapter(),
     ],
     []
   );
