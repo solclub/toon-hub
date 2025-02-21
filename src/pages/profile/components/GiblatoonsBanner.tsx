@@ -30,7 +30,7 @@ const GiblatoonBanner: React.FC<{
   const [isSwapArtModalOpen, setSwapArtModalOpen] = useState(false);
 
   const upgradeType =
-    nft?.type == NFTType.GOLEM
+    nft?.type === NFTType.GOLEM
       ? (upgradeOpt?.key as GolemUpgrades)
       : (upgradeOpt?.key as DemonUpgrades);
 
@@ -60,84 +60,77 @@ const GiblatoonBanner: React.FC<{
     }
   };
 
+  if (!upgradeOpt || !nft) {
+    return null; // or return a loading state
+  }
+
   return (
     <div className="w-full text-center lg:w-[25%]">
-      {upgradeOpt && nft && (
-        <>
-          {!isGiblatoonsLiveOpen ? (
-            <div className="mb-2">
-              <p className="text-[#BFA97F]">{upgradeOpt?.name} opens in</p>
-              <CountDown date={giblatoonsLiveDate} isLongForm />
-            </div>
-          ) : (
-            <p className="mb-2 text-[#BFA97F]">{upgradeOpt?.name} now OPEN!</p>
-          )}
-          <FrameBox
-            frameType={() => {
-              if (nft?.images?.get(upgradeType) && nft?.current == upgradeOpt.key)
-                return FrameType.default;
-              if (nft?.current != upgradeType && nft?.images?.get(upgradeType))
-                return FrameType.gray;
-              return FrameType.green;
-            }}
-          >
-            <div
-              className={classNames("clip-css relative h-full text-center ", {
-                "relative transition duration-200 ease-in-out hover:-translate-y-1 hover:scale-110":
-                  nft?.images?.get(upgradeType) == undefined,
-              })}
-            >
-              <Image src={GiblatoonLogo} alt="Giblatoon upgrade" width={900} height={900}></Image>
-
-              {/* {nft?.images?.get(upgradeType) == undefined && (
-                <div className="absolute top-4 w-full font-medieval-sharp text-green-400">
-                  {getPriceSingleText(upgradeOpt)}
-                </div>
-              )} */}
-
-              <motion.button
-                className="absolute left-0 top-0 h-full w-full cursor-pointer"
-                whileHover={{ scale: 1.1 }}
-                whileTap={{ scale: 0.9 }}
-                onClick={() => {
-                  isGiblatoonsLiveOpen ? setUpgradeModalOpen(!isUpgradeModalOpen) : undefined;
-                }}
-              ></motion.button>
-            </div>
-          </FrameBox>
-          <div className="relative -top-5 z-50 w-full items-center">
-            <button
-              onClick={() => {
-                isGiblatoonsLiveOpen ? setUpgradeModalOpen(!isUpgradeModalOpen) : undefined;
-              }}
-              className={classNames(
-                "hover:shadow-lg hover:shadow-slate-400",
-                "rounded-full px-3 py-1",
-                { "bg-[#6F5B38]": nft?.current == upgradeType },
-                {
-                  "bg-gray-600":
-                    nft?.current != upgradeType && nft?.images?.get(upgradeType) != undefined,
-                },
-                {
-                  "bg-green-400 text-black": nft?.images?.get(upgradeType) == undefined,
-                }
-              )}
-            >
-              {nft?.current == upgradeType
-                ? "Used"
-                : nft?.current != upgradeType && nft?.images?.get(upgradeType) != undefined
-                ? "Select"
-                : "Portal"}
-            </button>
-          </div>
-          <GiblatoonsUpgradeModal
-            isModalOpen={isUpgradeModalOpen}
-            setModalOpen={setUpgradeModalOpen}
-            upgradeOpt={upgradeOpt}
-            nft={nft}
-          />
-        </>
+      {!isGiblatoonsLiveOpen ? (
+        <div className="mb-2">
+          <p className="text-[#BFA97F]">{upgradeOpt.name} opens in</p>
+          <CountDown date={giblatoonsLiveDate} isLongForm />
+        </div>
+      ) : (
+        <p className="mb-2 text-[#BFA97F]">{upgradeOpt.name} now OPEN!</p>
       )}
+      <FrameBox
+        frameType={() => {
+          if (nft.images.get(upgradeType) && nft.current === upgradeOpt.key)
+            return FrameType.default;
+          if (nft.current !== upgradeType && nft.images.get(upgradeType)) return FrameType.gray;
+          return FrameType.green;
+        }}
+      >
+        <div
+          className={classNames("clip-css relative h-full text-center ", {
+            "relative transition duration-200 ease-in-out hover:-translate-y-1 hover:scale-110":
+              nft.images.get(upgradeType) === undefined,
+          })}
+        >
+          <Image src={GiblatoonLogo} alt="Giblatoon upgrade" width={900} height={900} />
+
+          <motion.button
+            className="absolute left-0 top-0 h-full w-full cursor-pointer"
+            whileHover={{ scale: 1.1 }}
+            whileTap={{ scale: 0.9 }}
+            onClick={() => {
+              isGiblatoonsLiveOpen ? setUpgradeModalOpen(!isUpgradeModalOpen) : undefined;
+            }}
+          />
+        </div>
+      </FrameBox>
+      <div className="relative -top-5 z-50 w-full items-center">
+        <button
+          onClick={() => {
+            isGiblatoonsLiveOpen ? setUpgradeModalOpen(!isUpgradeModalOpen) : undefined;
+          }}
+          className={classNames(
+            "hover:shadow-lg hover:shadow-slate-400",
+            "rounded-full px-3 py-1",
+            { "bg-[#6F5B38]": nft.current === upgradeType },
+            {
+              "bg-gray-600":
+                nft.current !== upgradeType && nft.images.get(upgradeType) !== undefined,
+            },
+            {
+              "bg-green-400 text-black": nft.images.get(upgradeType) === undefined,
+            }
+          )}
+        >
+          {nft.current === upgradeType
+            ? "Used"
+            : nft.current !== upgradeType && nft.images.get(upgradeType) !== undefined
+            ? "Select"
+            : "Portal"}
+        </button>
+      </div>
+      <GiblatoonsUpgradeModal
+        isModalOpen={isUpgradeModalOpen}
+        setModalOpen={setUpgradeModalOpen}
+        upgradeOpt={upgradeOpt}
+        nft={nft}
+      />
     </div>
   );
 };
