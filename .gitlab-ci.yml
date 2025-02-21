@@ -3,33 +3,30 @@ stages:
 
 deploy-mainnet-railway:
   stage: deploy
-  image: ubuntu
+  image: ghcr.io/railwayapp/cli:latest
   rules:
     - if: '$CI_PIPELINE_SOURCE == "push" && $CI_COMMIT_BRANCH == "main"'
+  variables:
+    SVC_ID: $RAILWAY_MAINNET_SERVICE_NAME
   script:
-    - apt-get update && apt-get install -y curl
-    - curl -fsSL https://railway.app/install.sh | bash
-    - RAILWAY_TOKEN=$RAILWAY_TOKEN railway link $RAILWAY_PROJECY_ID --environment production $RAILWAY_MAINNET_SERVICE_NAME
-    - RAILWAY_TOKEN=$RAILWAY_TOKEN railway up --service $RAILWAY_MAINNET_SERVICE_NAME -d
+    - railway up --service=$SVC_ID
 
 deploy-mainnet-war-railway:
   stage: deploy
-  image: ubuntu
+  image: ghcr.io/railwayapp/cli:latest
   rules:
     - if: '$CI_PIPELINE_SOURCE == "push" && $CI_COMMIT_BRANCH == "mainnet-war"'
+  variables:
+    SVC_ID: $RAILWAY_MAINNET_WAR_SERVICE_NAME
   script:
-    - apt-get update && apt-get install -y curl
-    - curl -fsSL https://railway.app/install.sh | bash
-    - RAILWAY_TOKEN=$RAILWAY_TOKEN railway link $RAILWAY_PROJECY_ID --environment production $RAILWAY_MAINNET_WAR_SERVICE_NAME
-    - RAILWAY_TOKEN=$RAILWAY_TOKEN railway up --service $RAILWAY_MAINNET_WAR_SERVICE_NAME -d
+    - railway up --service=$SVC_ID
 
 deploy-devnet-railway:
   stage: deploy
-  image: ubuntu
+  image: ghcr.io/railwayapp/cli:latest
   rules:
     - if: '$CI_PIPELINE_SOURCE == "push" && $CI_COMMIT_BRANCH == "devnet"'
+  variables:
+    SVC_ID: $RAILWAY_DEVNET_SERVICE_NAME
   script:
-    - apt-get update && apt-get install -y curl
-    - curl -fsSL https://railway.app/install.sh | bash
-    - RAILWAY_TOKEN=$RAILWAY_TOKEN railway link $RAILWAY_PROJECY_ID --environment production $RAILWAY_DEVNET_SERVICE_NAME
-    - RAILWAY_TOKEN=$RAILWAY_TOKEN railway up --service $RAILWAY_DEVNET_SERVICE_NAME -d
+    - railway up --service=$SVC_ID

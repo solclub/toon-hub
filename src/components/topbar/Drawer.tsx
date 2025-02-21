@@ -34,6 +34,7 @@ export const Drawer = ({ children }: { children: JSX.Element; }) => {
       name: "The Cartoon Clash", children: [
         { name: "Training camp", path: "https://app.rudegolems.com/training", isPrivate: true },
         { name: "Battlefield", path: "https://app.rudegolems.com/war", isPrivate: true },
+        { name: "Armor Upgrade", path: "https://app.rudegolems.com/armor-upgrade", isPrivate: true }
       ],
       icon: <SVGIcon.the_cartoon_clash_icon />
     },
