@@ -38,7 +38,7 @@ export const Drawer = ({ children }: { children: JSX.Element; }) => {
       ],
       icon: <SVGIcon.the_cartoon_clash_icon />
     },
-    { name: "Toon of the Ladder", path: "/toon-of-ladder", isPrivate: false, icon: <SVGIcon.the_toon_of_ladder_icon /> },
+    { name: "Toon of Ladder", path: "/toon-of-ladder", isPrivate: false, icon: <SVGIcon.the_toon_of_ladder_icon /> },
   ];
 
   return (
@@ -117,13 +117,13 @@ export const Drawer = ({ children }: { children: JSX.Element; }) => {
                 )
                 return item.children ? (
                   <li key={item.name}>
-                    <details className="flex flex-col items-start p-0">
+                    <details className="flex flex-col items-start p-0 gap-2">
                       <summary className="text-xl flex items-center gap-1">
                         <SVGIcon.arrowMarker className="arrow_marker" />
                         {item.icon}
                         <span>{item.name}</span>
                       </summary>
-                      <ul className="sub-menu">
+                      <ul className="sub-menu gap-2">
                         {item.children.map((child) => <TheItem key={child.name} item={child} />)}
                       </ul>
                     </details>

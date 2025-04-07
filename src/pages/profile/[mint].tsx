@@ -245,7 +245,7 @@ const Profile: NextPage = () => {
               </div>
             </div>
           </div>
-          <div className="mt-4 flex w-full flex-wrap gap-3">
+          <div className="mt-4 w-full grid grid-cols-2 2xl:grid-cols-4 gap-3 justify-items-center">
             {[
               {
                 title: "Leaderboard",
@@ -268,7 +268,7 @@ const Profile: NextPage = () => {
                 value: equippedWeapons?.slots?.filter((x) => x.status === "unlocked")?.length || 0,
               },
             ].map((x) => (
-              <div key={x.title} className={classNames("m-auto h-[150px] p-2 w-1/2 grow lg:w-1/5 flex flex-col items-center justify-between gap-4 bg-gray-900 rounded-xl", {
+              <div key={x.title} className={classNames("h-[150px] max-w-28 p-2 w-full flex flex-col items-center justify-between gap-4 bg-gray-900 rounded-xl", {
                 "loading-effect opacity-20": isProfileLoading,
               })}>
                 <span className="text-sm">{x.title}</span>
@@ -349,15 +349,18 @@ const CustomizePanel = ({
   const swapArtOpts = swapProducts?.options;
   const slotOpts = slotProducts?.options;
 
+  console.log("upgradeOpts", upgradeOpts);
+
   return (
     <>
       <h2 className="w-full text-3xl text-center mb-10">
         Toonify your characters
       </h2>
-      <div className="flex justify-center">
+      <div className="flex justify-center gap-4">
         {upgradeOpts &&
           !isGiblatoonsLive &&
           upgradeOpts
+            .filter((x) => x.key === "ORIGINAL")
             .filter((x) =>
               nft?.attributes.find((x) => x.name === "Background")?.value == "God"
                 ? x.key == "ORIGINAL" && true && x.isAvailable
@@ -372,7 +375,6 @@ const CustomizePanel = ({
               />
             ))}
         {upgradeOpts &&
-          true &&
           upgradeOpts
             .filter((x) => x.key === "CARTOON")
             .map((opt) => (
@@ -382,7 +384,7 @@ const CustomizePanel = ({
       <div className="flex w-full flex-wrap justify-center gap-4 text-center">
         <h2 className="mb-3 block w-full text-xl">Loot items</h2>
         {nft &&
-          warriorEquipment?.slots.map((x) => {
+          warriorEquipment?.slots.map((x, i) => {
             const { status, itemMetadata, updatedAt } = x || {};
             const { slotNumber } = itemMetadata || {};
             const slotOpt = slotOpts?.find((s) => s.key === `SLOT_${slotNumber}`);
@@ -390,6 +392,7 @@ const CustomizePanel = ({
             return (
               <div key={slotNumber} className="w-full text-center lg:w-1/5">
                 <BuyEquipment
+                  index={i}
                   weaponMetadata={itemMetadata}
                   product={slotOpt}
                   profileView={true}
