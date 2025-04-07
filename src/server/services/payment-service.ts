@@ -1,7 +1,7 @@
 import txLogService from "server/services/transactionlog-service";
 import { connection } from "./connections/web3-public";
 import { getUserPDAKey } from "./war-service";
-import { PublicKey } from "@solana/web3.js";
+import { ParsedAccountData, PublicKey } from "@solana/web3.js";
 
 interface PaymentRequestInfo {
   serializedTx: string;
@@ -93,7 +93,8 @@ const verifyNftOwner = async (owner: string, mint: string): Promise<string | nul
     ? await connection.getParsedAccountInfo(largestAccount.address)
     : null;
   const accountData = largestAccountInfo?.value?.data;
-  const parsedOwner = accountData instanceof Buffer ? null : accountData?.parsed?.info?.owner;
+  const parsedOwner =
+    accountData instanceof Buffer ? null : (accountData as ParsedAccountData).parsed?.info?.owner;
   const pdaKey = await getUserPDAKey(owner);
   if (!parsedOwner && !pdaKey) {
     return null;
