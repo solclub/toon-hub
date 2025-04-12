@@ -1,6 +1,8 @@
-import WeaponChest from "assets/weapons/weapon-chest.png";
+import bronze_weapon_chest from "assets/weapons/bronze_weapon_chest.png";
+import silver_weapon_chest from "assets/weapons/silver_weapon_chest.png";
+import gold_weapon_chest from "assets/weapons/gold_weapon_chest.png";
+import diamond_weapon_chest from "assets/weapons/diamond_weapon_chest.png";
 import classNames from "classnames";
-import FrameBox from "components/common/FrameBox";
 import Image from "next/image";
 import React, { useEffect, useRef, useState } from "react";
 import type { WeaponRarity } from "server/database/models/weapon.model";
@@ -13,7 +15,6 @@ import PaymentMethodSelector from "components/common/PaymentMethodSelector";
 import { useNFTManager } from "contexts/NFTManagerContext";
 import { motion } from "framer-motion";
 import { getCsrfToken } from "next-auth/react";
-import { title } from "process";
 import {
   ProductType,
   type PaymentOption,
@@ -42,6 +43,7 @@ type Props = {
   product: ProductOption | undefined;
   nft: NFTInfo;
   revealed: boolean;
+  index: number;
   updatedAt: Date | undefined;
 };
 
@@ -68,7 +70,7 @@ export const EquipmentRarityLabels: Record<WeaponRarity, string> = {
 const defaultRollTimes = [1, 86400, 172800, 43200];
 
 const BuyEquipment = (equipment: Props) => {
-  const { className, height, price, product, nft, weaponMetadata, revealed, updatedAt } = equipment;
+  const { className, height, product, nft, weaponMetadata, revealed, updatedAt, index } = equipment;
   const { data: rollDays } = trpc.weapons.getSlotRollTimes.useQuery({});
   const { publicKey, signMessage, signTransaction } = useWallet();
   const { prepTransaction, notifyPayment } = useNFTManager();
@@ -80,6 +82,13 @@ const BuyEquipment = (equipment: Props) => {
   const [isWeaponModalOpen, setWeaponModalOpen] = useState(false);
   const [targetRollDate, setTargetRollDate] = useState<Date | undefined>(undefined);
   const { paymentOptions } = product || {};
+
+  const defaultBg = [
+    bronze_weapon_chest,
+    silver_weapon_chest,
+    gold_weapon_chest,
+    diamond_weapon_chest,
+  ]
 
   useEffect(() => {
     if (paymentOptions) {
@@ -166,7 +175,7 @@ const BuyEquipment = (equipment: Props) => {
       <div className={classNames("card card-compact bg-gray-950 shadow-xl border-b-[1px] border-gray-700")}>
         <figure>
           <Image
-            src={weaponMetadata?.image || WeaponChest}
+            src={weaponMetadata?.image || defaultBg[index]}
             alt="weapon equiped"
             width={0}
             height={0}
@@ -242,7 +251,7 @@ const BuyEquipment = (equipment: Props) => {
         <div className="w-full flex flex-col lg:flex-row items-center justify-between gap-4">
           <ClippedToonCardContainer className="w-full lg:w-[500px]">
             <ClippedToonCard
-              bgImageUrl={weaponMetadata?.image ?? WeaponChest}
+              bgImageUrl={weaponMetadata?.image ?? defaultBg[index]}
             />
           </ClippedToonCardContainer>
           <div className="flex flex-wrap items-center lg:w-1/2">

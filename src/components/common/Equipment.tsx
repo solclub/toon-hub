@@ -20,7 +20,7 @@ type Props = {
 const Equipment = (equipment: Props) => {
   const { url, rarity, className, name } = equipment;
   return (
-    <Container $rarity={rarity || "NONE"} className={classNames(className, "relative rounded-2xl w-28 h-28")}>
+    <Container $rarity={rarity || "NONE"} className={classNames(className, "relative rounded-2xl w-28 h-28 overflow-hidden")}>
       <Image src={url ?? EmptyWeaponImage} alt={name ?? "empty"} fill className="object-cover" />
     </Container>
   );

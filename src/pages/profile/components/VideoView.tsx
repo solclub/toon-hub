@@ -7,7 +7,7 @@ const VideosURLs: Record<VideoViewType, string> = {
   NFT_UPGRADE:
     "https://res.cloudinary.com/dfniu7jks/video/upload/v1682957771/video/upgrade-video_vxcsd3.mp4",
   ROLL_WEAPON_SLOT:
-    "https://res.cloudinary.com/dfniu7jks/video/upload/v1692751066/video/eeebikiqpc0dpy0wy8ms.mp4",
+    "https://res.cloudinary.com/dveuv13td/video/upload/v1743723147/qswntirrr2gt005swaid.mp4",
 };
 
 const VideoView = ({ children, type }: { children: React.ReactNode; type: VideoViewType }) => {

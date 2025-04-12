@@ -8,18 +8,20 @@ import phrases from "./sample-data/phrases.json";
 import TwitterIcon from "../assets/images/twitter.svg";
 import ImgPowerRating from "../assets/images/power_rating_icon.png";
 import NftHidden from "assets/images/skin.png";
+import toon_of_ladder_banner from "../assets/images/toon_of_ladder_banner.png";
+import the_hub_banner from "../assets/images/the_hub_banner.png";
+import cartoon_clash_banner from "../assets/images/cartoon_clash_banner.png";
+import get_toonified_banner from "../assets/images/get_toonified_banner.png";
+import giblatoons_logo from "../assets/images/giblatoons_logo.png";
+import get_toonified_logo from "../assets/images/get_toonified_logo.png";
+import the_hub_logo from "../assets/images/the_hub_logo.png";
+import toon_of_ladder_logo from "../assets/images/toon_of_ladder_logo.png";
 
 import ImgSolScan from "../assets/images/solscan.png";
 import Panel from "../components/common/Panel";
 import { trpc } from "utils/trpc";
 import Loader from "components/common/Loader";
 import ToonCard from "components/common/ToonCard";
-
-import loot1 from "assets/images/loot1.png";
-import loot2 from "assets/images/loot2.png";
-import loot3 from "assets/images/loot3.png";
-import loot4 from "assets/images/loot4.png";
-import { type WeaponRarity } from "server/database/models/weapon.model";
 import styled from "styled-components";
 import { ClippedToonCard, Rank } from "components/toon-of-ladder/WinnerCard";
 
@@ -38,28 +40,28 @@ const Home: NextPage = () => {
 
   const featuredNFT = featured.data;
 
-  const mockLoot = [
+  const banners = [
     {
-      id: "1",
-      url: loot1,
-      rarity: "EPIC",
+      link: "/toon-of-ladder",
+      logo: toon_of_ladder_logo,
+      bg: toon_of_ladder_banner,
     },
     {
-      id: "2",
-      rarity: "RARE",
-      url: loot2,
+      link: "/",
+      logo: the_hub_logo,
+      bg: the_hub_banner,
     },
     {
-      id: "3",
-      url: loot3,
-      rarity: "MYTHIC",
+      link: "https://app.rudegolems.com/training",
+      logo: giblatoons_logo,
+      bg: cartoon_clash_banner,
     },
     {
-      url: loot4,
-      id: "4",
-      rarity: "LEGENDARY",
+      link: "/",
+      logo: get_toonified_logo,
+      bg: get_toonified_banner,
     },
-  ];
+  ]
 
   return (
     <div className="relative overflow-x-hidden">
@@ -74,103 +76,110 @@ const Home: NextPage = () => {
           </Link>
         </span>
       </div>
-      <div className="mt-10 flex flex-col lg:flex-row items-start gap-6">
-        <ToonCard className="w-full lg:w-[40%] relative" bgImageUrl={featuredNFT?.nft?.images?.get(featuredNFT?.nft?.current) ?? NftHidden}>
-          <div className="absolute bottom-0 h-[60%] w-full rounded-xl bg-gradient-to-t from-black to-transparent z-[-1]" />
-          <div className="h-full w-full p-8 flex items-end justify-between">
-            <div className="flex flex-col gap-1">
-              <h4 className=" text-2xl font-bold">{featuredNFT?.nft?.name || ""}</h4>
-              <div className="flex items-center gap-2">
-                <TwitterIcon className="w-4 h-4" />
-                <Link
-                  href={
-                    "https://twitter.com/" +
-                    featuredNFT?.user?.twitterDetails?.username.replace("@", "")
-                  }
-                  target="_blank"
-                >
-                  {featuredNFT?.user?.twitterDetails?.username
-                    .replace("@", "")
-                    .toLowerCase() ?? "Unknown"}
-                </Link>
-              </div>
-              <div className="flex gap-2">
-                <Image
-                  src={ImgSolScan}
-                  alt="Twitter Image"
-                  width={15}
-                  height={15}
-                />
-                <span className="ml-2 inline-block w-20 text-xs font-thin">
+      <div className="w-full mt-10 flex flex-col lg:flex-row gap-6 justify-center">
+        <div className="w-full lg:w-3/5 grid grid-cols-1 lg:grid-cols-3 items-start justify-items-center gap-6">
+          <ToonCard className="w-full lg:col-span-2 relative" bgImageUrl={featuredNFT?.nft?.images?.get(featuredNFT?.nft?.current) ?? NftHidden}>
+            <div className="absolute bottom-0 h-[60%] w-full rounded-xl bg-gradient-to-t from-black to-transparent z-[-1]" />
+            <div className="h-full w-full p-8 flex items-end justify-between">
+              <div className="flex flex-col gap-1">
+                <h4 className=" text-2xl font-bold">{featuredNFT?.nft?.name || ""}</h4>
+                <div className="flex items-center gap-2">
+                  <TwitterIcon className="w-4 h-4" />
                   <Link
-                    href={`https://solscan.io/token/${featuredNFT?.nft?.mint}`}
+                    href={
+                      "https://twitter.com/" +
+                      featuredNFT?.user?.twitterDetails?.username.replace("@", "")
+                    }
                     target="_blank"
                   >
-                    {"..." + (featuredNFT?.user?.walletId?.substring(5, 15) || "") + "..."}
+                    {featuredNFT?.user?.twitterDetails?.username
+                      .replace("@", "")
+                      .toLowerCase() ?? "Unknown"}
                   </Link>
-                </span>
+                </div>
+                <div className="flex gap-2">
+                  <Image
+                    src={ImgSolScan}
+                    alt="Twitter Image"
+                    width={15}
+                    height={15}
+                  />
+                  <span className="ml-2 inline-block w-20 text-xs font-thin">
+                    <Link
+                      href={`https://solscan.io/token/${featuredNFT?.nft?.mint}`}
+                      target="_blank"
+                    >
+                      {"..." + (featuredNFT?.user?.walletId?.substring(5, 15) || "") + "..."}
+                    </Link>
+                  </span>
+                </div>
               </div>
-            </div>
-            <div className="dropdown">
-              <label tabIndex={0} className="cursor-pointer">
-                <svg
-                  className="inline-block h-6 align-middle"
-                  id="info-circle"
-                  data-name="Layer 1"
-                  xmlns="http://www.w3.org/2000/svg"
-                  viewBox="0 0 24 24"
+              <div className="dropdown">
+                <label tabIndex={0} className="cursor-pointer">
+                  <svg
+                    className="inline-block h-6 align-middle"
+                    id="info-circle"
+                    data-name="Layer 1"
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      fill="white"
+                      d="M12,2A10,10,0,1,0,22,12,10.01114,10.01114,0,0,0,12,2Zm0,18a8,8,0,1,1,8-8A8.00917,8.00917,0,0,1,12,20Zm0-8.5a1,1,0,0,0-1,1v3a1,1,0,0,0,2,0v-3A1,1,0,0,0,12,11.5Zm0-4a1.25,1.25,0,1,0,1.25,1.25A1.25,1.25,0,0,0,12,7.5Z"
+                    ></path>
+                  </svg>
+                </label>
+                <div
+                  tabIndex={0}
+                  className="card dropdown-content card-compact w-72 bg-black bg-opacity-30 backdrop-blur-sm backdrop-filter"
                 >
-                  <path
-                    fill="white"
-                    d="M12,2A10,10,0,1,0,22,12,10.01114,10.01114,0,0,0,12,2Zm0,18a8,8,0,1,1,8-8A8.00917,8.00917,0,0,1,12,20Zm0-8.5a1,1,0,0,0-1,1v3a1,1,0,0,0,2,0v-3A1,1,0,0,0,12,11.5Zm0-4a1.25,1.25,0,1,0,1.25,1.25A1.25,1.25,0,0,0,12,7.5Z"
-                  ></path>
-                </svg>
-              </label>
-              <div
-                tabIndex={0}
-                className="card dropdown-content card-compact w-72 bg-black bg-opacity-30 backdrop-blur-sm backdrop-filter"
-              >
-                <div className="card-body">
-                  <h3 className="card-title">Want to Feature your NFT?</h3>
-                  <p>
-                    Make your NFT shine on your NFT profile. Log in and feature your
-                    masterpiece now!
-                  </p>
+                  <div className="card-body">
+                    <h3 className="card-title">Want to Feature your NFT?</h3>
+                    <p>
+                      Make your NFT shine on your NFT profile. Log in and feature your
+                      masterpiece now!
+                    </p>
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
-        </ToonCard>
-        <div className="flex w-full flex-wrap justify-center gap-2 lg:w-64">
-          <div className="w-full pb-3 text-center text-2xl text-slate-200">Loot Locker</div>
-          {/* {featuredNFT?.slots?.map((x, i) => {
-            if (x) {
-              return (
-                <Equipment
-                  className=""
-                  key={x?.slotNumber}
-                  url={x?.image}
-                  rarity={x?.rarity}
-                  name={x?.name}
-                ></Equipment>
-              );
-            } else {
-              return (
-                <Equipment className="" key={i} rarity={"NONE"} name={"EMPTY"}></Equipment>
-              );
-            }
-          })} */}
-          {
-            mockLoot.map((x) => (
+          </ToonCard>
+          <div className="w-full grid grid-cols-2 justify-center gap-2 max-w-64">
+            <div className="w-full pb-3 text-center text-2xl text-slate-200 col-span-2">Loot Locker</div>
+            {featuredNFT?.slots?.map((x, i) => (
               <Equipment
-                className=""
-                url={x.url}
-                key={x.id}
-                rarity={x.rarity as WeaponRarity}
-                name={"EMPTY"}
+                className="w-full h-auto aspect-square"
+                key={x?.slotNumber || i}
+                url={x?.image}
+                rarity={x?.rarity || "NONE"}
+                name={x?.name || "EMPTY"}
               />
-            ))
-          }
+            ))}
+          </div>
+          <div className="lg:col-span-3 grid grid-cols-2 lg:grid-cols-4 gap-2 justify-center">
+            {
+              banners.map((banner, i) => (
+                <Link
+                  href={banner.link}
+                  target={banner.link.includes("rude") ? "_blank" : ""}
+                  key={i}
+                >
+                  <div className="w-full h-auto aspect-video mb-4 relative">
+                    <Image
+                      className="w-full"
+                      src={banner.bg}
+                      alt="Banner"
+                    />
+                    <Image
+                      className="absolute bottom-4 left-2 w-20"
+                      src={banner.logo}
+                      alt="Banner logo"
+                    />
+                  </div>
+                </Link>
+              ))
+            }
+          </div>
         </div>
         <LeaderBoard />
       </div>
@@ -243,7 +252,7 @@ const LeaderBoard = () => {
         ))}
       </div>
       <div className="usersList flex max-h-[600px] gap-2 p-4 w-full flex-wrap items-start justify-start overflow-y-scroll">
-        {isLoading && <Loader/>}
+        {isLoading && <Loader />}
         {data?.pages?.[page[nftTypeTab] ?? 0]?.items.map(
           ({ mint, images, name, power, twitter, current, owner, twitterImage }, i) => {
             const index = i + (page[nftTypeTab] ?? 0) * queryLimit;
