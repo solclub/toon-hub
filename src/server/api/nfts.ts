@@ -12,7 +12,10 @@ export const nftsRouter = router({
     .input(z.object({ collection: z.enum(["GOLEM", "DEMON", "ALL"]) }))
     .query(async ({ ctx, input }) => {
       const { collection } = input;
-      const wallet = ctx.session.walletId;
+      const wallet = ctx.session.user?.walletId;
+      if (!wallet) {
+        throw new Error("Wallet ID not found in session");
+      }
       const userNFTs = await getUserNFTs(wallet);
       return collection == "ALL" ? userNFTs : userNFTs.filter((x) => x.type == collection);
     }),
@@ -20,17 +23,26 @@ export const nftsRouter = router({
     .input(z.object({ mint: z.string() }))
     .query(async ({ ctx, input }) => {
       const { mint } = input;
-      const wallet = ctx.session.walletId;
+      const wallet = ctx.session.user?.walletId;
+      if (!wallet) {
+        throw new Error("Wallet ID not found in session");
+      }
       const finded = getUserNFTbyMint(wallet, mint);
       return finded;
     }),
   getWalletBalance: protectedProcedure.query(async ({ ctx }) => {
-    const wallet = ctx.session.walletId;
+    const wallet = ctx.session.user?.walletId;
+    if (!wallet) {
+      throw new Error("Wallet ID not found in session");
+    }
     const balance = await getWalletBalanceTokens(wallet);
     return balance;
   }),
   getUserMints: protectedProcedure.query(async ({ ctx }) => {
-    const wallet = ctx.session.walletId;
+    const wallet = ctx.session.user?.walletId;
+    if (!wallet) {
+      throw new Error("Wallet ID not found in session");
+    }
     const mints = await getSyncedNfts(wallet);
     return mints;
   }),

@@ -23,7 +23,15 @@ export const Connect = () => {
   const walletModal = useWalletModal();
 
   const { data: user } = trpc.users.getUserByWallet.useQuery({
-    walletId: session?.user.id || "",
+    walletId: session?.user?.walletId || "",
+  });
+
+  console.log("Connect Debug:", { 
+    status, 
+    session, 
+    user, 
+    walletConnected: wallet.connected,
+    walletPublicKey: wallet.publicKey?.toBase58()
   });
 
   useEffect(() => {
@@ -46,11 +54,34 @@ export const Connect = () => {
         const signature = await wallet.signMessage(data);
         const serializedSignature = bs58.encode(signature);
 
-        signIn("credentials", {
+        const authData = {
           message: JSON.stringify(message),
-          redirect: false,
           signature: serializedSignature,
-          id: wallet.publicKey,
+          csrfToken: csrf,
+        };
+        
+        console.log("🔐 Calling signIn with:", authData);
+        
+        // Debug the auth data first
+        try {
+          const debugResponse = await fetch('/api/debug-auth', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(authData),
+          });
+          const debugResult = await debugResponse.json();
+          console.log("🔍 Debug auth result:", debugResult);
+        } catch (debugError) {
+          console.error("🔍 Debug auth error:", debugError);
+        }
+        
+        signIn("credentials", {
+          message: authData.message,
+          signature: authData.signature,
+          csrfToken: authData.csrfToken,
+          redirect: false,
         });
       } catch (error) {
         console.log(error);
@@ -76,14 +107,14 @@ export const Connect = () => {
       {status == "unauthenticated" && <WalletMultiButtonDynamic />}
       {status == "authenticated" && (
         <div className="dropdown dropdown-end">
-          <div className="flex flex-wrap items-center flex-col lg:flex-row">
+          <div className="flex flex-col flex-wrap items-center lg:flex-row">
             <BalancePanel className="w-fit"></BalancePanel>
-            <div className="mt-4 lg:mt-0 flex justify-center px-3 gap-4">
-              <div tabIndex={0} className="flex flex-row lg:flex-col gap-1">
+            <div className="mt-4 flex justify-center gap-4 px-3 lg:mt-0">
+              <div tabIndex={0} className="flex flex-row gap-1 lg:flex-col">
                 <div className="lg:text-xs">Hello</div>
                 <div className="indicator text-[#ffe75c]">
                   <span
-                    className={classNames("badge-error badge badge-xs indicator-item", {
+                    className={classNames("badge indicator-item badge-error badge-xs", {
                       "mt-2 hidden": user?.twitterVerified || user?.discordVerified,
                     })}
                   ></span>
@@ -91,7 +122,7 @@ export const Connect = () => {
                 </div>
               </div>
               <div>
-                <label className="swap-rotate swap">
+                <label className="swap swap-rotate">
                   <input type="checkbox" />
                   <div className="swap-on">
                     <SVGIcon.open></SVGIcon.open>
@@ -106,7 +137,7 @@ export const Connect = () => {
           </div>
           <ul
             tabIndex={0}
-            className="panel dropdown-content menu mt-3 w-60 rounded-2xl p-2 pt-5 text-xs shadow font-sans"
+            className="panel dropdown-content menu mt-3 w-60 rounded-2xl p-2 pt-5 font-sans text-xs shadow"
           >
             <li>
               <label
@@ -146,7 +177,7 @@ export const Connect = () => {
                 <div className="grid grow place-content-end">
                   <span
                     className={classNames(
-                      "badge badge-xs indicator-item mx-auto self-end align-middle",
+                      "badge indicator-item badge-xs mx-auto self-end align-middle",
                       {
                         "badge-success": user?.twitterVerified,
                         "badge-error": !user?.twitterVerified,
@@ -188,7 +219,7 @@ export const Connect = () => {
                 </svg>
                 <div className="grid grow place-content-end">
                   <span
-                    className={classNames("badge badge-xs indicator-item", {
+                    className={classNames("badge indicator-item badge-xs", {
                       "badge-success": user?.discordVerified,
                       "badge-error": !user?.discordVerified,
                     })}
@@ -207,7 +238,7 @@ export const Connect = () => {
               </button>
             </li>
             <ButtonContainer>
-              <WalletMultiButtonDynamic/>
+              <WalletMultiButtonDynamic />
             </ButtonContainer>
           </ul>
         </div>
@@ -217,7 +248,6 @@ export const Connect = () => {
 };
 
 const ButtonContainer = styled.li`
-
   & > .wallet-adapter-dropdown {
     padding: 0 !important;
     padding-bottom: 5px;

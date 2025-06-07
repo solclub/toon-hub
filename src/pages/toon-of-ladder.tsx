@@ -1,600 +1,902 @@
-import ToonCard from 'components/common/ToonCard'
-import React, { useMemo } from 'react'
-import styled from 'styled-components'
-import bgImageUrl from '../assets/images/toon-of-ladder/card-bg.png'
-import bgImageUrl1 from '../assets/images/toon-of-ladder/card-bg1.png'
-import bgImageUrl2 from '../assets/images/toon-of-ladder/card-bg2.png'
-import bgImageUrl3 from '../assets/images/toon-of-ladder/card-bg3.png'
-import bgImageUrl4 from '../assets/images/toon-of-ladder/card-bg4.png'
-import bgImageUrl5 from '../assets/images/toon-of-ladder/card-bg5.png'
-import square1 from '../assets/images/toon-of-ladder/square1.png'
-import square2 from '../assets/images/toon-of-ladder/square2.png'
-import RegisteredUserIcon from '../assets/images/toon-of-ladder/registeredUserIcon.svg'
-import ParticipantsIcon from '../assets/images/toon-of-ladder/participantsIcon.svg'
-import PointIcon from '../assets/images/toon-of-ladder/pointIcon.svg'
-import Image from 'next/image'
-import Carousel, { type RenderArrowProps } from "react-elastic-carousel";
-import MainButton, { ButtonContainer, ButtonMixin } from 'components/common/MainButton';
-import WinnerCard, { ClippedToonCard, Rank } from 'components/toon-of-ladder/WinnerCard'
-import { Table, type TableProps, type TableColumnsType } from 'antd'
+import ToonCard from "components/common/ToonCard";
+import React, { useMemo, useState } from "react";
+import styled from "styled-components";
+import bgImageUrl from "../assets/images/toon-of-ladder/card-bg.png";
+import RegisteredUserIcon from "../assets/images/toon-of-ladder/registeredUserIcon.svg";
+import ParticipantsIcon from "../assets/images/toon-of-ladder/participantsIcon.svg";
+import PointIcon from "../assets/images/toon-of-ladder/pointIcon.svg";
+import Image from "next/image";
+import MainButton, { ButtonContainer, ButtonMixin } from "components/common/MainButton";
+import { ClippedToonCard, Rank } from "components/toon-of-ladder/WinnerCard";
+import { Table, type TableProps, type TableColumnsType } from "antd";
+import { X } from "lucide-react";
+import { trpc } from "utils/trpc";
+import Notification from "components/toon-of-ladder/Notification";
+import { useSession } from "next-auth/react";
+import { useWallet } from "@solana/wallet-adapter-react";
+import Loader from "components/common/Loader";
+import type { RudeNFT } from "server/database/models/nft.model";
+import { createPaymentTransaction, signAndSerializeTransaction } from "utils/payment-transactions";
+import { Connection } from "@solana/web3.js";
+import { env } from "env/client.mjs";
+import { showPromisedToast } from "utils/toast-utils";
+import { useRef } from "react";
+import type { Id } from "react-toastify";
 
 interface DataType {
-  id: number,
-  rank: number,
-  username: string,
-  toonname: string,
-  wins: number,
-  best_win: string,
-  victories: number,
-  spent_time: number,
-  point: string
+  rank: number;
+  userWallet: string;
+  totalWins: number;
+  totalPowerDealt: number;
+  bestCharacter: string;
+  lastBattle: Date;
 }
 
-const Page = () => {
+interface Character extends RudeNFT {
+  status: "idle" | "success" | "failure" | "attacking" | "loading";
+  isSelected: boolean;
+}
 
-  const mockCards = Array(20).fill(null)
+interface NotificationState {
+  message: string;
+  isSuccess: boolean;
+}
 
-  const mockDataSquares: [(string | null), (string | null), (string | null), (string | null)] = [square1, square2, null, null]
+const ToonOfLadderPage = () => {
+  const { data: session } = useSession();
+  const wallet = useWallet();
+  const { connected } = wallet;
+  const connection = new Connection(env.NEXT_PUBLIC_RPC_NODE, "confirmed");
+  const [selectedCharacters, setSelectedCharacters] = useState<Character[]>([]);
+  const [attackAnimation, setAttackAnimation] = useState(false);
+  const [combatLog, setCombatLog] = useState<string[]>([]);
+  const [notification, setNotification] = useState<NotificationState | null>(null);
+  const [currentAttackingIndex, setCurrentAttackingIndex] = useState<number>(-1);
+  const [isSimpleFightMode, setIsSimpleFightMode] = useState(false);
+  const toastId = useRef<Id>(0);
 
-  const carouselChildren = {
-    children: [
-      <ToonCard key={1} bgImageUrl={bgImageUrl1} className='rounded-md w-full' />,
-      <ToonCard key={2} bgImageUrl={bgImageUrl2} className='rounded-md w-full' />,
-      <ToonCard key={3} bgImageUrl={bgImageUrl3} className='rounded-md w-full' />,
-      <ToonCard key={4} bgImageUrl={bgImageUrl4} className='rounded-md w-full' />,
-      <ToonCard key={5} bgImageUrl={bgImageUrl5} className='rounded-md w-full' />,
-      <ToonCard key={6} bgImageUrl={bgImageUrl1} className='rounded-md w-full' />,
-      <ToonCard key={7} bgImageUrl={bgImageUrl2} className='rounded-md w-full' />,
-      <ToonCard key={8} bgImageUrl={bgImageUrl3} className='rounded-md w-full' />,
-      <ToonCard key={9} bgImageUrl={bgImageUrl4} className='rounded-md w-full' />,
-      <ToonCard key={10} bgImageUrl={bgImageUrl5} className='rounded-md w-full' />,
-    ]
-  }
+  console.log("session", session);
+  // Fetch user's NFTs
+  const { data: userNFTs, isLoading: nftsLoading } = trpc.nfts.getUserNFTs.useQuery(
+    { collection: "ALL" },
+    { enabled: !!session?.user?.walletId }
+  );
 
-  const mockWinnersData = [
-    { rank: 1, username: 'charlie_z_t', toonName: 'Golem #2077', points: "20,780", wins: 676, matches: 778 },
-    { rank: 2, username: 'mxcaraudio', toonName: 'Golem #6265', points: "19,580", wins: 521, matches: 800 },
-    { rank: 3, username: 'mxcaraudio', toonName: 'Golem #6049', points: "19,120", wins: 458, matches: 789 },
-  ]
+  // Fetch current active game
+  const {
+    data: gameData,
+    isLoading: gameLoading,
+    error: gameError,
+    refetch: refetchGame,
+  } = trpc.conquest.getCurrentActiveGame.useQuery();
 
-  const mockTableData: DataType[] = [
-    {
-      id: 1,
-      rank: 1,
-      username: 'charlie_z_t',
-      toonname: 'Golem #2077',
-      wins: 676,
-      best_win: "43:32",
-      victories: 778,
-      spent_time: 344,
-      point: "20,780"
-    },
-    {
-      id: 2,
-      rank: 2,
-      username: 'mxcaraudio',
-      wins: 521,
-      toonname: 'Golem #2077',
-      best_win: "2:00",
-      victories: 800,
-      spent_time: 772,
-      point: "19,580"
-    },
-    {
-      id: 3,
-      rank: 3,
-      username: 'mxcaraudio',
-      wins: 458,
-      best_win: "00:59",
-      toonname: 'Golem #2077',
-      victories: 789,
-      spent_time: 122,
-      point: "19,120"
-    },
-    {
-      id: 4,
-      rank: 4,
-      username: 'charlie_z_t',
-      wins: 676,
-      best_win: "43:32",
-      toonname: 'Golem #2077',
-      victories: 778,
-      spent_time: 344,
-      point: "20,780"
-    },
-    {
-      id: 5,
-      rank: 5,
-      username: 'mxcaraudio',
-      wins: 521,
-      toonname: 'Golem #2077',
-      best_win: "2:00",
-      victories: 800,
-      spent_time: 772,
-      point: "19,580"
-    },
-    {
-      id: 6,
-      rank: 6,
-      username: 'mxcaraudio',
-      wins: 458,
-      best_win: "00:59",
-      victories: 789,
-      toonname: 'Golem #2077',
-      spent_time: 122,
-      point: "19,120"
-    },
-    {
-      id: 7,
-      rank: 7,
-      username: 'charlie_z_t',
-      wins: 676,
-      toonname: 'Golem #2077',
-      best_win: "43:32",
-      victories: 778,
-      spent_time: 344,
-      point: "20,780"
-    },
-    {
-      id: 8,
-      rank: 8,
-      username: 'mxcaraudio',
-      wins: 521,
-      best_win: "2:00",
-      toonname: 'Golem #2077',
-      victories: 800,
-      spent_time: 772,
-      point: "19,580"
-    },
-    {
-      id: 9,
-      rank: 9,
-      username: 'mxcaraudio',
-      wins: 458,
-      best_win: "00:59",
-      toonname: 'Golem #2077',
-      victories: 789,
-      spent_time: 122,
-      point: "19,120"
-    },
-    {
-      id: 10,
-      rank: 10,
-      username: 'charlie_z_t',
-      wins: 676,
-      toonname: 'Golem #2077',
-      best_win: "43:32",
-      victories: 778,
-      spent_time: 344,
-      point: "20,780"
-    },
-    {
-      id: 11,
-      rank: 11,
-      username: 'mxcaraudio',
-      wins: 521,
-      best_win: "2:00",
-      toonname: 'Golem #2077',
-      victories: 800,
-      spent_time: 772,
-      point: "19,580"
-    },
-    {
-      id: 12,
-      rank: 12,
-      username: 'mxcaraudio',
-      wins: 458,
-      toonname: 'Golem #2077',
-      best_win: "00:59",
-      victories: 789,
-      spent_time: 122,
-      point: "19,120"
-    },
-    {
-      id: 13,
-      rank: 13,
-      username: 'charlie_z_t',
-      wins: 676,
-      best_win: "43:32",
-      toonname: 'Golem #2077',
-      victories: 778,
-      spent_time: 344,
-      point: "20,780"
-    },
-    {
-      id: 14,
-      rank: 14,
-      username: 'mxcaraudio',
-      wins: 521,
-      best_win: "2:00",
-      toonname: 'Golem #2077',
-      victories: 800,
-      spent_time: 772,
-      point: "19,580"
-    },
-    {
-      id: 15,
-      rank: 15,
-      username: 'mxcaraudio',
-      wins: 458,
-      best_win: "00:59",
-      toonname: 'Golem #2077',
-      victories: 789,
-      spent_time: 122,
-      point: "19,120"
-    },
-    {
-      id: 16,
-      rank: 16,
-      username: 'charlie_z_t',
-      wins: 676,
-      best_win: "43:32",
-      victories: 778,
-      toonname: 'Golem #2077',
-      spent_time: 344,
-      point: "20,780"
-    },
-    {
-      id: 17,
-      rank: 17,
-      username: 'mxcaraudio',
-      wins: 521,
-      toonname: 'Golem #2077',
-      best_win: "2:00",
-      victories: 800,
-      spent_time: 772,
-      point: "19,580"
-    },
-    {
-      id: 18,
-      rank: 18,
-      username: 'mxcaraudio',
-      wins: 458,
-      best_win: "00:59",
-      toonname: 'Golem #2077',
-      victories: 789,
-      spent_time: 122,
-      point: "19,120"
-    },
-    {
-      id: 19,
-      rank: 19,
-      username: 'charlie_z_t',
-      wins: 676,
-      best_win: "43:32",
-      victories: 778,
-      toonname: 'Golem #2077',
-      spent_time: 344,
-      point: "20,780"
-    },
-    {
-      id: 20,
-      rank: 20,
-      username: 'mxcaraudio',
-      wins: 521,
-      toonname: 'Golem #2077',
-      best_win: "2:00",
-      victories: 800,
-      spent_time: 772,
-      point: "19,580"
-    },
-    {
-      id: 21,
-      rank: 21,
-      username: 'mxcaraudio',
-      wins: 458,
-      best_win: "00:59",
-      toonname: 'Golem #2077',
-      victories: 789,
-      spent_time: 122,
-      point: "19,120"
-    },
+  // Fetch user battle stats
+  const { data: userStats, refetch: refetchUserStats } = trpc.conquest.getUserBattleStats.useQuery(
+    undefined,
+    { enabled: !!session?.user?.walletId }
+  );
 
-  ]
+  // Fetch game leaderboard
+  const { data: leaderboard, refetch: refetchLeaderboard } =
+    trpc.conquest.getGameLeaderboard.useQuery({ limit: 20 });
 
-  const columns: TableColumnsType<DataType> = useMemo(() => (
-    [
+  // Attack mutation
+  const attackMutation = trpc.conquest.attackEnemy.useMutation({
+    onSuccess: async (result) => {
+      // Show success toast
+      showPromisedToast(
+        toastId,
+        `Attack complete! ${result.totalDamageDealt} damage dealt`,
+        true,
+        "SUCCESS"
+      );
+
+      setAttackAnimation(true);
+      await Promise.all([refetchGame(), refetchUserStats(), refetchLeaderboard()]);
+      setAttackAnimation(false);
+
+      setCombatLog((prevLog) => [...result.combatLog, ...prevLog].slice(0, 10));
+
+      if (isSimpleFightMode) {
+        // Handle simple fight mode progression
+        setSelectedCharacters((prev) =>
+          prev.map((char, index) => {
+            const outcome = result.battleOutcomes.find((r) => r.characterMint === char.mint);
+            if (outcome) {
+              return { ...char, status: outcome.success ? "success" : "failure" };
+            } else if (index === currentAttackingIndex + 1) {
+              // Set next character as attacking
+              return { ...char, status: "attacking" };
+            }
+            return char;
+          })
+        );
+
+        // Move to next character or end simple fight mode
+        if (currentAttackingIndex + 1 < selectedCharacters.length) {
+          setCurrentAttackingIndex(currentAttackingIndex + 1);
+        } else {
+          setIsSimpleFightMode(false);
+          setCurrentAttackingIndex(-1);
+        }
+      } else {
+        // Handle bulk attack mode
+        setSelectedCharacters((prev) =>
+          prev.map((char) => {
+            const outcome = result.battleOutcomes.find((r) => r.characterMint === char.mint);
+            if (outcome) {
+              return { ...char, status: outcome.success ? "success" : "failure" };
+            }
+            return char;
+          })
+        );
+      }
+
+      if (result.totalDamageDealt > 0) {
+        setNotification({
+          message: `${result.totalDamageDealt} Dmg (${result.totalPowerDealt} Power)`,
+          isSuccess: true,
+        });
+      } else {
+        setNotification({
+          message: `Attack failed!`,
+          isSuccess: false,
+        });
+      }
+
+      if (result.gameEnded) {
+        showPromisedToast(toastId, "🎉 Enemy Defeated! Victory!", true, "SUCCESS");
+        setNotification({
+          message: "🎉 Enemy Defeated! Victory!",
+          isSuccess: true,
+        });
+        setIsSimpleFightMode(false);
+        setCurrentAttackingIndex(-1);
+      }
+    },
+    onError: (error) => {
+      showPromisedToast(toastId, `Attack failed: ${error.message}`, true, "ERROR");
+
+      setNotification({
+        message: `Error: ${error.message}`,
+        isSuccess: false,
+      });
+
+      if (isSimpleFightMode) {
+        // On error, mark current attacking character as failed and continue
+        setSelectedCharacters((prev) =>
+          prev.map((char, index) => {
+            if (index === currentAttackingIndex) {
+              return { ...char, status: "failure" };
+            } else if (index === currentAttackingIndex + 1) {
+              return { ...char, status: "attacking" };
+            }
+            return char;
+          })
+        );
+
+        if (currentAttackingIndex + 1 < selectedCharacters.length) {
+          setCurrentAttackingIndex(currentAttackingIndex + 1);
+        } else {
+          setIsSimpleFightMode(false);
+          setCurrentAttackingIndex(-1);
+        }
+      }
+    },
+  });
+
+  // Transform user NFTs to character format
+  const allCharacters: Character[] = useMemo(() => {
+    if (!userNFTs || userNFTs.length === 0) return [];
+
+    return userNFTs.map((nft) => ({
+      ...nft,
+      status: "idle" as const,
+      isSelected: false,
+    }));
+  }, [userNFTs]);
+
+  // Leaderboard table columns - moved before early returns
+  const columns: TableColumnsType<DataType> = useMemo(
+    () => [
       {
         title: "Rank",
         key: "rank",
-        dataIndex: 'rank',
-        render: (value: number) => <Rank className='rank w-10 h-10 text-base filter-none'>{value}</Rank>
+        dataIndex: "rank",
+        render: (value: number) => (
+          <Rank className="rank h-10 w-10 text-base filter-none">{value}</Rank>
+        ),
       },
       {
-        title: "User name",
-        key: "username",
-        dataIndex: 'username',
-        render: (value: number, row: typeof mockTableData[0]) => (
-          <div className='flex items-center gap-4'>
-            <ClippedToonCard className='w-14' bgImageUrl={bgImageUrl} />
-            <div className='flex flex-col'>
-              <span>{value}</span>
-              <span className='font-sans text-[#ffe75c] text-sm'>{row.toonname}</span>
-            </div>
-          </div>
-        )
-      },
-      {
-        title: "Match wins",
-        key: "wins",
-        dataIndex: 'wins',
-      },
-      {
-        title: "Spent time",
-        key: "spent_time",
-        dataIndex: 'spent_time',
-      },
-      {
-        title: "Victories",
-        key: "victories",
-        dataIndex: 'victories',
-      },
-      {
-        title: "Best Win (mins)",
-        key: "best_win",
-        dataIndex: 'best_win',
-      },
-      {
-        title: "Point",
-        key: "point",
-        dataIndex: 'point',
+        title: "Wallet",
+        key: "userWallet",
+        dataIndex: "userWallet",
         render: (value: string) => (
-          <div className='flex gap-2 items-center'>
+          <div className="flex items-center gap-4">
+            <ClippedToonCard className="w-14" bgImageUrl={bgImageUrl} />
+            <div className="flex flex-col">
+              <span className="font-mono text-sm">
+                {value.slice(0, 4)}...{value.slice(-4)}
+              </span>
+            </div>
+          </div>
+        ),
+      },
+      {
+        title: "Total Wins",
+        key: "totalWins",
+        dataIndex: "totalWins",
+      },
+      {
+        title: "Power Dealt",
+        key: "totalPowerDealt",
+        dataIndex: "totalPowerDealt",
+        render: (value: number) => (
+          <div className="flex items-center gap-2">
             <PointIcon />
-            <span>{value}</span>
+            <span>{value.toLocaleString()}</span>
           </div>
-        )
+        ),
+      },
+      {
+        title: "Best Character",
+        key: "bestCharacter",
+        dataIndex: "bestCharacter",
+      },
+    ],
+    []
+  );
+
+  const toggleCharacter = (mint: string) => {
+    setSelectedCharacters((prev) => {
+      const isAlreadySelected = prev.find((char) => char.mint === mint);
+
+      if (isAlreadySelected) {
+        return prev.filter((char) => char.mint !== mint);
+      } else {
+        const character = allCharacters.find((char) => char.mint === mint);
+        if (character) {
+          return [...prev, { ...character, isSelected: true }];
+        }
       }
-    ]
-  ), [])
+      return prev;
+    });
+  };
 
-  return (
-    <div className='flex w-full flex-col gap-32'>
-      <div className='flex w-full flex-col lg:flex-row justify-center gap-8'>
-        <ToonCard
-          bgImageUrl={bgImageUrl}
-          className='w-full lg:w-2/5 border-b-8'
-        >
-          <div className="flex flex-col justify-between items-center py-3 w-full h-full">
-            <h2 className='text-5xl'>Level: Easy</h2>
-            <div className='flex flex-col h-1/3 justify-around items-center w-full'>
-              <CarouselStyled
-                disableArrowsOnEnd={false}
-                pagination={false}
-                isRTL={true}
-                enableMouseSwipe
-                itemsToShow={5}
-                itemPadding={[4]}
-                renderArrow={RenderArrow}
-                {...carouselChildren} />
-              <h4 className='text-xl'>Attackers</h4>
-            </div>
-          </div>
-        </ToonCard>
-        <div className='flex flex-col justify-between w-full lg:w-2/5 gap-8'>
-          <HealthContainer>
-            <div className='flex justify-between'>
-              <h3 className='text-3xl'>Total Health</h3>
-              <span className='text-lg text-red-600'>2000 / 8000</span>
-            </div>
-            <HealthBar $percentage={30} />
-            <div className='flex justify-between gap-4 w-full'>
-              <MainButton color='yellow' className='w-1/2 font-sans font-bold'>
-                SIMPLE FIGHT
-              </MainButton>
-              <MainButton color='yellow' className='w-1/2 font-sans font-bold'>
-                BULK FIGHT
-              </MainButton>
-            </div>
-          </HealthContainer>
-          <div className='flex justify-between w-full'>
-            <MainButton color='yellow' buttonClassName='w-fit px-4 font-sans font-bold'>
-              SELECT ALL UNITS
-            </MainButton>
-            <MainButton color='red' buttonClassName='w-fit px-4 font-sans font-bold'>
-              DESELECT ALL
-            </MainButton>
-          </div>
-          <ScrollContainer>
-            <CardsContainer>
-              {mockCards.map((item, i) => (
-                <ToonCard key={i} bgImageUrl={bgImageUrl1} className='rounded-md p-1 w-1/4 lg:w-1/5'>
-                  <div className="flex flex-col justify-between items-start w-full h-full">
-                    <Square>3</Square>
-                    <div className='flex items-center w-full justify-around'>
-                      {mockDataSquares.map((item, i) => (
-                        <Square key={i} className='font-sans font-bold'>
-                          {item ? <Image src={item} alt="" /> : "+"}
-                        </Square>
-                      ))}
-                    </div>
-                  </div>
-                </ToonCard>
-              ))}
-            </CardsContainer>
-          </ScrollContainer>
-        </div>
-      </div>
-      <div className='w-full'>
-        <h1 className='text-4xl text-center lg:text-left mb-16'>Leaderboard</h1>
-        <div className='w-full flex flex-col lg:flex-row justify-center items-center gap-8 lg:gap-0'>
-          {mockWinnersData.map((item, i) => (
-            <WinnerCard key={i} {...item} />
-          ))}
-        </div>
-      </div>
-      <div className='w-full flex flex-row gap-4 flex-wrap lg:flex-nowrap justify-between m-auto'>
-        <DataRankingContainer>
-          <div className='flex gap-8 lg:gap-32 mb-4'>
-            <span className='text-3xl'>1777</span>
-            <div className='p-2 rounded-full bg-[#ffe75c] w-fit'>
-              <RegisteredUserIcon />
-            </div>
-          </div>
-          <span className='font-sans text-xs text-gray-300'>Total Registered</span>
-        </DataRankingContainer>
-        <DataRankingContainer >
-          <div className='flex gap-8 lg:gap-32 mb-4'>
-            <span className='text-3xl'>400</span>
-            <div className='p-2 rounded-full bg-[#ffe75c] w-fit'>
-              <ParticipantsIcon />
-            </div>
-          </div>
-          <span className='font-sans text-xs text-gray-300'>Total Participants</span>
-        </DataRankingContainer>
-        <DataRankingContainer className='flex-grow gap-4'>
-          <span className='text-3xl'>Fighting in progress</span>
-          <div className='flex justify-between gap-4'>
-            <p className='font-sans text-xs text-gray-300 w-3/5'>
-              The more damage, the higher the characters will reach the first positions to get the <span className='text-[#ffe75c]'>Crayon Token</span>.
-              Only the first <span className='text-[#ffe75c]'>three positions</span> will be awarded.
-            </p>
-            <div className='flex'>
-              <AvatarContainer>
-                <Image src={bgImageUrl} alt='avatar' />
-              </AvatarContainer>
-              <AvatarContainer>
-                <Image src={bgImageUrl2} alt='avatar' />
-              </AvatarContainer>
-              <AvatarContainer>
-                <Image src={bgImageUrl3} alt='avatar' />
-              </AvatarContainer>
-              <AvatarContainer>
-                <Image src={bgImageUrl4} alt='avatar' />
-              </AvatarContainer>
-              <AvatarContainer className='bg-[#ffe75c] flex justify-center items-center font-sans text-black'>
-                +10
-              </AvatarContainer>
-            </div>
-          </div>
-        </DataRankingContainer>
-      </div>
-      <div className='bg-[#0d0d10] w-full p-4 lg:p-16 rounded-2xl'>
-        <h1 className='text-4xl text-center lg:text-left mb-16'>Global Ranking</h1>
-        <TableStyled
-          rowKey={"id"}
-          bordered
-          columns={columns}
-          dataSource={mockTableData}
-          scroll={{ x: "max-content" }}
-          pagination={{
-            itemRender(_page, type, element) {
-              return ["prev", "next"].includes(type) ? (
-                <ButtonContainerStyled $color='yellow'>
-                  {element}
-                </ButtonContainerStyled>
-              ) : (
-                <MainButton color="black" className='w-8'>
-                  {element}
-                </MainButton>
-              )
-            },
-          }}
-        />
-      </div>
-    </div>
-  )
-}
+  const selectAll = () => {
+    setSelectedCharacters(allCharacters.map((char) => ({ ...char, isSelected: true })));
+  };
 
-export default Page
+  const unselectAll = () => {
+    setSelectedCharacters([]);
+  };
 
-const CarouselStyled = styled(Carousel)`
-    & > div {
-        position: relative;
+  const handleSimpleFight = () => {
+    if (!gameData?.enemy || selectedCharacters.length === 0 || attackMutation.isLoading) return;
 
-        & > div:nth-child(2) {
-            margin: 0;
-        }
+    setIsSimpleFightMode(true);
+    setCurrentAttackingIndex(0);
 
-        & > div:first-child, & > div:last-child {
-            position: absolute;
-            z-index: 2;
-            top: 35%;
-        }
+    // Set first character as attacking
+    setSelectedCharacters((prev) =>
+      prev.map((char, index) => ({
+        ...char,
+        status: index === 0 ? "attacking" : "idle",
+      }))
+    );
+  };
 
-        & > div:last-child {
-            left: 25px;
-        }
+  const attackCurrentUnit = async () => {
+    if (
+      !gameData?.enemy ||
+      currentAttackingIndex === -1 ||
+      attackMutation.isLoading ||
+      !wallet.publicKey ||
+      !wallet.signTransaction
+    )
+      return;
 
-        & > div:first-child {
-            right: 25px;
-        }
+    const currentCharacter = selectedCharacters[currentAttackingIndex];
+    if (!currentCharacter) return;
+
+    try {
+      // Show initial toast
+      showPromisedToast(toastId, "Creating payment transaction...", false);
+
+      // Create payment transaction for simple fight (100 RUDE)
+      const { transaction } = await createPaymentTransaction({
+        userWallet: wallet.publicKey,
+        isBulkAttack: false,
+        connection,
+      });
+
+      // Set current attacking unit to loading status
+      setSelectedCharacters((prev) =>
+        prev.map((char, index) => ({
+          ...char,
+          status: index === currentAttackingIndex ? "loading" : char.status,
+        }))
+      );
+
+      // Update toast for signing
+      showPromisedToast(toastId, "Please sign the transaction (100 RUDE)...", true);
+
+      // Sign and serialize the transaction
+      const serializedTransaction = await signAndSerializeTransaction(
+        transaction,
+        connection,
+        wallet.signTransaction
+      );
+
+      // Update toast for processing
+      showPromisedToast(toastId, "Processing attack...", true);
+
+      attackMutation.mutate({
+        enemyId: gameData.enemy._id.toString(),
+        characterMints: [currentCharacter.mint],
+        isBulkAttack: false,
+        serializedTransaction,
+      });
+    } catch (error) {
+      showPromisedToast(
+        toastId,
+        `Payment failed: ${error instanceof Error ? error.message : "Unknown error"}`,
+        true,
+        "ERROR"
+      );
+
+      setNotification({
+        message: `Payment failed: ${error instanceof Error ? error.message : "Unknown error"}`,
+        isSuccess: false,
+      });
+
+      // Reset loading state on error
+      setSelectedCharacters((prev) =>
+        prev.map((char, index) => ({
+          ...char,
+          status: index === currentAttackingIndex ? "idle" : char.status,
+        }))
+      );
     }
-`;
+  };
 
-const RenderArrow = ({ type, onClick }: RenderArrowProps) => {
+  const handleBulkAttack = async () => {
+    if (
+      !gameData?.enemy ||
+      selectedCharacters.length === 0 ||
+      attackMutation.isLoading ||
+      !wallet.publicKey ||
+      !wallet.signTransaction
+    )
+      return;
+
+    try {
+      // Show initial toast
+      showPromisedToast(toastId, "Creating bulk payment transaction...", false);
+
+      // Create payment transaction for bulk fight (0.01 SOL)
+      const { transaction } = await createPaymentTransaction({
+        userWallet: wallet.publicKey,
+        isBulkAttack: true,
+        connection,
+      });
+
+      setIsSimpleFightMode(false);
+      setCurrentAttackingIndex(-1);
+
+      // Set all selected characters to loading status
+      setSelectedCharacters((prev) => prev.map((char) => ({ ...char, status: "loading" })));
+
+      // Update toast for signing
+      showPromisedToast(toastId, "Please sign the transaction (0.01 SOL)...", true);
+
+      // Sign and serialize the transaction
+      const serializedTransaction = await signAndSerializeTransaction(
+        transaction,
+        connection,
+        wallet.signTransaction
+      );
+
+      // Update toast for processing
+      showPromisedToast(toastId, "Processing bulk attack...", true);
+
+      attackMutation.mutate({
+        enemyId: gameData.enemy._id.toString(),
+        characterMints: selectedCharacters.map((char) => char.mint),
+        isBulkAttack: true,
+        serializedTransaction,
+      });
+    } catch (error) {
+      showPromisedToast(
+        toastId,
+        `Payment failed: ${error instanceof Error ? error.message : "Unknown error"}`,
+        true,
+        "ERROR"
+      );
+
+      setNotification({
+        message: `Payment failed: ${error instanceof Error ? error.message : "Unknown error"}`,
+        isSuccess: false,
+      });
+
+      // Reset loading state on error
+      setSelectedCharacters((prev) => prev.map((char) => ({ ...char, status: "idle" })));
+    }
+  };
+
+  const getCharacterBorderColor = (status: Character["status"]) => {
+    switch (status) {
+      case "success":
+        return "ring-2 ring-green-500";
+      case "failure":
+        return "ring-2 ring-red-500";
+      case "attacking":
+        return "ring-2 ring-yellow-500";
+      case "loading":
+        return "ring-2 ring-yellow-500 animate-pulse";
+      default:
+        return "";
+    }
+  };
+
+  // Show loading state - only show loading if game is loading, or NFTs are loading when user is connected
+  if (gameLoading || (nftsLoading && session?.user?.walletId)) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-gradient-to-b from-[#2e026d] to-[#15162c]">
+        <div className="text-center text-white">
+          <Loader />
+          <p className="mt-4">Loading game data...</p>
+          {gameError && <p className="mt-2 text-sm text-red-500">Error: {gameError.message}</p>}
+        </div>
+      </div>
+    );
+  }
+
+  // Show wallet connection prompt
+  if (!connected || !session?.user?.walletId) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-gradient-to-b from-[#2e026d] to-[#15162c]">
+        <div className="text-center text-white">
+          <h2 className="mb-4 text-3xl">Connect Your Wallet</h2>
+          <p className="mb-8 text-lg text-gray-300">
+            Please connect your wallet to participate in Toon of Ladder battles.
+          </p>
+          <MainButton color="yellow" className="px-8 py-3">
+            Connect Wallet
+          </MainButton>
+        </div>
+      </div>
+    );
+  }
+
+  // Show no active game message
+  if (!gameData?.hasActiveGame) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-gradient-to-b from-[#2e026d] to-[#15162c]">
+        <div className="text-center text-white">
+          <h2 className="mb-4 text-3xl">No Active Game</h2>
+          <p className="mb-8 text-lg text-gray-300">
+            There is currently no active Toon of Ladder battle. Check back later!
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  // Show no NFTs message
+  if (allCharacters.length === 0) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-gradient-to-b from-[#2e026d] to-[#15162c]">
+        <div className="text-center text-white">
+          <h2 className="mb-4 text-3xl">No Characters Found</h2>
+          <p className="mb-8 text-lg text-gray-300">
+            You need to own Golem or Demon NFTs to participate in battles.
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  const enemy = gameData?.enemy;
+
+  if (!enemy) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-gradient-to-b from-[#2e026d] to-[#15162c]">
+        <div className="text-center text-white">
+          <h2 className="mb-4 text-3xl">Enemy Data Missing</h2>
+          <p className="mb-8 text-lg text-gray-300">
+            Unable to load enemy information. Please try refreshing the page.
+          </p>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <MainButton onClick={onClick} color="yellow">
-      {type === "PREV" ? "<" : ">"}
-    </MainButton>
-  )
+    <>
+      <style jsx>{`
+        @keyframes shake {
+          0%,
+          100% {
+            transform: translateX(0);
+          }
+          25% {
+            transform: translateX(-5px);
+          }
+          75% {
+            transform: translateX(5px);
+          }
+        }
+
+        .animate-shake {
+          animation: shake 0.5s ease-in-out;
+        }
+      `}</style>
+      <div className="flex w-full flex-col gap-32">
+        {/* Main Battle Interface */}
+        <div className="flex w-full flex-col justify-center gap-8 lg:flex-row">
+          <ToonCard bgImageUrl={bgImageUrl} className="w-full border-b-8 lg:w-2/5">
+            <div className="flex h-full w-full flex-col items-center justify-between py-3">
+              <h2 className="text-center text-3xl">
+                Enemy: {enemy.name} ({enemy.type} - {enemy.difficulty})
+              </h2>
+              <div
+                className={`relative aspect-square w-3/4 overflow-hidden rounded-xl bg-slate-800 ${
+                  attackAnimation ? "animate-shake" : ""
+                }`}
+              >
+                <Image src={enemy.image} alt="Enemy" fill className="object-cover" />
+                {notification && (
+                  <Notification
+                    message={notification.message}
+                    isSuccess={notification.isSuccess}
+                    onHide={() => setNotification(null)}
+                  />
+                )}
+              </div>
+              <div className="flex h-1/3 w-full flex-col items-center justify-around">
+                <div className="flex flex-wrap justify-center gap-2">
+                  {selectedCharacters.map((char) => (
+                    <div
+                      key={char.mint}
+                      className={`relative flex aspect-square w-12 items-center justify-center overflow-hidden rounded-lg bg-slate-700 p-1 ${getCharacterBorderColor(
+                        char.status
+                      )}`}
+                    >
+                      <Image
+                        src={char.image}
+                        alt={char.name || `Character`}
+                        fill
+                        className="object-cover"
+                      />
+                      {char.status === "failure" && (
+                        <div className="absolute inset-0 flex items-center justify-center">
+                          <X className="text-red-500" size={20} />
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+                <h4 className="text-xl">Selected Attackers ({selectedCharacters.length})</h4>
+              </div>
+            </div>
+          </ToonCard>
+
+          {/* Controls and Characters */}
+          <div className="flex w-full flex-col justify-between gap-8 lg:w-2/5">
+            <HealthContainer>
+              <div className="flex justify-between">
+                <h3 className="text-3xl">Enemy Health</h3>
+                <span className="text-lg text-red-600">
+                  {enemy.currentHealth} / {enemy.maxHealth}
+                </span>
+              </div>
+              <HealthBar $percentage={(enemy.currentHealth / enemy.maxHealth) * 100} />
+              <div className="flex w-full justify-between gap-4">
+                <MainButton
+                  color="yellow"
+                  className="w-1/2 font-sans font-bold"
+                  onClick={isSimpleFightMode ? attackCurrentUnit : handleSimpleFight}
+                  disabled={selectedCharacters.length === 0 || attackMutation.isLoading}
+                >
+                  {isSimpleFightMode
+                    ? currentAttackingIndex >= 0 &&
+                      currentAttackingIndex < selectedCharacters.length
+                      ? `ATTACK (${currentAttackingIndex + 1}/${
+                          selectedCharacters.length
+                        }) - 100 RUDE`
+                      : "SIMPLE FIGHT"
+                    : "SIMPLE FIGHT - 100 RUDE"}
+                </MainButton>
+                <MainButton
+                  color="yellow"
+                  className="w-1/2 font-sans font-bold"
+                  onClick={handleBulkAttack}
+                  disabled={selectedCharacters.length === 0 || attackMutation.isLoading}
+                >
+                  BULK FIGHT - 0.01 SOL
+                </MainButton>
+              </div>
+              {isSimpleFightMode && (
+                <div className="text-center">
+                  <MainButton
+                    color="red"
+                    className="px-4 py-2 font-sans text-sm font-bold"
+                    onClick={() => {
+                      setIsSimpleFightMode(false);
+                      setCurrentAttackingIndex(-1);
+                      setSelectedCharacters((prev) =>
+                        prev.map((char) => ({ ...char, status: "idle" }))
+                      );
+                    }}
+                  >
+                    CANCEL SIMPLE FIGHT
+                  </MainButton>
+                </div>
+              )}
+            </HealthContainer>
+
+            {/* Character Selection Controls */}
+            {!isSimpleFightMode && (
+              <div className="flex w-full justify-between">
+                <MainButton
+                  color="yellow"
+                  buttonClassName="w-fit px-4 font-sans font-bold"
+                  onClick={selectAll}
+                >
+                  SELECT ALL UNITS
+                </MainButton>
+                <MainButton
+                  color="red"
+                  buttonClassName="w-fit px-4 font-sans font-bold"
+                  onClick={unselectAll}
+                >
+                  DESELECT ALL
+                </MainButton>
+              </div>
+            )}
+
+            {/* Characters Grid */}
+            <ScrollContainer>
+              <CardsContainer>
+                {allCharacters.map((char) => {
+                  const selectedChar = selectedCharacters.find((c) => c.mint === char.mint);
+                  const isSelected = !!selectedChar;
+                  const status = selectedChar?.status || "idle";
+
+                  return (
+                    <div
+                      key={char.mint}
+                      className={`h-32 w-32 cursor-pointer rounded-md p-1 ${
+                        isSelected ? "ring-2 ring-blue-500" : ""
+                      } ${getCharacterBorderColor(status)}`}
+                      onClick={() => !isSimpleFightMode && toggleCharacter(char.mint)}
+                    >
+                      <ToonCard
+                        bgImageUrl={char.image}
+                        className="relative h-full w-full rounded-md"
+                      >
+                        <div className="flex h-full w-full flex-col items-start justify-between">
+                          <Square className="text-xs">
+                            {char.name?.slice(0, 8) || "Character"}
+                          </Square>
+                          <div className="flex w-full items-center justify-around">
+                            <Square className="font-sans text-xs font-bold">
+                              P: {char.power || char.rudeScore || 100}
+                            </Square>
+                            <Square className="font-sans text-xs font-bold">{char.type}</Square>
+                          </div>
+                        </div>
+
+                        {status === "loading" && (
+                          <div className="absolute inset-0 flex items-center justify-center rounded-md bg-black bg-opacity-60">
+                            <div className="h-8 w-8 animate-spin rounded-full border-2 border-yellow-500 border-t-transparent"></div>
+                          </div>
+                        )}
+                      </ToonCard>
+                    </div>
+                  );
+                })}
+              </CardsContainer>
+            </ScrollContainer>
+          </div>
+        </div>
+
+        {/* User Stats */}
+        {userStats && (
+          <div className="w-full">
+            <h2 className="mb-8 text-center text-3xl lg:text-left">Your Battle Stats</h2>
+            <div className="flex justify-center gap-4 lg:justify-start">
+              <DataRankingContainer>
+                <div className="mb-4 flex gap-8 lg:gap-32">
+                  <span className="text-3xl">{userStats.totalBattles}</span>
+                  <div className="w-fit rounded-full bg-[#ffe75c] p-2">
+                    <ParticipantsIcon />
+                  </div>
+                </div>
+                <span className="font-sans text-xs text-gray-300">Total Battles</span>
+              </DataRankingContainer>
+
+              <DataRankingContainer>
+                <div className="mb-4 flex gap-8 lg:gap-32">
+                  <span className="text-3xl">{userStats.totalWins}</span>
+                  <div className="w-fit rounded-full bg-[#ffe75c] p-2">
+                    <PointIcon />
+                  </div>
+                </div>
+                <span className="font-sans text-xs text-gray-300">Total Wins</span>
+              </DataRankingContainer>
+
+              <DataRankingContainer>
+                <div className="mb-4 flex gap-8 lg:gap-32">
+                  <span className="text-3xl">{Math.round(userStats.winRate * 100)}%</span>
+                  <div className="w-fit rounded-full bg-[#ffe75c] p-2">
+                    <RegisteredUserIcon />
+                  </div>
+                </div>
+                <span className="font-sans text-xs text-gray-300">Win Rate</span>
+              </DataRankingContainer>
+            </div>
+          </div>
+        )}
+
+        {/* Combat Log Section */}
+        <div className="w-full">
+          <div className="rounded-xl bg-slate-800 p-6">
+            <h3 className="mb-4 text-2xl font-bold text-slate-200">Combat Log</h3>
+            <div className="max-h-40 overflow-y-auto">
+              {combatLog.length > 0 ? (
+                combatLog.map((log, index) => (
+                  <p key={index} className="mb-2 text-sm text-slate-300">
+                    {log}
+                  </p>
+                ))
+              ) : (
+                <p className="text-sm italic text-slate-400">No combat activity yet...</p>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* Leaderboard */}
+        <div className="w-full">
+          <h1 className="mb-16 text-center text-4xl lg:text-left">Current Game Leaderboard</h1>
+
+          {/* Game Stats */}
+          <div className="m-auto mb-8 flex w-full flex-row flex-wrap justify-between gap-4 lg:flex-nowrap">
+            <DataRankingContainer>
+              <div className="mb-4 flex gap-8 lg:gap-32">
+                <span className="text-3xl">{gameData?.session?.stats?.totalParticipants || 0}</span>
+                <div className="w-fit rounded-full bg-[#ffe75c] p-2">
+                  <RegisteredUserIcon />
+                </div>
+              </div>
+              <span className="font-sans text-xs text-gray-300">Total Participants</span>
+            </DataRankingContainer>
+
+            <DataRankingContainer>
+              <div className="mb-4 flex gap-8 lg:gap-32">
+                <span className="text-3xl">{gameData?.session?.stats?.totalBattles || 0}</span>
+                <div className="w-fit rounded-full bg-[#ffe75c] p-2">
+                  <ParticipantsIcon />
+                </div>
+              </div>
+              <span className="font-sans text-xs text-gray-300">Total Battles</span>
+            </DataRankingContainer>
+
+            <DataRankingContainer className="flex-grow gap-4">
+              <span className="text-3xl">
+                {enemy.currentHealth > 0 ? "Battle in Progress" : "Victory Achieved!"}
+              </span>
+              <div className="flex justify-between gap-4">
+                <p className="w-3/5 font-sans text-xs text-gray-300">
+                  Total power dealt:{" "}
+                  <span className="text-[#ffe75c]">
+                    {gameData?.session?.stats?.totalPower || 0}
+                  </span>
+                  <br />
+                  Damage progress:{" "}
+                  <span className="text-[#ffe75c]">
+                    {Math.round(((enemy.maxHealth - enemy.currentHealth) / enemy.maxHealth) * 100)}%
+                  </span>
+                </p>
+              </div>
+            </DataRankingContainer>
+          </div>
+
+          {/* Leaderboard Table */}
+          <div className="w-full rounded-2xl bg-[#0d0d10] p-4 lg:p-16">
+            <h1 className="mb-16 text-center text-4xl lg:text-left">Global Ranking</h1>
+            <TableStyled
+              rowKey="rank"
+              bordered
+              columns={columns}
+              dataSource={leaderboard || []}
+              scroll={{ x: "max-content" }}
+              pagination={{
+                pageSize: 20,
+                itemRender(_page, type, element) {
+                  return ["prev", "next"].includes(type) ? (
+                    <ButtonContainerStyled $color="yellow">{element}</ButtonContainerStyled>
+                  ) : (
+                    <MainButton color="black" className="w-8">
+                      {element}
+                    </MainButton>
+                  );
+                },
+              }}
+            />
+          </div>
+        </div>
+      </div>
+    </>
+  );
 };
 
+export default ToonOfLadderPage;
+
+// Styled components (reused from original)
 const HealthContainer = styled.div`
-    background-color: #18181b;
-    border-radius: 1rem;
-    padding: 1rem;
-    display: flex;
-    flex-direction: column;
-    gap: 2rem;
-    width: 100%;
-    border-bottom: 8px solid #313946;
+  background-color: #18181b;
+  border-radius: 1rem;
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+  width: 100%;
+  border-bottom: 8px solid #313946;
 `;
 
 const HealthBar = styled.div<{ $percentage: number }>`
-    background-color: #34171f;
-    border-radius: .5rem;
-    width: 100%;
-    height: 2rem;
+  background-color: #34171f;
+  border-radius: 0.5rem;
+  width: 100%;
+  height: 2rem;
 
-    &::before {
-        content: '';
-        background-color: #ff1037;
-        border-radius: .5rem;
-        width: ${({ $percentage }) => $percentage}%;
-        height: 100%;
-        display: block;
-    }
+  &::before {
+    content: "";
+    background-color: #ff1037;
+    border-radius: 0.5rem;
+    width: ${({ $percentage }) => $percentage}%;
+    height: 100%;
+    display: block;
+  }
 `;
 
 const ScrollContainer = styled.div`
-    width: 100%;
-    height: auto;
-    aspect-ratio: 2 / 1;
-    overflow-x: scroll;
-    padding-bottom: .5rem;
-    display: flex;
-    align-items: flex-end;
+  width: 100%;
+  height: auto;
+  min-height: 180px;
+  overflow-x: scroll;
+  padding-bottom: 0.5rem;
+  display: flex;
+  align-items: center;
 
-    @media screen and (max-width: 1024px) {
-      aspect-ratio: 2 / 1.2;
-    }
+  &::-webkit-scrollbar {
+    height: 12px;
+  }
 
-    &::-webkit-scrollbar {
-        height: 12px;
-    }
+  &::-webkit-scrollbar-track {
+    background: #2c2918;
+    border-radius: 20px;
+  }
 
-    &::-webkit-scrollbar-track {
-        background: #2c2918;
-        border-radius: 20px;
-    }
-
-    &::-webkit-scrollbar-thumb {
-        background-color: #ffe75c; 
-        border-radius: 20px;
-        border: 3px solid #2c2918;
-    }
+  &::-webkit-scrollbar-thumb {
+    background-color: #ffe75c;
+    border-radius: 20px;
+    border: 3px solid #2c2918;
+  }
 `;
 
 const CardsContainer = styled.div`
-    display: flex;
-    flex-wrap: wrap;
-    width: 100%;
-    height: 100%;
-    gap: .75rem;
-    flex-direction: column;
-    align-content: start;
-    justify-content: space-evenly;
+  display: flex;
+  flex-direction: row;
+  width: max-content;
+  height: 100%;
+  gap: 1rem;
+  align-items: center;
+  justify-content: flex-start;
+  padding: 0.5rem;
 `;
 
 const Square = styled.div`
@@ -607,6 +909,9 @@ const Square = styled.div`
   align-items: center;
   color: black;
   line-height: 1;
+  font-size: 10px;
+  padding: 2px;
+  text-align: center;
 `;
 
 const DataRankingContainer = styled.div`
@@ -620,22 +925,7 @@ const DataRankingContainer = styled.div`
   border-bottom: 6px solid #313946;
 `;
 
-const AvatarContainer = styled.div`
-  width: 3rem;
-  height: 3rem;
-  border-radius: 50%;
-  margin-left:  -1rem;
-  border: 2px solid #18181b;
-
-  img {
-    object-fit: cover;
-    border-radius: 50%;
-    width: 100%;
-    height: 100%;
-  }
-`;
-
-const TableStyled = styled(Table) <TableProps<DataType>>`
+const TableStyled = styled(Table)<TableProps<DataType>>`
   * :not(.rank, .ant-pagination *) {
     background-color: transparent !important;
     border-color: gray !important;
@@ -645,22 +935,23 @@ const TableStyled = styled(Table) <TableProps<DataType>>`
     color: #9ca3af !important;
   }
 
-  th, tbody td {
-      border-inline-end: none !important;
-  };
+  th,
+  tbody td {
+    border-inline-end: none !important;
+  }
 
   tbody tr:last-child td {
-    border-bottom: none ;
+    border-bottom: none;
   }
 
   tbody td {
     color: white !important;
-    font-family: 'Clarence Pro', sans-serif;
-    font-size: 18px
+    font-family: "Clarence Pro", sans-serif;
+    font-size: 18px;
   }
 
   .ant-table-container {
-    border: 1px solid; 
+    border: 1px solid;
     border-radius: 1rem;
   }
 
@@ -684,9 +975,9 @@ const TableStyled = styled(Table) <TableProps<DataType>>`
 
 const ButtonContainerStyled = styled(ButtonContainer)`
   & .ant-pagination-item-link {
-      ${ButtonMixin}
-      width: 100% !important;
-      height: 35px !important;
-      border-radius: 10px !important;
-    }
+    ${ButtonMixin}
+    width: 100% !important;
+    height: 35px !important;
+    border-radius: 10px !important;
+  }
 `;

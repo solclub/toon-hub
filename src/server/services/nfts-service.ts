@@ -52,7 +52,6 @@ export const syncUserNFTs = async (
     const saved = (await usernfts.UserNFTsModel().find({ wallet, active: true })).map(
       (x) => x.mint
     );
-    console.log("saved", saved);
     const current = nfts.map((x) => x.mint);
     const removedItems = saved.filter((val) => !current.includes(val));
     const newItems = current.filter((val) => !saved.includes(val));
@@ -144,7 +143,7 @@ export const getNFTsByWalletId = async (
   });
 
   logWithTimestamp("fetchAllDigitalAssetByOwner");
-  const stakedUserNfts = getInTrainingNfts(wallet);
+  const stakedUserNfts = await getInTrainingNfts(wallet);
   const trainingMints: NFTDictionary = {};
   const mints: NFTDictionary = walletNfts
     .filter((i) => i.metadata.updateAuthority == env.UPDATE_AUTHORITY_ADDRESS)
@@ -158,7 +157,7 @@ export const getNFTsByWalletId = async (
       }
       return acc;
     }, {});
-  const stakedMints = await stakedUserNfts;
+  const stakedMints = stakedUserNfts;
   stakedMints?.forEach((item) => {
     const type = item.rudeType === 1 ? NFTType.GOLEM : NFTType.DEMON;
     if (!trainingMints[type]) {

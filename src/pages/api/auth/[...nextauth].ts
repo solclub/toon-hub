@@ -10,9 +10,9 @@ import type { NextApiRequest, NextApiResponse } from "next";
 import userModel from "server/database/models/user.model";
 
 export const getOptions = (req: NextApiRequest): NextAuthOptions => {
-  return {
+  const options = {
     callbacks: {
-      jwt: async ({ token, user, account, profile }) => {
+      jwt: async ({ token, user, account, profile }: any) => {
         if (!user) {
           return token;
         }
@@ -40,10 +40,36 @@ export const getOptions = (req: NextApiRequest): NextAuthOptions => {
 
         return token;
       },
-      session: async ({ session, token }) => {
+      session: async ({ session, token }: any) => {
         const walletId = (token as any)?.user?.id;
+        
+        if (!walletId) {
+          return session;
+        }
+        
         const exists = await userModel().findOne({ walletId });
-        return { ...session, ...token, ...exists?.toObject() };
+        
+        if (exists) {
+          const userData = exists.toObject();
+          return {
+            ...session,
+            user: {
+              ...session.user,
+              id: userData.walletId,
+              walletId: userData.walletId,
+              ...userData
+            }
+          };
+        }
+        
+        return {
+          ...session,
+          user: {
+            ...session.user,
+            id: walletId,
+            walletId: walletId
+          }
+        };
       },
     },
     // Configure one or more authentication providers
@@ -90,6 +116,7 @@ export const getOptions = (req: NextApiRequest): NextAuthOptions => {
         },
       }),
       CredentialsProvider({
+        id: "credentials",
         name: "Solana",
         credentials: {
           message: {
@@ -100,30 +127,43 @@ export const getOptions = (req: NextApiRequest): NextAuthOptions => {
             label: "Signature",
             type: "text",
           },
+          csrfToken: {
+            label: "CSRF Token",
+            type: "text",
+          },
         },
         async authorize(credentials) {
+          if (!credentials) {
+            console.error("❌ No credentials provided");
+            return null;
+          }
+          
           try {
-            const { message, signature } = credentials ?? {};
-            const nonce = await getCsrfToken({ req: { headers: req.headers } });
-
-            if (!message || !signature) {
-              throw new Error("Could not validate the signed message");
+            const { message, signature, csrfToken } = credentials;
+            
+            if (!message || !signature || !csrfToken) {
+              console.error("❌ Missing message, signature, or CSRF token");
+              return null;
             }
 
             const signinMessage = new SigninMessage(message);
 
-            if (signinMessage.nonce !== nonce) {
-              throw new Error("Could not validate the signed message");
+            if (signinMessage.nonce !== csrfToken) {
+              console.error("❌ Nonce mismatch:", { expected: csrfToken, received: signinMessage.nonce });
+              return null;
             }
 
-            const validationResult = signinMessage.validate(signature || "");
+            const validationResult = signinMessage.validate(signature);
+            
             if (!validationResult) {
-              throw new Error("Could not validate the signed message");
+              console.error("❌ Signature validation failed");
+              return null;
             }
 
             const user = await userModel().findOne({ walletId: signinMessage.publicKey });
-
+            
             if (!user) {
+              console.log("👤 Creating new user...");
               await userModel().create({
                 walletId: signinMessage.publicKey,
                 twitterVerified: false,
@@ -140,19 +180,20 @@ export const getOptions = (req: NextApiRequest): NextAuthOptions => {
               });
             }
 
-            return (async function () {
-              return {
-                id: signinMessage.publicKey,
-              };
-            })();
+            return {
+              id: signinMessage.publicKey,
+            };
           } catch (e) {
-            console.error(e);
+            console.error("❌ AUTHORIZE ERROR:", e);
+            console.error("❌ Error stack:", e instanceof Error ? e.stack : "No stack trace");
             return null;
           }
         },
       }),
     ],
   };
+  
+  return options;
 };
 
 const saveProviderData = async (provider: string, id: string, profile: any) => {
@@ -204,5 +245,6 @@ const saveProviderData = async (provider: string, id: string, profile: any) => {
 };
 
 export default async function auth(req: NextApiRequest, res: NextApiResponse) {
+  console.log("📡 NextAuth handler called with:", req.method, req.url);
   return await NextAuth(req, res, getOptions(req));
 }
