@@ -213,8 +213,7 @@ export const getAndUpdatePatoArmor = async (nftModel: Model<RudeNFT>, mintArray:
       return;
     }
 
-    // @ts-ignore: Unreachable code error
-    const newCount = parseInt(demonAttrinbutes[attIndex].value) + 1;
+    const newCount = parseInt(demonAttrinbutes[attIndex]?.value ?? "0") + 1;
     await nftModel.updateOne(
       {
         mint,

@@ -231,4 +231,5 @@ class GameConfigService {
   }
 }
 
-export default new GameConfigService();
+const gameConfigService = new GameConfigService();
+export default gameConfigService;

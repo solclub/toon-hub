@@ -1,4 +1,4 @@
-import { ObjectId } from "mongodb";
+import type { ObjectId } from "mongodb";
 import mongoose, { Schema, model } from "mongoose";
 
 export const GameSessionStatus = ["PENDING", "ACTIVE", "COMPLETED", "CANCELLED"] as const;

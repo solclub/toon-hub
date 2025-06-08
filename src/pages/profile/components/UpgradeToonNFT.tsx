@@ -1,12 +1,9 @@
-import { motion } from "framer-motion";
-import Image from "next/image";
 import React, { useEffect, useRef, useState } from "react";
 import type { PaymentOption, ProductOption } from "server/database/models/catalog.model";
 import { ProductType } from "server/database/models/catalog.model";
 import PaymentMethodSelector from "components/common/PaymentMethodSelector";
 import DemonToonHidden from "assets/images/demon-toon-reveal.jpeg";
 import GolemToonHidden from "assets/images/golem-toon-reveal.jpeg";
-import FrameBox from "components/common/FrameBox";
 import type { DemonUpgrades, GolemUpgrades } from "server/database/models/nft.model";
 import type { UserNFT } from "server/database/models/user-nfts.model";
 import { showSuccessToast, showErrorToast, showPromisedToast } from "utils/toast-utils";
@@ -26,7 +23,6 @@ import { ClippedToonCard, ClippedToonCardContainer } from "components/toon-of-la
 import MainButton from "components/common/MainButton";
 
 interface BuyProperties {
-  title: string;
   upgradeOption: ProductOption;
   sourceImageUrl?: string;
   nft: RudeNFT & {
@@ -34,7 +30,7 @@ interface BuyProperties {
   };
 }
 
-const UpgradeToonNFT: React.FC<BuyProperties> = ({ title, upgradeOption, sourceImageUrl, nft }) => {
+const UpgradeToonNFT: React.FC<BuyProperties> = ({ upgradeOption, sourceImageUrl, nft }) => {
   const { connection } = useConnection();
   const { publicKey, signMessage, signTransaction } = useWallet();
   const { prepTransaction, notifyPayment } = useNFTManager();
@@ -64,6 +60,30 @@ const UpgradeToonNFT: React.FC<BuyProperties> = ({ title, upgradeOption, sourceI
   }, [paymentOptions]);
 
   useEffect(() => {
+    const handleUpgradeResult = async () => {
+      if (signTransaction && upgradeResult && upgradeResult.crayonTx) {
+        console.log("contains crayon txn..");
+        showPromisedToast(
+          toastRef,
+          "Warrior successfully upgraded!, Wow, you found a Crayon, minting your Token...",
+          true
+        );
+        const swapTransactionBuf = Buffer.from(upgradeResult.crayonTx, "base64");
+        const txid = await connection.sendRawTransaction(swapTransactionBuf, {
+          skipPreflight: true,
+        });
+        console.log("sent tx", txid);
+        try {
+          await confirmTransactionWithRetry(connection, txid);
+          showPromisedToast(toastRef, "Your Crayon was minted", true, "SUCCESS");
+        } catch (e) {
+          console.error("Error confirming transaction:", e);
+        }
+      } else {
+        showPromisedToast(toastRef, "Warrior successfully upgraded!", true, "SUCCESS");
+      }
+    };
+
     if (isLoading) {
       showPromisedToast(toastRef, "Confirming transaction & upgrading your warrior...", true);
     } else if (error && !upgradeResult) {
@@ -71,7 +91,7 @@ const UpgradeToonNFT: React.FC<BuyProperties> = ({ title, upgradeOption, sourceI
     } else if (upgradeResult) {
       handleUpgradeResult();
     }
-  }, [isLoading, error, upgradeResult]);
+  }, [isLoading, error, upgradeResult, signTransaction, connection]);
 
   useEffect(() => {
     if (isError) {
@@ -90,30 +110,6 @@ const UpgradeToonNFT: React.FC<BuyProperties> = ({ title, upgradeOption, sourceI
   }
 
   const nftType = nft.type || NFTType.GOLEM; // Provide a default value
-
-  const handleUpgradeResult = async () => {
-    if (signTransaction && upgradeResult && upgradeResult.crayonTx) {
-      console.log("contains crayon txn..");
-      showPromisedToast(
-        toastRef,
-        "Warrior successfully upgraded!, Wow, you found a Crayon, minting your Token...",
-        true
-      );
-      const swapTransactionBuf = Buffer.from(upgradeResult.crayonTx, "base64");
-      const txid = await connection.sendRawTransaction(swapTransactionBuf, {
-        skipPreflight: true,
-      });
-      console.log("sent tx", txid);
-      try {
-        await confirmTransactionWithRetry(connection, txid);
-        showPromisedToast(toastRef, "Your Crayon was minted", true, "SUCCESS");
-      } catch (e) {
-        console.error("Error confirming transaction:", e);
-      }
-    } else {
-      showPromisedToast(toastRef, "Warrior successfully upgraded!", true, "SUCCESS");
-    }
-  };
 
   const upgradeGolem = async (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
     e.stopPropagation();

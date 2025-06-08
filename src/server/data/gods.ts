@@ -1,5 +1,5 @@
 import { env } from "env/server.mjs";
-import type { DemonUpgrades, GolemUpgrades, NFTType } from "server/database/models/nft.model";
+import type { NFTType } from "server/database/models/nft.model";
 
 interface GodUpgrade {
   mint: string;

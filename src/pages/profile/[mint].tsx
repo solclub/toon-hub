@@ -235,7 +235,6 @@ const Profile: NextPage = () => {
                     >
                       <FeatureNFT
                         nft={profileNFT}
-                        title={featureProduct?.options[0]?.name ?? " Feature NFT"}
                         featureOption={featureProduct.options[0]}
                         sourceImageUrl={profileNFT?.images?.get(profileNFT?.current)}
                       ></FeatureNFT>

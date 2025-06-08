@@ -4,7 +4,6 @@ import {
 } from "@solana/spl-token";
 import type { Connection } from "@solana/web3.js";
 import { PublicKey } from "@solana/web3.js";
-import { env } from "env/client.mjs";
 
 export const modifyHours = (date: Date, hours: number) => {
   const dateCopy = new Date(date);

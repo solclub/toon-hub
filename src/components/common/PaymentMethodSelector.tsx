@@ -1,5 +1,4 @@
 import SVGIcon from "assets/svg/SVGIcon";
-import { motion } from "framer-motion";
 import React from "react";
 import type { PaymentOption } from "server/database/models/catalog.model";
 import { PaymentToken } from "server/database/models/catalog.model";

@@ -16,7 +16,7 @@ import { useSession } from "next-auth/react";
 import { useWallet } from "@solana/wallet-adapter-react";
 import Loader from "components/common/Loader";
 import type { RudeNFT } from "server/database/models/nft.model";
-import { createPaymentTransaction, signAndSerializeTransaction } from "utils/payment-transactions";
+import { createPaymentTransaction } from "utils/payment-transactions";
 import { Connection } from "@solana/web3.js";
 import { env } from "env/client.mjs";
 import { showPromisedToast } from "utils/toast-utils";
@@ -322,11 +322,12 @@ const ToonOfLadderPage = () => {
       showPromisedToast(toastId, "Please sign the transaction (100 RUDE)...", true);
 
       // Sign and serialize the transaction
-      const serializedTransaction = await signAndSerializeTransaction(
-        transaction,
-        connection,
-        wallet.signTransaction
-      );
+      const { blockhash } = await connection.getLatestBlockhash();
+      transaction.recentBlockhash = blockhash;
+      transaction.feePayer = wallet.publicKey!;
+      
+      const signedTransaction = await wallet.signTransaction!(transaction);
+      const serializedTransaction = signedTransaction.serialize().toString('base64');
 
       // Update toast for processing
       showPromisedToast(toastId, "Processing attack...", true);
@@ -391,11 +392,12 @@ const ToonOfLadderPage = () => {
       showPromisedToast(toastId, "Please sign the transaction (0.01 SOL)...", true);
 
       // Sign and serialize the transaction
-      const serializedTransaction = await signAndSerializeTransaction(
-        transaction,
-        connection,
-        wallet.signTransaction
-      );
+      const { blockhash } = await connection.getLatestBlockhash();
+      transaction.recentBlockhash = blockhash;
+      transaction.feePayer = wallet.publicKey!;
+      
+      const signedTransaction = await wallet.signTransaction!(transaction);
+      const serializedTransaction = signedTransaction.serialize().toString('base64');
 
       // Update toast for processing
       showPromisedToast(toastId, "Processing bulk attack...", true);
@@ -676,23 +678,25 @@ const ToonOfLadderPage = () => {
                         bgImageUrl={char.image}
                         className="relative h-full w-full rounded-md"
                       >
-                        <div className="flex h-full w-full flex-col items-start justify-between">
-                          <Square className="text-xs">
-                            {char.name?.slice(0, 8) || "Character"}
-                          </Square>
-                          <div className="flex w-full items-center justify-around">
-                            <Square className="font-sans text-xs font-bold">
-                              P: {char.power || char.rudeScore || 100}
+                        <>
+                          <div className="flex h-full w-full flex-col items-start justify-between">
+                            <Square className="text-xs">
+                              {char.name?.slice(0, 8) || "Character"}
                             </Square>
-                            <Square className="font-sans text-xs font-bold">{char.type}</Square>
+                            <div className="flex w-full items-center justify-around">
+                              <Square className="font-sans text-xs font-bold">
+                                P: {char.power || char.rudeScore || 100}
+                              </Square>
+                              <Square className="font-sans text-xs font-bold">{char.type}</Square>
+                            </div>
                           </div>
-                        </div>
 
-                        {status === "loading" && (
-                          <div className="absolute inset-0 flex items-center justify-center rounded-md bg-black bg-opacity-60">
-                            <div className="h-8 w-8 animate-spin rounded-full border-2 border-yellow-500 border-t-transparent"></div>
-                          </div>
-                        )}
+                          {status === "loading" && (
+                            <div className="absolute inset-0 flex items-center justify-center rounded-md bg-black bg-opacity-60">
+                              <div className="h-8 w-8 animate-spin rounded-full border-2 border-yellow-500 border-t-transparent"></div>
+                            </div>
+                          )}
+                        </>
                       </ToonCard>
                     </div>
                   );

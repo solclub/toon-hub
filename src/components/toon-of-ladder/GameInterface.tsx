@@ -5,7 +5,7 @@ import Image from "next/image";
 import Notification from "./Notification";
 
 interface Character {
-  id: number;
+  id: string;
   status: "idle" | "success" | "failure" | "next";
 }
 
@@ -14,12 +14,13 @@ interface NotificationState {
   isSuccess: boolean;
 }
 
+
 const GameInterface = () => {
   const [selectedCharacters, setSelectedCharacters] = useState<Character[]>([]);
   const [allCharacters] = useState<Character[]>(
     Array(20)
       .fill(null)
-      .map((_, i) => ({ id: i + 1, status: "idle" }))
+      .map((_, i) => ({ id: (i + 1).toString(), status: "idle" }))
   );
   const [attackAnimation, setAttackAnimation] = useState(false);
   const [combatLog, setCombatLog] = useState<string[]>([]);
@@ -31,16 +32,16 @@ const GameInterface = () => {
   const { data: enemy, isLoading, error, refetch } = trpc.conquest.getCurrentEnemy.useQuery();
 
   const attackMutation = trpc.conquest.attackEnemy.useMutation({
-    onSuccess: async (result: any) => {
+    onSuccess: async (result) => {
       setAttackAnimation(true);
       await refetch();
       setAttackAnimation(false);
-      setCombatLog((prevLog) => [result.log, ...prevLog].slice(0, 5));
+      setCombatLog((prevLog) => [...result.combatLog, ...prevLog].slice(0, 5));
 
       // Update the character status based on the attack result
       setSelectedCharacters((prev: Character[]) => {
         return prev.map((char: Character) => {
-          const attackResult = result.characterResults.find((r: any) => r.id === char.id);
+          const attackResult = result.battleOutcomes.find((r) => r.characterMint === char.id);
           if (attackResult) {
             char.status = attackResult.success ? "success" : "failure";
           }
@@ -50,13 +51,13 @@ const GameInterface = () => {
 
       // Set notification based on attack result
       if (isBulkAttack) {
-        const totalDamage = result.characterResults.filter((r: any) => r.success).length;
+        const totalDamage = result.battleOutcomes.filter((r) => r.success).length;
         setNotification({
           message: `${totalDamage} Dmg`,
           isSuccess: totalDamage > 0,
         });
       } else {
-        const singleResult = result.characterResults[0];
+        const singleResult = result.battleOutcomes[0];
         setNotification({
           message: singleResult?.success ? "1 Dmg" : "Miss",
           isSuccess: singleResult ? singleResult.success : false,
@@ -87,7 +88,7 @@ const GameInterface = () => {
     }
   }, [currentAttackIndex, isBulkAttack, attackRoundComplete]);
 
-  const toggleCharacter = (id: number) => {
+  const toggleCharacter = (id: string) => {
     if (attackRoundComplete) {
       // If attack round is complete, first reset all characters
       setSelectedCharacters([]);
@@ -127,8 +128,9 @@ const GameInterface = () => {
       if (nextCharacter && !attackMutation.isLoading) {
         attackMutation.mutate({
           enemyId: enemy._id.toString(),
-          characterMints: [nextCharacter.id.toString()],
+          characterMints: [nextCharacter.id],
           isBulkAttack: false,
+          serializedTransaction: "placeholder",
         });
       }
     }
@@ -144,8 +146,9 @@ const GameInterface = () => {
       setIsBulkAttack(true);
       attackMutation.mutate({
         enemyId: enemy._id.toString(),
-        characterMints: selectedCharacters.map((char) => char.id.toString()),
+        characterMints: selectedCharacters.map((char) => char.id),
         isBulkAttack: true,
+        serializedTransaction: "placeholder",
       });
     }
   };

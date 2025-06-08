@@ -4,7 +4,7 @@ import DiscordProvider from "next-auth/providers/discord";
 import TwitterProvider from "next-auth/providers/twitter";
 import CredentialsProvider from "next-auth/providers/credentials";
 import { env } from "env/server.mjs";
-import { getSession, getCsrfToken } from "next-auth/react";
+import { getSession } from "next-auth/react";
 import { SigninMessage } from "utils/signin-message";
 import type { NextApiRequest, NextApiResponse } from "next";
 import userModel from "server/database/models/user.model";
@@ -55,8 +55,6 @@ export const getOptions = (req: NextApiRequest): NextAuthOptions => {
             ...session,
             user: {
               ...session.user,
-              id: userData.walletId,
-              walletId: userData.walletId,
               ...userData
             }
           };
@@ -108,10 +106,10 @@ export const getOptions = (req: NextApiRequest): NextAuthOptions => {
 
           return {
             id: user?.user.id || "",
-            name: profile.data.username,
+            name: (profile as any).data?.username || (profile as any).screen_name || "",
             // NOTE: E-mail is currently unsupported by OAuth 2 Twitter.
             email: null,
-            image: profile.data.profile_image_url,
+            image: (profile as any).data?.profile_image_url || (profile as any).profile_image_url,
           };
         },
       }),

@@ -16,7 +16,6 @@ import { ClippedToonCard, ClippedToonCardContainer } from "components/toon-of-la
 import MainButton from "components/common/MainButton";
 
 interface BuyProperties {
-  title: string;
   featureOption: ProductOption;
   sourceImageUrl?: string;
   nft: RudeNFT & {
@@ -24,7 +23,7 @@ interface BuyProperties {
   };
 }
 
-const FeatureNFT: React.FC<BuyProperties> = ({ title, featureOption, sourceImageUrl, nft }) => {
+const FeatureNFT: React.FC<BuyProperties> = ({ featureOption, sourceImageUrl, nft }) => {
   const { publicKey, signMessage, signTransaction } = useWallet();
   const { prepTransaction, notifyPayment } = useNFTManager();
   const toastRef = useRef("");

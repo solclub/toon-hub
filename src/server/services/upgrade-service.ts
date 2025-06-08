@@ -9,7 +9,6 @@ import axios from "axios";
 import { env } from "env/server.mjs";
 import paymentService from "./payment-service";
 import { godsData } from "server/data/gods";
-import { VersionedTransaction } from "@solana/web3.js";
 
 const UpgradeServerUrl = env.METADATA_UPGRADE_SERVER_URL;
 const UpgradeServerToken = env.METADATA_UPGRADE_ACCESS_TOKEN;

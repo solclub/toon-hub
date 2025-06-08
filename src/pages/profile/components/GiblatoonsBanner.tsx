@@ -3,21 +3,17 @@ import FrameBox, { FrameType } from "components/common/FrameBox";
 import classNames from "classnames";
 import Image from "next/image";
 import GiblatoonLogo from "assets/images/giblatoons-logo.jpg";
-import { Modal } from "components/common/Modal";
 import { motion } from "framer-motion";
 import type { UserNFT } from "server/database/models/user-nfts.model";
-import UpgradeNFT from "./UpgradeNFT";
 import { ProductType } from "server/database/models/catalog.model";
 import { NFTType } from "server/database/models/nft.model";
 import type { DemonUpgrades, GolemUpgrades } from "server/database/models/nft.model";
 import type { RudeNFT } from "server/database/models/nft.model";
-import SwapArtNFT from "./SwapArtNFT";
 import { useNFTManager } from "contexts/NFTManagerContext";
 import type { ProductOption } from "server/database/models/catalog.model";
 import GiblatoonsUpgradeModal from "./GiblatoonsUpgradeModal";
 import { CountDown } from "components/common/CountDown";
 import { giblatoonsLiveDate, isGiblatoonsLiveOpen } from "utils/giblatoons";
-import { env } from "env/client.mjs";
 
 const GiblatoonBanner: React.FC<{
   upgradeOpt?: ProductOption;
@@ -27,19 +23,12 @@ const GiblatoonBanner: React.FC<{
 }> = ({ upgradeOpt, nft }) => {
   const { paymentChannel } = useNFTManager();
   const [isUpgradeModalOpen, setUpgradeModalOpen] = useState(false);
-  const [isSwapArtModalOpen, setSwapArtModalOpen] = useState(false);
 
   const upgradeType =
     nft?.type === NFTType.GOLEM
       ? (upgradeOpt?.key as GolemUpgrades)
       : (upgradeOpt?.key as DemonUpgrades);
 
-  const getPriceSingleText = (opt: ProductOption) => {
-    if (!opt.paymentOptions) return "Loading...";
-    const [po] = opt.paymentOptions;
-    const price = po?.amounts.map((x) => `${x.amount} ${x.token}`);
-    return price?.join(" + ");
-  };
 
   useEffect(() => {
     paymentChannel.on("payment_success", handlePaymentSuccess);
@@ -51,9 +40,6 @@ const GiblatoonBanner: React.FC<{
 
   const handlePaymentSuccess = (type: ProductType) => {
     switch (type) {
-      case ProductType.NFT_ART_SWAP:
-        setSwapArtModalOpen(false);
-        break;
       case ProductType.NFT_UPGRADE:
         setUpgradeModalOpen(false);
         break;

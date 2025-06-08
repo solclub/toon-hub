@@ -1,4 +1,5 @@
-import { Connection, PublicKey } from "@solana/web3.js";
+import type { Connection } from "@solana/web3.js";
+import { PublicKey } from "@solana/web3.js";
 import { env } from "env/client.mjs";
 
 export const giblatoonsCrayonsMintkey = env.NEXT_PUBLIC_GIBLATOONS_CRAYONS_MINT_KEY;

@@ -1,6 +1,5 @@
 import { Modal } from "components/common/Modal";
 import React, { useEffect, useState } from "react";
-import UpgradeNFT from "./UpgradeNFT";
 import Image from "next/image";
 import GiblatoonLogo from "assets/images/giblatoons-logo.jpg";
 import type { RudeNFT } from "server/database/models/nft.model";
@@ -74,7 +73,6 @@ export default function GiblatoonsUpgradeModal({
       {!nft.images.has(upgradeOpt.key) ? (
         <UpgradeToonNFT
           nft={nft}
-          title={upgradeOpt.name}
           upgradeOption={upgradeOpt}
           sourceImageUrl={nft.images.get(nft.current)}
         ></UpgradeToonNFT>

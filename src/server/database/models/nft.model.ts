@@ -1,5 +1,4 @@
 import mongoose, { model, Schema } from "mongoose";
-import { boolean } from "zod";
 
 export enum NFTType {
   GOLEM = "GOLEM",

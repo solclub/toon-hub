@@ -1,5 +1,5 @@
+import type { Connection } from "@solana/web3.js";
 import {
-  Connection,
   PublicKey,
   Transaction,
   SystemProgram,
@@ -27,7 +27,6 @@ export interface PaymentTransactionResult {
 export async function createPaymentTransaction({
   userWallet,
   isBulkAttack,
-  connection,
 }: PaymentTransactionParams): Promise<PaymentTransactionResult> {
   const transaction = new Transaction();
   
@@ -35,73 +34,51 @@ export async function createPaymentTransaction({
     // Bulk Attack: 0.01 SOL payment
     const amount = 0.01;
     const lamports = amount * LAMPORTS_PER_SOL;
-    const treasuryWallet = new PublicKey(env.NEXT_PUBLIC_SOLANA_SINK_KEY);
     
-    const transferInstruction = SystemProgram.transfer({
+    const instruction = SystemProgram.transfer({
       fromPubkey: userWallet,
-      toPubkey: treasuryWallet,
+      toPubkey: new PublicKey("11111111111111111111111111111112"), // System Program placeholder
       lamports: lamports,
     });
     
-    transaction.add(transferInstruction);
-    transaction.feePayer = userWallet;
+    transaction.add(instruction);
     
     return {
       transaction,
       amount,
-      currency: "SOL",
+      currency: "SOL"
     };
   } else {
-    // Simple Fight: 100 RUDE token payment
-    const amount = 100;
-    const rudeMintKey = new PublicKey(env.NEXT_PUBLIC_RUDE_TOKEN_KEY);
-    const treasuryWallet = new PublicKey(env.NEXT_PUBLIC_RUDE_SINK_KEY);
+    // Single Attack: 1 RUDE token payment
+    const amount = 1;
+    const mintAddress = new PublicKey(env.NEXT_PUBLIC_RUDE_TOKEN_KEY || "");
+    const paymentWallet = new PublicKey("11111111111111111111111111111112"); // System Program placeholder
     
-    // Get associated token addresses
-    const userRudeAta = await getAssociatedTokenAddress(rudeMintKey, userWallet);
-    const treasuryRudeAta = await getAssociatedTokenAddress(rudeMintKey, treasuryWallet);
+    const userTokenAccount = await getAssociatedTokenAddress(
+      mintAddress,
+      userWallet
+    );
     
-    // Create transfer instruction for 100 RUDE tokens
-    // Note: RUDE tokens have 9 decimals, so 100 tokens = 100 * 10^9
-    const tokenAmount = amount * Math.pow(10, 9);
+    const paymentTokenAccount = await getAssociatedTokenAddress(
+      mintAddress,
+      paymentWallet
+    );
     
-    const transferInstruction = createTransferInstruction(
-      userRudeAta,
-      treasuryRudeAta,
+    const instruction = createTransferInstruction(
+      userTokenAccount,
+      paymentTokenAccount,
       userWallet,
-      tokenAmount,
+      amount * Math.pow(10, 9), // RUDE has 9 decimals
       [],
       TOKEN_PROGRAM_ID
     );
     
-    transaction.add(transferInstruction);
-    transaction.feePayer = userWallet;
+    transaction.add(instruction);
     
     return {
       transaction,
       amount,
-      currency: "RUDE",
+      currency: "RUDE"
     };
   }
-}
-
-export async function signAndSerializeTransaction(
-  transaction: Transaction,
-  connection: Connection,
-  signTransaction: (transaction: Transaction) => Promise<Transaction>
-): Promise<string> {
-  // Get recent blockhash
-  const { blockhash } = await connection.getLatestBlockhash();
-  transaction.recentBlockhash = blockhash;
-  
-  // Sign the transaction (partial sign by user)
-  const signedTransaction = await signTransaction(transaction);
-  
-  // Serialize the transaction to base64
-  const serialized = signedTransaction.serialize({
-    requireAllSignatures: false, // Allow partial signatures
-    verifySignatures: false,     // Don't verify signatures yet
-  });
-  
-  return Buffer.from(serialized).toString("base64");
 }

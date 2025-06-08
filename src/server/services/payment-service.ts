@@ -1,7 +1,8 @@
 import txLogService from "server/services/transactionlog-service";
 import { connection } from "./connections/web3-public";
 import { getUserPDAKey } from "./war-service";
-import { ParsedAccountData, PublicKey } from "@solana/web3.js";
+import type { ParsedAccountData } from "@solana/web3.js";
+import { PublicKey } from "@solana/web3.js";
 
 interface PaymentRequestInfo {
   serializedTx: string;
