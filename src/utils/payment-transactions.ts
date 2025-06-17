@@ -50,20 +50,20 @@ export async function createPaymentTransaction({
     };
   } else {
     // Single Attack: 1 RUDE token payment
-    const amount = 1;
+    const amount = 100;
     const mintAddress = new PublicKey(env.NEXT_PUBLIC_RUDE_TOKEN_KEY || "");
-    const paymentWallet = new PublicKey("11111111111111111111111111111112"); // System Program placeholder
-    
+    const paymentWallet = new PublicKey(env.NEXT_PUBLIC_RUDE_SINK_KEY || ""); // System Program placeholder
+ 
     const userTokenAccount = await getAssociatedTokenAddress(
       mintAddress,
       userWallet
     );
-    
+
     const paymentTokenAccount = await getAssociatedTokenAddress(
       mintAddress,
       paymentWallet
     );
-    
+
     const instruction = createTransferInstruction(
       userTokenAccount,
       paymentTokenAccount,
