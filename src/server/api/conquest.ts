@@ -7,8 +7,18 @@ import gameConfigService from "../services/game-config-service";
 import { getUserNFTbyMint } from "../services/nfts-service";
 import logWithTimestamp from "utils/logs";
 import { ObjectId } from "mongodb";
-import { Transaction, PublicKey, LAMPORTS_PER_SOL, SystemProgram, SystemInstruction } from "@solana/web3.js";
-import { getAssociatedTokenAddress, TOKEN_PROGRAM_ID, decodeTransferInstruction } from "@solana/spl-token";
+import {
+  Transaction,
+  PublicKey,
+  LAMPORTS_PER_SOL,
+  SystemProgram,
+  SystemInstruction,
+} from "@solana/web3.js";
+import {
+  getAssociatedTokenAddress,
+  TOKEN_PROGRAM_ID,
+  decodeTransferInstruction,
+} from "@solana/spl-token";
 import { connection } from "../services/connections/web3-public";
 import { env as clientEnv } from "env/client.mjs";
 
@@ -38,22 +48,22 @@ export const conquestRouter = router({
     try {
       const gameSession = await gameConfigService.getCurrentActiveSession();
       if (!gameSession) {
-        return { 
-          hasActiveGame: false, 
-          enemy: null, 
-          session: null 
+        return {
+          hasActiveGame: false,
+          enemy: null,
+          session: null,
         };
       }
 
       const stats = await gameConfigService.getGameStatistics(gameSession._id);
-      
+
       return {
         hasActiveGame: true,
         enemy: gameSession.enemy,
         session: {
           ...gameSession,
-          stats
-        }
+          stats,
+        },
       };
     } catch (error) {
       logWithTimestamp(`Error fetching active game: ${error}`);
@@ -81,7 +91,7 @@ export const conquestRouter = router({
         characterMints: z.array(z.string()).min(1).max(20),
         isBulkAttack: z.boolean(),
         serializedTransaction: z.string(),
-      }),
+      })
     )
     .mutation(async ({ input, ctx }) => {
       try {
@@ -117,7 +127,9 @@ export const conquestRouter = router({
             throw new Error(paymentResult.error || "Payment verification failed");
           }
         } catch (error) {
-          throw new Error(`Payment failed: ${error instanceof Error ? error.message : "Unknown error"}`);
+          throw new Error(
+            `Payment failed: ${error instanceof Error ? error.message : "Unknown error"}`
+          );
         }
 
         // Validate and get character data
@@ -131,7 +143,7 @@ export const conquestRouter = router({
               mint: nftData.mint,
               name: nftData.name,
               power: nftData.power || nftData.rudeScore || 100, // Fallback to rudeScore or 100
-              type: nftData.type
+              type: nftData.type,
             };
           })
         );
@@ -146,18 +158,18 @@ export const conquestRouter = router({
         for (const character of characterData) {
           const success = Math.random() < winProbability;
           const powerDealt = success ? character.power : 0;
-          
+
           battleOutcomes.push({
             characterMint: character.mint,
             characterName: character.name,
             characterPower: character.power,
             success,
-            powerDealt
+            powerDealt,
           });
 
           if (success) {
             totalPowerDealt += powerDealt;
-            totalDamageDealt += 1; // Each successful hit = 1 damage point
+            totalDamageDealt += powerDealt; // Each successful hit = 1 damage point
             combatLog.push(`${character.name} hit for ${powerDealt} power!`);
           } else {
             combatLog.push(`${character.name} missed the enemy.`);
@@ -173,7 +185,7 @@ export const conquestRouter = router({
             characterPower: character.power,
             success: success,
             characterName: character.name,
-            characterType: character.type
+            characterType: character.type,
           });
           await battleResult.save();
         }
@@ -186,8 +198,8 @@ export const conquestRouter = router({
             $inc: {
               totalDamageReceived: totalDamageDealt,
               totalPowerReceived: totalPowerDealt,
-              currentHealth: -totalDamageDealt
-            }
+              currentHealth: -totalDamageDealt,
+            },
           },
           { new: true }
         );
@@ -203,8 +215,8 @@ export const conquestRouter = router({
             totalDamageDealt: totalDamageDealt,
             totalPowerDealt: totalPowerDealt,
             battleCount: battleOutcomes.length,
-            participantCount: 1 // This will be deduplicated in real aggregations
-          }
+            participantCount: 1, // This will be deduplicated in real aggregations
+          },
         });
 
         // Ensure health doesn't go below 0
@@ -215,7 +227,7 @@ export const conquestRouter = router({
 
         combatLog.push(`Total power dealt: ${totalPowerDealt}`);
         combatLog.push(`Total damage dealt: ${totalDamageDealt}`);
-        
+
         // Check if enemy is defeated
         if (updatedEnemy.currentHealth <= 0) {
           combatLog.push("🎉 Enemy defeated! Victory!");
@@ -231,9 +243,8 @@ export const conquestRouter = router({
           combatLog,
           totalPowerDealt,
           totalDamageDealt,
-          gameEnded: updatedEnemy.currentHealth <= 0
+          gameEnded: updatedEnemy.currentHealth <= 0,
         };
-
       } catch (error) {
         logWithTimestamp(`Error in attackEnemy: ${error}`);
         throw error;
@@ -253,39 +264,38 @@ export const conquestRouter = router({
           totalBattles: 0,
           totalWins: 0,
           totalPowerDealt: 0,
-          winRate: 0
+          winRate: 0,
         };
       }
 
       const BattleResult = battleResultModel();
       const stats = await BattleResult.aggregate([
-        { 
-          $match: { 
-            userWallet, 
-            gameSessionId: gameSession._id 
-          } 
+        {
+          $match: {
+            userWallet,
+            gameSessionId: gameSession._id,
+          },
         },
         {
           $group: {
             _id: null,
             totalBattles: { $sum: 1 },
             totalWins: { $sum: { $cond: ["$success", 1, 0] } },
-            totalPowerDealt: { $sum: "$powerDealt" }
-          }
-        }
+            totalPowerDealt: { $sum: "$powerDealt" },
+          },
+        },
       ]);
 
       const result = stats[0] || {
         totalBattles: 0,
         totalWins: 0,
-        totalPowerDealt: 0
+        totalPowerDealt: 0,
       };
 
       return {
         ...result,
-        winRate: result.totalBattles > 0 ? (result.totalWins / result.totalBattles) : 0
+        winRate: result.totalBattles > 0 ? result.totalWins / result.totalBattles : 0,
       };
-
     } catch (error) {
       logWithTimestamp(`Error getting user battle stats: ${error}`);
       throw new Error("Failed to get user battle stats");
@@ -295,7 +305,7 @@ export const conquestRouter = router({
   getGameLeaderboard: publicProcedure
     .input(
       z.object({
-        limit: z.number().min(1).max(100).default(50)
+        limit: z.number().min(1).max(100).default(50),
       })
     )
     .query(async ({ input }) => {
@@ -307,11 +317,11 @@ export const conquestRouter = router({
 
         const BattleResult = battleResultModel();
         const leaderboard = await BattleResult.aggregate([
-          { 
-            $match: { 
+          {
+            $match: {
               gameSessionId: gameSession._id,
-              success: true 
-            } 
+              success: true,
+            },
           },
           {
             $group: {
@@ -319,8 +329,8 @@ export const conquestRouter = router({
               totalWins: { $sum: 1 },
               totalPowerDealt: { $sum: "$powerDealt" },
               bestCharacter: { $first: "$characterName" },
-              lastBattle: { $max: "$timestamp" }
-            }
+              lastBattle: { $max: "$timestamp" },
+            },
           },
           { $sort: { totalPowerDealt: -1, totalWins: -1 } },
           { $limit: input.limit },
@@ -331,16 +341,15 @@ export const conquestRouter = router({
               totalPowerDealt: 1,
               bestCharacter: 1,
               lastBattle: 1,
-              _id: 0
-            }
-          }
+              _id: 0,
+            },
+          },
         ]);
 
         return leaderboard.map((entry, index) => ({
           rank: index + 1,
-          ...entry
+          ...entry,
         }));
-
       } catch (error) {
         logWithTimestamp(`Error getting game leaderboard: ${error}`);
         throw new Error("Failed to get game leaderboard");
@@ -364,120 +373,117 @@ async function verifyPaymentTransaction(
     // Deserialize the transaction
     const transactionBuffer = Buffer.from(serializedTransaction, "base64");
     const transaction = Transaction.from(transactionBuffer);
-    
+
     // Define expected amounts
     const expectedRudeAmount = 100; // 100 RUDE for simple fight
     const expectedSolAmount = 0.01; // 0.01 SOL for bulk fight
-    
+
     // Get treasury wallets (where payments go)
     const rudeTreasuryWallet = new PublicKey(clientEnv.NEXT_PUBLIC_RUDE_SINK_KEY);
     const solTreasuryWallet = new PublicKey(clientEnv.NEXT_PUBLIC_SOLANA_SINK_KEY);
     const userPublicKey = new PublicKey(userWallet);
-    
+
     // Verify the fee payer is set correctly (should be the user wallet)
     if (!transaction.feePayer || !transaction.feePayer.equals(userPublicKey)) {
       return { valid: false, error: "Invalid transaction fee payer" };
     }
-    
+
     if (isBulkAttack) {
       // Verify SOL payment for bulk attack
-      const solTransferInstruction = transaction.instructions.find(instruction => {
+      const solTransferInstruction = transaction.instructions.find((instruction) => {
         // Check if it's a system transfer instruction (SOL transfer)
         return instruction.programId.equals(SystemProgram.programId);
       });
-      
+
       if (!solTransferInstruction) {
         return { valid: false, error: "No SOL transfer instruction found" };
       }
-      
+
       // Parse the instruction data to verify amount and recipient
       try {
         const decodedInstruction = SystemInstruction.decodeTransfer(solTransferInstruction);
         const expectedLamports = expectedSolAmount * LAMPORTS_PER_SOL;
-        
-        // Verify the transfer amount  
+
+        // Verify the transfer amount
         if (decodedInstruction.lamports.toString() !== expectedLamports.toString()) {
-          return { 
-            valid: false, 
-            error: `Invalid SOL amount. Expected: ${expectedLamports} lamports, got: ${decodedInstruction.lamports}` 
+          return {
+            valid: false,
+            error: `Invalid SOL amount. Expected: ${expectedLamports} lamports, got: ${decodedInstruction.lamports}`,
           };
         }
-        
+
         // Verify the recipient (treasury wallet)
         if (!decodedInstruction.toPubkey.equals(solTreasuryWallet)) {
           return { valid: false, error: "Invalid SOL transfer recipient" };
         }
-        
+
         // Verify the sender (user wallet)
         if (!decodedInstruction.fromPubkey.equals(userPublicKey)) {
           return { valid: false, error: "Invalid SOL transfer sender" };
         }
-        
       } catch (parseError) {
         return { valid: false, error: "Failed to parse SOL transfer instruction" };
       }
-      
     } else {
       // Verify RUDE token payment for simple fight
       const rudeMintKey = new PublicKey(clientEnv.NEXT_PUBLIC_RUDE_TOKEN_KEY);
       const userRudeAta = await getAssociatedTokenAddress(rudeMintKey, userPublicKey);
       const treasuryRudeAta = await getAssociatedTokenAddress(rudeMintKey, rudeTreasuryWallet);
-      
-      const tokenTransferInstruction = transaction.instructions.find(instruction => {
+
+      const tokenTransferInstruction = transaction.instructions.find((instruction) => {
         return instruction.programId.equals(TOKEN_PROGRAM_ID);
       });
-      
+
       if (!tokenTransferInstruction) {
         return { valid: false, error: "No RUDE token transfer instruction found" };
       }
-      
+
       // Verify token transfer instruction details
       try {
         const decodedTransfer = decodeTransferInstruction(tokenTransferInstruction);
-        
+
         // RUDE tokens have 9 decimals, so 100 tokens = 100 * 10^9
         const expectedTokenAmount = BigInt(expectedRudeAmount) * BigInt(Math.pow(10, 9));
-        
+
         // Verify the transfer amount
         if (decodedTransfer.data.amount !== expectedTokenAmount) {
-          return { 
-            valid: false, 
-            error: `Invalid RUDE token amount. Expected: ${expectedTokenAmount.toString()}, got: ${decodedTransfer.data.amount.toString()}` 
+          return {
+            valid: false,
+            error: `Invalid RUDE token amount. Expected: ${expectedTokenAmount.toString()}, got: ${decodedTransfer.data.amount.toString()}`,
           };
         }
-        
+
         // Verify source account (user's RUDE ATA)
         if (!decodedTransfer.keys.source.pubkey.equals(userRudeAta)) {
           return { valid: false, error: "Invalid token transfer source account" };
         }
-        
+
         // Verify destination account (treasury RUDE ATA)
         if (!decodedTransfer.keys.destination.pubkey.equals(treasuryRudeAta)) {
           return { valid: false, error: "Invalid token transfer destination account" };
         }
-        
+
         // Verify authority (user wallet)
         if (!decodedTransfer.keys.owner.pubkey.equals(userPublicKey)) {
           return { valid: false, error: "Invalid token transfer authority" };
         }
-        
       } catch (parseError) {
         return { valid: false, error: "Failed to parse RUDE token transfer instruction" };
       }
     }
-    
+
     // Verify the transaction has a recent blockhash
     if (!transaction.recentBlockhash) {
       return { valid: false, error: "Transaction missing recent blockhash" };
     }
-    
+
     // Send the transaction to the blockchain using the original serialized bytes
     // Note: The transaction should be already signed by the client
     const signature = await connection.sendRawTransaction(transactionBuffer, {
       skipPreflight: false,
       preflightCommitment: "confirmed",
     });
-    
+
     // Wait for confirmation
     const latestBlockHash = await connection.getLatestBlockhash();
     await connection.confirmTransaction({
@@ -485,19 +491,18 @@ async function verifyPaymentTransaction(
       lastValidBlockHeight: latestBlockHash.lastValidBlockHeight,
       signature: signature,
     });
-    
+
     logWithTimestamp(`Payment transaction confirmed: ${signature}`);
-    
+
     return {
       valid: true,
       txSignature: signature,
     };
-    
   } catch (error) {
     logWithTimestamp(`Payment verification failed: ${error}`);
     return {
       valid: false,
-      error: error instanceof Error ? error.message : "Unknown payment error"
+      error: error instanceof Error ? error.message : "Unknown payment error",
     };
   }
 }
