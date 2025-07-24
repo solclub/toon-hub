@@ -9,9 +9,12 @@ import Image from "next/image";
 import MainButton, { ButtonContainer, ButtonMixin } from "components/common/MainButton";
 import { ClippedToonCard, Rank } from "components/toon-of-ladder/WinnerCard";
 import { Table, type TableProps, type TableColumnsType } from "antd";
-import { X } from "lucide-react";
+import { X, Sword, BarChart3, Trophy } from "lucide-react";
 import { trpc } from "utils/trpc";
 import Notification from "components/toon-of-ladder/Notification";
+import FightTab from "components/toon-of-ladder/FightTab";
+import MyStatsTab from "components/toon-of-ladder/MyStatsTab";
+import LeaderboardTab from "components/toon-of-ladder/LeaderboardTab";
 import { useSession } from "next-auth/react";
 import { useWallet } from "@solana/wallet-adapter-react";
 import Loader from "components/common/Loader";
@@ -34,7 +37,7 @@ interface DataType {
 
 interface Character extends RudeNFT {
   status: "idle" | "success" | "failure" | "attacking" | "loading";
-  isSelected: boolean;
+  isSelected?: boolean;
 }
 
 interface NotificationState {
@@ -53,6 +56,7 @@ const ToonOfLadderPage = () => {
   const [notification, setNotification] = useState<NotificationState | null>(null);
   const [currentAttackingIndex, setCurrentAttackingIndex] = useState<number>(-1);
   const [isSimpleFightMode, setIsSimpleFightMode] = useState(false);
+  const [activeTab, setActiveTab] = useState<"fight" | "stats" | "leaderboard">("fight");
   const toastId = useRef<Id>(0);
 
   console.log("session", session);
@@ -325,9 +329,9 @@ const ToonOfLadderPage = () => {
       const { blockhash } = await connection.getLatestBlockhash();
       transaction.recentBlockhash = blockhash;
       transaction.feePayer = wallet.publicKey!;
-      
+
       const signedTransaction = await wallet.signTransaction!(transaction);
-      const serializedTransaction = signedTransaction.serialize().toString('base64');
+      const serializedTransaction = signedTransaction.serialize().toString("base64");
 
       // Update toast for processing
       showPromisedToast(toastId, "Processing attack...", true);
@@ -395,9 +399,9 @@ const ToonOfLadderPage = () => {
       const { blockhash } = await connection.getLatestBlockhash();
       transaction.recentBlockhash = blockhash;
       transaction.feePayer = wallet.publicKey!;
-      
+
       const signedTransaction = await wallet.signTransaction!(transaction);
-      const serializedTransaction = signedTransaction.serialize().toString('base64');
+      const serializedTransaction = signedTransaction.serialize().toString("base64");
 
       // Update toast for processing
       showPromisedToast(toastId, "Processing bulk attack...", true);
@@ -514,6 +518,44 @@ const ToonOfLadderPage = () => {
     );
   }
 
+  const renderFightTab = () => (
+    <FightTab
+      enemy={enemy}
+      selectedCharacters={selectedCharacters}
+      allCharacters={allCharacters}
+      attackAnimation={attackAnimation}
+      notification={notification}
+      setNotification={setNotification}
+      isSimpleFightMode={isSimpleFightMode}
+      setIsSimpleFightMode={setIsSimpleFightMode}
+      currentAttackingIndex={currentAttackingIndex}
+      setCurrentAttackingIndex={setCurrentAttackingIndex}
+      setSelectedCharacters={setSelectedCharacters}
+      attackCurrentUnit={attackCurrentUnit}
+      handleSimpleFight={handleSimpleFight}
+      handleBulkAttack={handleBulkAttack}
+      selectAll={selectAll}
+      unselectAll={unselectAll}
+      toggleCharacter={toggleCharacter}
+      getCharacterBorderColor={getCharacterBorderColor}
+      attackMutation={attackMutation}
+      bgImageUrl={bgImageUrl}
+    />
+  );
+
+  const renderStatsTab = () => (
+    <MyStatsTab userStats={userStats} combatLog={combatLog} />
+  );
+
+  const renderLeaderboardTab = () => (
+    <LeaderboardTab
+      gameData={gameData}
+      enemy={enemy}
+      leaderboard={leaderboard || []}
+      columns={columns}
+    />
+  );
+
   return (
     <>
       <style jsx>{`
@@ -534,303 +576,31 @@ const ToonOfLadderPage = () => {
           animation: shake 0.5s ease-in-out;
         }
       `}</style>
-      <div className="flex w-full flex-col gap-32">
-        {/* Main Battle Interface */}
-        <div className="flex w-full flex-col justify-center gap-8 lg:flex-row">
-          <ToonCard bgImageUrl={bgImageUrl} className="w-full border-b-8 lg:w-2/5">
-            <div className="flex h-full w-full flex-col items-center justify-between py-3">
-              <h2 className="text-center text-3xl">
-                Enemy: {enemy.name} ({enemy.type} - {enemy.difficulty})
-              </h2>
-              <div
-                className={`relative aspect-square w-3/4 overflow-hidden rounded-xl bg-slate-800 ${
-                  attackAnimation ? "animate-shake" : ""
-                }`}
-              >
-                <Image src={enemy.image} alt="Enemy" fill className="object-cover" />
-                {notification && (
-                  <Notification
-                    message={notification.message}
-                    isSuccess={notification.isSuccess}
-                    onHide={() => setNotification(null)}
-                  />
-                )}
-              </div>
-              <div className="flex h-1/3 w-full flex-col items-center justify-around">
-                <div className="flex flex-wrap justify-center gap-2">
-                  {selectedCharacters.map((char) => (
-                    <div
-                      key={char.mint}
-                      className={`relative flex aspect-square w-12 items-center justify-center overflow-hidden rounded-lg bg-slate-700 p-1 ${getCharacterBorderColor(
-                        char.status
-                      )}`}
-                    >
-                      <Image
-                        src={char.image}
-                        alt={char.name || `Character`}
-                        fill
-                        className="object-cover"
-                      />
-                      {char.status === "failure" && (
-                        <div className="absolute inset-0 flex items-center justify-center">
-                          <X className="text-red-500" size={20} />
-                        </div>
-                      )}
-                    </div>
-                  ))}
-                </div>
-                <h4 className="text-xl">Selected Attackers ({selectedCharacters.length})</h4>
-              </div>
-            </div>
-          </ToonCard>
+      <div className="flex w-full flex-col">
+        {/* Tab Navigation */}
+        <TabNavigation>
+          <TabButton $isActive={activeTab === "fight"} onClick={() => setActiveTab("fight")}>
+            <Sword size={20} />
+            Fight
+          </TabButton>
+          <TabButton $isActive={activeTab === "stats"} onClick={() => setActiveTab("stats")}>
+            <BarChart3 size={20} />
+            My Stats
+          </TabButton>
+          <TabButton
+            $isActive={activeTab === "leaderboard"}
+            onClick={() => setActiveTab("leaderboard")}
+          >
+            <Trophy size={20} />
+            Leaderboard
+          </TabButton>
+        </TabNavigation>
 
-          {/* Controls and Characters */}
-          <div className="flex w-full flex-col justify-between gap-8 lg:w-2/5">
-            <HealthContainer>
-              <div className="flex justify-between">
-                <h3 className="text-3xl">Enemy Health</h3>
-                <span className="text-lg text-red-600">
-                  {enemy.currentHealth} / {enemy.maxHealth}
-                </span>
-              </div>
-              <HealthBar $percentage={(enemy.currentHealth / enemy.maxHealth) * 100} />
-              <div className="flex w-full justify-between gap-4">
-                <MainButton
-                  color="yellow"
-                  className="w-1/2 font-sans font-bold"
-                  onClick={isSimpleFightMode ? attackCurrentUnit : handleSimpleFight}
-                  disabled={selectedCharacters.length === 0 || attackMutation.isLoading}
-                >
-                  {isSimpleFightMode
-                    ? currentAttackingIndex >= 0 &&
-                      currentAttackingIndex < selectedCharacters.length
-                      ? `ATTACK (${currentAttackingIndex + 1}/${
-                          selectedCharacters.length
-                        }) - 100 RUDE`
-                      : "SIMPLE FIGHT"
-                    : "SIMPLE FIGHT - 100 RUDE"}
-                </MainButton>
-                <MainButton
-                  color="yellow"
-                  className="w-1/2 font-sans font-bold"
-                  onClick={handleBulkAttack}
-                  disabled={selectedCharacters.length === 0 || attackMutation.isLoading}
-                >
-                  BULK FIGHT - 0.01 SOL
-                </MainButton>
-              </div>
-              {isSimpleFightMode && (
-                <div className="text-center">
-                  <MainButton
-                    color="red"
-                    className="px-4 py-2 font-sans text-sm font-bold"
-                    onClick={() => {
-                      setIsSimpleFightMode(false);
-                      setCurrentAttackingIndex(-1);
-                      setSelectedCharacters((prev) =>
-                        prev.map((char) => ({ ...char, status: "idle" }))
-                      );
-                    }}
-                  >
-                    CANCEL SIMPLE FIGHT
-                  </MainButton>
-                </div>
-              )}
-            </HealthContainer>
-
-            {/* Character Selection Controls */}
-            {!isSimpleFightMode && (
-              <div className="flex w-full justify-between">
-                <MainButton
-                  color="yellow"
-                  buttonClassName="w-fit px-4 font-sans font-bold"
-                  onClick={selectAll}
-                >
-                  SELECT ALL UNITS
-                </MainButton>
-                <MainButton
-                  color="red"
-                  buttonClassName="w-fit px-4 font-sans font-bold"
-                  onClick={unselectAll}
-                >
-                  DESELECT ALL
-                </MainButton>
-              </div>
-            )}
-
-            {/* Characters Grid */}
-            <ScrollContainer>
-              <CardsContainer>
-                {allCharacters.map((char) => {
-                  const selectedChar = selectedCharacters.find((c) => c.mint === char.mint);
-                  const isSelected = !!selectedChar;
-                  const status = selectedChar?.status || "idle";
-
-                  return (
-                    <div
-                      key={char.mint}
-                      className={`h-32 w-32 cursor-pointer rounded-md p-1 ${
-                        isSelected ? "ring-2 ring-blue-500" : ""
-                      } ${getCharacterBorderColor(status)}`}
-                      onClick={() => !isSimpleFightMode && toggleCharacter(char.mint)}
-                    >
-                      <ToonCard
-                        bgImageUrl={char.image}
-                        className="relative h-full w-full rounded-md"
-                      >
-                        <>
-                          <div className="flex h-full w-full flex-col items-start justify-between">
-                            <Square className="text-xs">
-                              {char.name?.slice(0, 8) || "Character"}
-                            </Square>
-                            <div className="flex w-full items-center justify-around">
-                              <Square className="font-sans text-xs font-bold">
-                                P: {char.power || char.rudeScore || 100}
-                              </Square>
-                              <Square className="font-sans text-xs font-bold">{char.type}</Square>
-                            </div>
-                          </div>
-
-                          {status === "loading" && (
-                            <div className="absolute inset-0 flex items-center justify-center rounded-md bg-black bg-opacity-60">
-                              <div className="h-8 w-8 animate-spin rounded-full border-2 border-yellow-500 border-t-transparent"></div>
-                            </div>
-                          )}
-                        </>
-                      </ToonCard>
-                    </div>
-                  );
-                })}
-              </CardsContainer>
-            </ScrollContainer>
-          </div>
-        </div>
-
-        {/* User Stats */}
-        {userStats && (
-          <div className="w-full">
-            <h2 className="mb-8 text-center text-3xl lg:text-left">Your Battle Stats</h2>
-            <div className="flex justify-center gap-4 lg:justify-start">
-              <DataRankingContainer>
-                <div className="mb-4 flex gap-8 lg:gap-32">
-                  <span className="text-3xl">{userStats.totalBattles}</span>
-                  <div className="w-fit rounded-full bg-[#ffe75c] p-2">
-                    <ParticipantsIcon />
-                  </div>
-                </div>
-                <span className="font-sans text-xs text-gray-300">Total Battles</span>
-              </DataRankingContainer>
-
-              <DataRankingContainer>
-                <div className="mb-4 flex gap-8 lg:gap-32">
-                  <span className="text-3xl">{userStats.totalWins}</span>
-                  <div className="w-fit rounded-full bg-[#ffe75c] p-2">
-                    <PointIcon />
-                  </div>
-                </div>
-                <span className="font-sans text-xs text-gray-300">Total Wins</span>
-              </DataRankingContainer>
-
-              <DataRankingContainer>
-                <div className="mb-4 flex gap-8 lg:gap-32">
-                  <span className="text-3xl">{Math.round(userStats.winRate * 100)}%</span>
-                  <div className="w-fit rounded-full bg-[#ffe75c] p-2">
-                    <RegisteredUserIcon />
-                  </div>
-                </div>
-                <span className="font-sans text-xs text-gray-300">Win Rate</span>
-              </DataRankingContainer>
-            </div>
-          </div>
-        )}
-
-        {/* Combat Log Section */}
-        <div className="w-full">
-          <div className="rounded-xl bg-slate-800 p-6">
-            <h3 className="mb-4 text-2xl font-bold text-slate-200">Combat Log</h3>
-            <div className="max-h-40 overflow-y-auto">
-              {combatLog.length > 0 ? (
-                combatLog.map((log, index) => (
-                  <p key={index} className="mb-2 text-sm text-slate-300">
-                    {log}
-                  </p>
-                ))
-              ) : (
-                <p className="text-sm italic text-slate-400">No combat activity yet...</p>
-              )}
-            </div>
-          </div>
-        </div>
-
-        {/* Leaderboard */}
-        <div className="w-full">
-          <h1 className="mb-16 text-center text-4xl lg:text-left">Current Game Leaderboard</h1>
-
-          {/* Game Stats */}
-          <div className="m-auto mb-8 flex w-full flex-row flex-wrap justify-between gap-4 lg:flex-nowrap">
-            <DataRankingContainer>
-              <div className="mb-4 flex gap-8 lg:gap-32">
-                <span className="text-3xl">{gameData?.session?.stats?.totalParticipants || 0}</span>
-                <div className="w-fit rounded-full bg-[#ffe75c] p-2">
-                  <RegisteredUserIcon />
-                </div>
-              </div>
-              <span className="font-sans text-xs text-gray-300">Total Participants</span>
-            </DataRankingContainer>
-
-            <DataRankingContainer>
-              <div className="mb-4 flex gap-8 lg:gap-32">
-                <span className="text-3xl">{gameData?.session?.stats?.totalBattles || 0}</span>
-                <div className="w-fit rounded-full bg-[#ffe75c] p-2">
-                  <ParticipantsIcon />
-                </div>
-              </div>
-              <span className="font-sans text-xs text-gray-300">Total Battles</span>
-            </DataRankingContainer>
-
-            <DataRankingContainer className="flex-grow gap-4">
-              <span className="text-3xl">
-                {enemy.currentHealth > 0 ? "Battle in Progress" : "Victory Achieved!"}
-              </span>
-              <div className="flex justify-between gap-4">
-                <p className="w-3/5 font-sans text-xs text-gray-300">
-                  Total power dealt:{" "}
-                  <span className="text-[#ffe75c]">
-                    {gameData?.session?.stats?.totalPower || 0}
-                  </span>
-                  <br />
-                  Damage progress:{" "}
-                  <span className="text-[#ffe75c]">
-                    {Math.round(((enemy.maxHealth - enemy.currentHealth) / enemy.maxHealth) * 100)}%
-                  </span>
-                </p>
-              </div>
-            </DataRankingContainer>
-          </div>
-
-          {/* Leaderboard Table */}
-          <div className="w-full rounded-2xl bg-[#0d0d10] p-4 lg:p-16">
-            <h1 className="mb-16 text-center text-4xl lg:text-left">Global Ranking</h1>
-            <TableStyled
-              rowKey="rank"
-              bordered
-              columns={columns}
-              dataSource={leaderboard || []}
-              scroll={{ x: "max-content" }}
-              pagination={{
-                pageSize: 20,
-                itemRender(_page, type, element) {
-                  return ["prev", "next"].includes(type) ? (
-                    <ButtonContainerStyled $color="yellow">{element}</ButtonContainerStyled>
-                  ) : (
-                    <MainButton color="black" className="w-8">
-                      {element}
-                    </MainButton>
-                  );
-                },
-              }}
-            />
-          </div>
+        {/* Tab Content */}
+        <div className="mt-8">
+          {activeTab === "fight" && renderFightTab()}
+          {activeTab === "stats" && renderStatsTab()}
+          {activeTab === "leaderboard" && renderLeaderboardTab()}
         </div>
       </div>
     </>
@@ -983,5 +753,42 @@ const ButtonContainerStyled = styled(ButtonContainer)`
     width: 100% !important;
     height: 35px !important;
     border-radius: 10px !important;
+  }
+`;
+
+const TabNavigation = styled.div`
+  display: flex;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.5rem;
+`;
+
+const TabButton = styled.button<{ $isActive: boolean }>`
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.5rem;
+  background-color: ${({ $isActive }) => ($isActive ? "#ffe75c" : "#2c2918")};
+  color: ${({ $isActive }) => ($isActive ? "black" : "white")};
+  border: none;
+  border-radius: 0.5rem;
+  font-size: 1rem;
+  font-weight: bold;
+  font-family: "Clarence Pro", sans-serif;
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+  border-bottom: ${({ $isActive }) => ($isActive ? "4px solid #d4a853" : "4px solid transparent")};
+
+  &:hover {
+    background-color: ${({ $isActive }) => ($isActive ? "#ffe75c" : "#3f3827")};
+    transform: translateY(-1px);
+  }
+
+  &:active {
+    transform: translateY(0);
+  }
+
+  svg {
+    flex-shrink: 0;
   }
 `;
