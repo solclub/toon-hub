@@ -275,6 +275,27 @@ export const conquestRouter = router({
         }
       ]);
 
+      // Get best performing warrior
+      const bestWarrior = await BattleResult.aggregate([
+        { 
+          $match: { 
+            userWallet, 
+            gameSessionId: gameSession._id 
+          } 
+        },
+        {
+          $group: {
+            _id: "$characterMint",
+            totalDamage: { $sum: "$powerDealt" },
+            characterName: { $first: "$characterName" },
+            characterType: { $first: "$characterType" },
+            battles: { $sum: 1 }
+          }
+        },
+        { $sort: { totalDamage: -1 } },
+        { $limit: 1 }
+      ]);
+
       const result = stats[0] || {
         totalBattles: 0,
         totalWins: 0,
@@ -283,7 +304,8 @@ export const conquestRouter = router({
 
       return {
         ...result,
-        winRate: result.totalBattles > 0 ? (result.totalWins / result.totalBattles) : 0
+        winRate: result.totalBattles > 0 ? (result.totalWins / result.totalBattles) : 0,
+        bestWarrior: bestWarrior[0] || null
       };
 
     } catch (error) {
