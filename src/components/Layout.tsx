@@ -18,7 +18,13 @@ const Layout = ({ children }: Props) => {
   return (
     <>
       <Head>
-        <title>{router.pathname === "/toon-of-ladder" ? "Toon of the Ladder" : "The Hub"}</title>
+        <title>
+          {router.pathname === "/toon-of-ladder" 
+            ? "Toon of the Ladder" 
+            : router.pathname.startsWith("/admin") 
+            ? "Admin Dashboard" 
+            : "The Hub"}
+        </title>
         <meta name="description" content="The Hub" />
         <link rel="icon" href="/favicon.ico" />
       </Head>
@@ -79,6 +85,9 @@ const Layout = ({ children }: Props) => {
 
 const MainComponent = styled.main`
   background: url(${mainbg.src}) bottom/cover no-repeat;
+  min-height: 100vh;
+  position: relative;
+  z-index: 1;
 `;
 
 const FooterStyled = styled.footer`

@@ -37,7 +37,7 @@ export async function createPaymentTransaction({
     
     const instruction = SystemProgram.transfer({
       fromPubkey: userWallet,
-      toPubkey: new PublicKey("11111111111111111111111111111112"), // System Program placeholder
+      toPubkey: new PublicKey(process.env.NEXT_PUBLIC_SOL_SINK_KEY || "4mivnMu9ooY83gmMCu6Yqbdwg2EKwBwNAvKMLbwTaf3z"), // System Program placeholder
       lamports: lamports,
     });
     

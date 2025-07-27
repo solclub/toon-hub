@@ -55,7 +55,9 @@ export const getOptions = (req: NextApiRequest): NextAuthOptions => {
             ...session,
             user: {
               ...session.user,
-              ...userData
+              ...userData,
+              // Ensure admin status is included
+              isAdmin: userData.isAdmin || false
             }
           };
         }
@@ -65,7 +67,8 @@ export const getOptions = (req: NextApiRequest): NextAuthOptions => {
           user: {
             ...session.user,
             id: walletId,
-            walletId: walletId
+            walletId: walletId,
+            isAdmin: false
           }
         };
       },

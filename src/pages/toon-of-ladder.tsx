@@ -137,23 +137,26 @@ const ToonOfLadderPage = () => {
       }
 
       if (result.totalDamageDealt > 0) {
-        setNotification({
-          message: `${result.totalDamageDealt} Dmg (${result.totalPowerDealt} Power)`,
-          isSuccess: true,
-        });
+        showPromisedToast(
+          toastId,
+          `${result.totalDamageDealt} Dmg (${result.totalPowerDealt} Power)`,
+          true,
+          "SUCCESS"
+        );
+        // setNotification({
+        //   message: `${result.totalDamageDealt} Dmg (${result.totalPowerDealt} Power)`,
+        //   isSuccess: true,
+        // });
       } else {
-        setNotification({
-          message: `Attack failed!`,
-          isSuccess: false,
-        });
+        showPromisedToast(toastId, `Attack failed!`, true, "ERROR");
+        // setNotification({
+        //   message: `Attack failed!`,
+        //   isSuccess: false,
+        // });
       }
 
       if (result.gameEnded) {
         showPromisedToast(toastId, "🎉 Enemy Defeated! Victory!", true, "SUCCESS");
-        setNotification({
-          message: "🎉 Enemy Defeated! Victory!",
-          isSuccess: true,
-        });
         setIsSimpleFightMode(false);
         setCurrentAttackingIndex(-1);
       }
@@ -161,10 +164,10 @@ const ToonOfLadderPage = () => {
     onError: (error) => {
       showPromisedToast(toastId, `Attack failed: ${error.message}`, true, "ERROR");
 
-      setNotification({
-        message: `Error: ${error.message}`,
-        isSuccess: false,
-      });
+      // setNotification({
+      //   message: `Error: ${error.message}`,
+      //   isSuccess: false,
+      // });
 
       if (isSimpleFightMode) {
         // On error, mark current attacking character as failed and continue
@@ -350,10 +353,10 @@ const ToonOfLadderPage = () => {
         "ERROR"
       );
 
-      setNotification({
-        message: `Payment failed: ${error instanceof Error ? error.message : "Unknown error"}`,
-        isSuccess: false,
-      });
+      // setNotification({
+      //   message: `Payment failed: ${error instanceof Error ? error.message : "Unknown error"}`,
+      //   isSuccess: false,
+      // });
 
       // Reset loading state on error
       setSelectedCharacters((prev) =>
@@ -420,10 +423,10 @@ const ToonOfLadderPage = () => {
         "ERROR"
       );
 
-      setNotification({
-        message: `Payment failed: ${error instanceof Error ? error.message : "Unknown error"}`,
-        isSuccess: false,
-      });
+      // setNotification({
+      //   message: `Payment failed: ${error instanceof Error ? error.message : "Unknown error"}`,
+      //   isSuccess: false,
+      // });
 
       // Reset loading state on error
       setSelectedCharacters((prev) => prev.map((char) => ({ ...char, status: "idle" })));
@@ -448,7 +451,7 @@ const ToonOfLadderPage = () => {
   // Show loading state - only show loading if game is loading, or NFTs are loading when user is connected
   if (gameLoading || (nftsLoading && session?.user?.walletId)) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-gradient-to-b from-[#2e026d] to-[#15162c]">
+      <div className="flex min-h-screen items-center justify-center">
         <div className="text-center text-white">
           <Loader />
           <p className="mt-4">Loading game data...</p>
@@ -461,7 +464,7 @@ const ToonOfLadderPage = () => {
   // Show wallet connection prompt
   if (!connected || !session?.user?.walletId) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-gradient-to-b from-[#2e026d] to-[#15162c]">
+      <div className="flex min-h-screen items-center justify-center">
         <div className="text-center text-white">
           <h2 className="mb-4 text-3xl">Connect Your Wallet</h2>
           <p className="mb-8 text-lg text-gray-300">
@@ -478,7 +481,7 @@ const ToonOfLadderPage = () => {
   // Show no active game message
   if (!gameData?.hasActiveGame) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-gradient-to-b from-[#2e026d] to-[#15162c]">
+      <div className="flex min-h-screen items-center justify-center">
         <div className="text-center text-white">
           <h2 className="mb-4 text-3xl">No Active Game</h2>
           <p className="mb-8 text-lg text-gray-300">
@@ -492,7 +495,7 @@ const ToonOfLadderPage = () => {
   // Show no NFTs message
   if (allCharacters.length === 0) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-gradient-to-b from-[#2e026d] to-[#15162c]">
+      <div className="flex min-h-screen items-center justify-center">
         <div className="text-center text-white">
           <h2 className="mb-4 text-3xl">No Characters Found</h2>
           <p className="mb-8 text-lg text-gray-300">
@@ -507,7 +510,7 @@ const ToonOfLadderPage = () => {
 
   if (!enemy) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-gradient-to-b from-[#2e026d] to-[#15162c]">
+      <div className="flex min-h-screen items-center justify-center">
         <div className="text-center text-white">
           <h2 className="mb-4 text-3xl">Enemy Data Missing</h2>
           <p className="mb-8 text-lg text-gray-300">
@@ -543,9 +546,7 @@ const ToonOfLadderPage = () => {
     />
   );
 
-  const renderStatsTab = () => (
-    <MyStatsTab userStats={userStats} combatLog={combatLog} />
-  );
+  const renderStatsTab = () => <MyStatsTab userStats={userStats} combatLog={combatLog} />;
 
   const renderLeaderboardTab = () => (
     <LeaderboardTab

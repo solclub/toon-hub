@@ -26,14 +26,6 @@ export const Connect = () => {
     walletId: session?.user?.walletId || "",
   });
 
-  console.log("Connect Debug:", { 
-    status, 
-    session, 
-    user, 
-    walletConnected: wallet.connected,
-    walletPublicKey: wallet.publicKey?.toBase58()
-  });
-
   useEffect(() => {
     const handleSignIn = async () => {
       try {
@@ -59,15 +51,15 @@ export const Connect = () => {
           signature: serializedSignature,
           csrfToken: csrf,
         };
-        
+
         console.log("🔐 Calling signIn with:", authData);
-        
+
         // Debug the auth data first
         try {
-          const debugResponse = await fetch('/api/debug-auth', {
-            method: 'POST',
+          const debugResponse = await fetch("/api/debug-auth", {
+            method: "POST",
             headers: {
-              'Content-Type': 'application/json',
+              "Content-Type": "application/json",
             },
             body: JSON.stringify(authData),
           });
@@ -76,7 +68,7 @@ export const Connect = () => {
         } catch (debugError) {
           console.error("🔍 Debug auth error:", debugError);
         }
-        
+
         signIn("credentials", {
           message: authData.message,
           signature: authData.signature,

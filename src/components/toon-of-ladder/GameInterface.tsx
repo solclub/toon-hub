@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { ChevronLeftIcon, ChevronRightIcon, X } from "lucide-react";
 import { trpc } from "utils/trpc";
 import Image from "next/image";
+import { getEnemyImageSrc } from "../../utils/enemy-images";
 import Notification from "./Notification";
 
 interface Character {
@@ -189,7 +190,7 @@ const GameInterface = () => {
             fill
           />
           <Image
-            src={enemy.image}
+            src={getEnemyImageSrc(enemy.image)}
             alt="Enemy"
             width={100}
             height={200}

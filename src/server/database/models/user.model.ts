@@ -14,6 +14,7 @@ export interface IUser {
   golemKeys: string[] | null;
   demonNumbers: number[] | null;
   demonKeys: string[] | null;
+  isAdmin: boolean;
 }
 
 export interface ProviderDetails {
@@ -46,6 +47,7 @@ const UserSchema = new Schema<IUser>({
   golemKeys: [String],
   demonNumbers: [Number],
   demonKeys: [String],
+  isAdmin: { type: Boolean, default: false },
 });
 
 const userModel = () => {

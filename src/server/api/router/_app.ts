@@ -9,6 +9,7 @@ import { leaderboardRouter } from "../leaderboard";
 import { weaponsRouter } from "../weapon";
 import { conquestRouter } from "../conquest";
 import { gameManagementRouter } from "../game-management";
+import { crayonManagementRouter } from "../crayon-management";
 export const appRouter = router({
   auth: authRouter,
   users: usersRouter,
@@ -20,6 +21,7 @@ export const appRouter = router({
   weapons: weaponsRouter,
   conquest: conquestRouter,
   gameManagement: gameManagementRouter,
+  crayonManagement: crayonManagementRouter,
 });
 
 // export type definition of API

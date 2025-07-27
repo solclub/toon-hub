@@ -5,9 +5,10 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## Development Commands
 
 - `yarn dev` - Start development server
-- `yarn build` - Build for production
+- `yarn build` - Build for production  
 - `yarn start` - Start production server
 - `yarn lint` - Run ESLint
+- `yarn version` - Increment patch version
 
 ## Architecture Overview
 
@@ -25,7 +26,7 @@ This is a Next.js application for the "Toon Hub" - a platform for managing NFT c
 **API Structure (tRPC Routers)**:
 - Located in `src/server/api/`
 - Main router at `src/server/api/router/_app.ts` combines all sub-routers
-- Individual routers: `auth`, `nfts`, `users`, `catalog`, `upgrade`, `feature`, `leaderboard`, `weapons`, `conquest`
+- Individual routers: `auth`, `nfts`, `users`, `catalog`, `upgrade`, `feature`, `leaderboard`, `weapons`, `conquest`, `gameManagement`
 - All procedures defined in router files use either `publicProcedure` or `protectedProcedure`
 
 **Database Models**:
@@ -67,8 +68,12 @@ This is a Next.js application for the "Toon Hub" - a platform for managing NFT c
 
 **Environment Setup**:
 - Environment variables validated at build time via `src/env/server.mjs`
+- Server environment schema defined in `src/env/schema.mjs`
 - MongoDB connection required: `MONGODB_URI` and `MONGODB_DB_NAME`
 - Solana RPC endpoint: `NEXT_PUBLIC_RPC_NODE`
+- Required tokens: `NEXT_PUBLIC_RUDE_TOKEN_KEY`, various wallet and program keys
+- Social auth: Discord and Twitter client credentials
+- File storage: Cloudinary configuration
 
 **TypeScript Configuration**:
 - Base URL set to `src/` for cleaner imports
@@ -76,8 +81,9 @@ This is a Next.js application for the "Toon Hub" - a platform for managing NFT c
 
 **Image Handling**:
 - Static assets in `src/assets/images/` and `src/assets/weapons/`
-- SVG imports handled by custom webpack config
-- Remote image patterns configured for Arweave, Cloudinary, Discord CDN
+- SVG imports handled by custom webpack config in `next.config.mjs`
+- Remote image patterns configured for Arweave, Cloudinary, Discord CDN, Twitter
+- Images are unoptimized for better compatibility with static hosting
 
 **Database Patterns**:
 - All models use factory functions that check `mongoose.models` first to prevent re-compilation
@@ -89,9 +95,21 @@ This is a Next.js application for the "Toon Hub" - a platform for managing NFT c
 - Damage calculation based on character power and RNG
 - Battle results stored for leaderboard tracking
 
+**Testing and Quality**:
+- No test framework is currently configured
+- Run `yarn lint` to check code quality with ESLint
+- TypeScript strict mode enforces type safety
+
+**Next.js Configuration**:
+- Styled Components compiler enabled
+- SWC minification for better performance
+- CORS headers configured for external war game admin access
+- Transpilation enabled for Ant Design components
+
 When working on new features, follow the established patterns:
 1. Create tRPC router procedures in appropriate router file
-2. Add database models if needed in `models/` directory
+2. Add database models if needed in `models/` directory  
 3. Implement business logic in corresponding service file
 4. Create React components following the component organization
 5. Use TypeScript throughout with proper type definitions
+6. Always run `yarn lint` before committing changes
