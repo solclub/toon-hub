@@ -341,7 +341,6 @@ export const conquestRouter = router({
         const leaderboard = await BattleResult.aggregate([
           {
             $match: {
-              gameSessionId: gameSession._id,
               success: true,
             },
           },

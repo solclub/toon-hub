@@ -175,7 +175,6 @@ class GameConfigService {
       }
 
       const stats = await BattleResult.aggregate([
-        { $match: matchCondition },
         {
           $group: {
             _id: null,

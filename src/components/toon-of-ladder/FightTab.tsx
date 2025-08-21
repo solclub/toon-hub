@@ -200,7 +200,7 @@ const FightTab: React.FC<FightTabProps> = ({
                     />
 
                     {/* HP Bar, Title and HP - Positioned within enemy image bounds */}
-                    <div className="absolute left-0 right-0 top-0 bg-gradient-to-b from-black/80 via-black/60 to-transparent p-6">
+                    <div className="absolute left-0 right-0 top-0 mx-auto max-w-[80%] bg-gradient-to-b from-black/80 via-black/60 to-transparent p-6">
                       <div className="mb-3 flex items-center justify-between">
                         <div className="flex items-center gap-3">
                           <h2 className="text-2xl font-bold text-white drop-shadow-lg">

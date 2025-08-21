@@ -44,7 +44,7 @@ const LeaderboardTab: React.FC<LeaderboardTabProps> = ({
 }) => {
   return (
     <div className="w-full">
-      <h1 className="mb-16 text-center text-4xl lg:text-left">Current Game Leaderboard</h1>
+      <h1 className="mb-16 text-center text-4xl lg:text-left">Leaderboard</h1>
 
       {/* Game Stats */}
       <div className="m-auto mb-8 flex w-full flex-row flex-wrap justify-between gap-4 lg:flex-nowrap">
@@ -75,9 +75,7 @@ const LeaderboardTab: React.FC<LeaderboardTabProps> = ({
           <div className="flex justify-between gap-4">
             <p className="w-3/5 font-sans text-xs text-gray-300">
               Total power dealt:{" "}
-              <span className="text-[#ffe75c]">
-                {gameData?.session?.stats?.totalPower || 0}
-              </span>
+              <span className="text-[#ffe75c]">{gameData?.session?.stats?.totalPower || 0}</span>
               <br />
               Damage progress:{" "}
               <span className="text-[#ffe75c]">
