@@ -48,6 +48,8 @@ interface FightTabProps {
   getCharacterBorderColor: (status: Character["status"]) => string;
   attackMutation: { isLoading: boolean };
   bgImageUrl: string;
+  isWalletConnected: boolean;
+  hasCharacters: boolean;
 }
 
 const FightTab: React.FC<FightTabProps> = ({
@@ -71,8 +73,11 @@ const FightTab: React.FC<FightTabProps> = ({
   getCharacterBorderColor,
   attackMutation,
   bgImageUrl,
+  isWalletConnected,
+  hasCharacters,
 }) => {
   const [isWarriorSheetOpen, setIsWarriorSheetOpen] = useState(false);
+  const [attackButtonState, setAttackButtonState] = useState<'ready' | 'waiting' | 'normal'>('normal');
 
   const getDifficultyZaps = (difficulty: string) => {
     const zapCount = difficulty === "EASY" ? 1 : difficulty === "MEDIUM" ? 2 : 3;
@@ -84,6 +89,35 @@ const FightTab: React.FC<FightTabProps> = ({
   // Use centralized enemy image utility
   const getEnemyImage = (enemyImage: string) => {
     return getEnemyImageSrc(enemyImage);
+  };
+
+  // Effect to manage attack button states based on game state
+  React.useEffect(() => {
+    if (selectedCharacters.length > 0 && !attackMutation.isLoading) {
+      if (isSimpleFightMode && currentAttackingIndex >= 0) {
+        setAttackButtonState('ready');
+      } else if (selectedCharacters.length > 0) {
+        setAttackButtonState('waiting');
+      }
+    } else {
+      setAttackButtonState('normal');
+    }
+  }, [selectedCharacters.length, isSimpleFightMode, currentAttackingIndex, attackMutation.isLoading]);
+
+  // Enhanced button handlers to manage visual feedback
+  const handleSimpleFightWithFeedback = () => {
+    setAttackButtonState('normal');
+    handleSimpleFight();
+  };
+
+  const handleBulkAttackWithFeedback = () => {
+    setAttackButtonState('normal');
+    handleBulkAttack();
+  };
+
+  const handleAttackCurrentWithFeedback = () => {
+    setAttackButtonState('normal');
+    attackCurrentUnit();
   };
   return (
     <>
@@ -163,14 +197,23 @@ const FightTab: React.FC<FightTabProps> = ({
           animation: shake-notification 0.5s ease-in-out;
         }
       `}</style>
-      <div className="relative flex w-full flex-col">
+      <div className="relative flex w-full flex-col h-full">
+        {/* Disconnected overlay */}
+        {!isWalletConnected && (
+          <div className="absolute inset-0 z-20 bg-black/20 backdrop-blur-[1px] pointer-events-none">
+            <div className="absolute top-4 right-4 bg-orange-500/90 text-white px-3 py-2 rounded-lg text-sm font-medium backdrop-blur-sm">
+              Wallet Disconnected - View Only
+            </div>
+          </div>
+        )}
+        
         {/* Main Battle Interface - Enemy Dominates */}
-        <div className="flex w-full flex-col items-center">
+        <div className="flex w-full flex-col items-center h-full">
           {/* Enemy Section - Large and Dominating */}
           <div className="w-full">
             <div className={`relative w-full ${attackAnimation ? "animate-shake" : ""}`}>
               {/* Enemy Image - Full width and very large */}
-              <div className="relative h-[80vh] w-full overflow-hidden rounded-2xl">
+              <div className="relative h-[calc(100vh-120px)] w-full overflow-hidden rounded-2xl">
                 {/* Background - Blurred and scaled version of enemy image */}
                 <div className="absolute inset-0">
                   <Image
@@ -267,17 +310,38 @@ const FightTab: React.FC<FightTabProps> = ({
                           );
                         })}
 
-                        {!isSimpleFightMode && (
+                        {!isSimpleFightMode && isWalletConnected && hasCharacters && (
                           <button
                             onClick={() => setIsWarriorSheetOpen(true)}
-                            className="flex h-16 w-16 items-center justify-center rounded-lg border-2 border-dashed border-gray-400 bg-black/50 backdrop-blur-sm transition-colors hover:bg-black/70"
+                            className={`
+                              flex items-center justify-center rounded-lg border-2 border-dashed 
+                              bg-black/50 backdrop-blur-sm transition-all duration-300
+                              ${selectedCharacters.length === 0 
+                                ? 'h-20 w-20 border-blue-400 bg-blue-500/20 hover:bg-blue-500/30 animate-attention-pulse' 
+                                : 'h-16 w-16 border-gray-400 hover:bg-black/70'
+                              }
+                            `}
                           >
-                            <Plus size={24} className="text-gray-300" />
+                            <Plus 
+                              size={selectedCharacters.length === 0 ? 32 : 24} 
+                              className={`transition-all duration-300 ${
+                                selectedCharacters.length === 0 
+                                  ? 'text-blue-300' 
+                                  : 'text-gray-300'
+                              }`} 
+                            />
                           </button>
                         )}
                       </div>
-                      <div className="rounded-full bg-black/50 px-3 py-1 text-sm font-medium text-white drop-shadow-lg backdrop-blur-sm">
-                        Selected Attackers ({selectedCharacters.length})
+                      <div className={`rounded-full bg-black/50 px-3 py-1 text-sm font-medium text-white drop-shadow-lg backdrop-blur-sm transition-all duration-300 ${
+                        selectedCharacters.length > 0 ? 'bg-green-500/20 border border-green-400/30' : ''
+                      }`}>
+                        {isWalletConnected && hasCharacters 
+                          ? `Selected Attackers (${selectedCharacters.length})`
+                          : !isWalletConnected 
+                            ? "Connect wallet to select attackers"
+                            : "No characters available"
+                        }
                       </div>
                     </div>
 
@@ -297,34 +361,64 @@ const FightTab: React.FC<FightTabProps> = ({
             </div>
           </div>
 
-          {/* Action Buttons at bottom */}
-          <div className="mt-8 w-full max-w-2xl">
-            <div className="flex gap-4">
-              <MainButton
-                color="yellow"
-                className="flex-1 font-sans font-bold"
-                buttonClassName="h-16"
-                onClick={isSimpleFightMode ? attackCurrentUnit : handleSimpleFight}
-                disabled={selectedCharacters.length === 0 || attackMutation.isLoading}
-              >
-                {isSimpleFightMode
-                  ? currentAttackingIndex >= 0 && currentAttackingIndex < selectedCharacters.length
-                    ? `ATTACK (${currentAttackingIndex + 1}/${
-                        selectedCharacters.length
-                      }) - 100 RUDE`
-                    : "SIMPLE FIGHT"
-                  : "SIMPLE FIGHT - 100 RUDE"}
-              </MainButton>
-              <MainButton
-                color="yellow"
-                className="flex-1 font-sans font-bold"
-                buttonClassName="h-16"
-                onClick={handleBulkAttack}
-                disabled={selectedCharacters.length === 0 || attackMutation.isLoading}
-              >
-                BULK FIGHT - 0.01 SOL
-              </MainButton>
-            </div>
+          {/* Action Buttons at bottom - Fixed position */}
+          <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 w-full max-w-2xl px-4">
+            {!isWalletConnected ? (
+              <div className="text-center">
+                <MainButton
+                  color="yellow"
+                  className="px-8 py-4 font-sans font-bold"
+                  buttonClassName="h-16"
+                >
+                  Connect Wallet to Battle
+                </MainButton>
+              </div>
+            ) : !hasCharacters ? (
+              <div className="text-center">
+                <div className="mb-4 rounded-lg bg-black/50 p-4 backdrop-blur-sm">
+                  <p className="text-white">
+                    You need to own Golem or Demon NFTs to participate in battles.
+                  </p>
+                </div>
+              </div>
+            ) : (
+              <div className="flex gap-4">
+                <MainButton
+                  color="yellow"
+                  className={`flex-1 font-sans font-bold transition-all duration-300 ${
+                    attackButtonState === 'ready' && isSimpleFightMode 
+                      ? 'animate-ready-glow' 
+                      : attackButtonState === 'waiting' && !isSimpleFightMode
+                      ? 'animate-waiting-pulse'
+                      : ''
+                  }`}
+                  buttonClassName="h-16"
+                  onClick={isSimpleFightMode ? handleAttackCurrentWithFeedback : handleSimpleFightWithFeedback}
+                  disabled={selectedCharacters.length === 0 || attackMutation.isLoading}
+                >
+                  {isSimpleFightMode
+                    ? currentAttackingIndex >= 0 && currentAttackingIndex < selectedCharacters.length
+                      ? `ATTACK (${currentAttackingIndex + 1}/${
+                          selectedCharacters.length
+                        }) - 100 RUDE`
+                      : "SIMPLE FIGHT"
+                    : "SIMPLE FIGHT - 100 RUDE"}
+                </MainButton>
+                <MainButton
+                  color="yellow"
+                  className={`flex-1 font-sans font-bold transition-all duration-300 ${
+                    attackButtonState === 'waiting' && !isSimpleFightMode
+                      ? 'animate-waiting-pulse'
+                      : ''
+                  }`}
+                  buttonClassName="h-16"
+                  onClick={handleBulkAttackWithFeedback}
+                  disabled={selectedCharacters.length === 0 || attackMutation.isLoading}
+                >
+                  BULK FIGHT - 0.01 SOL
+                </MainButton>
+              </div>
+            )}
 
             {isSimpleFightMode && (
               <div className="mt-4 text-center">
@@ -347,7 +441,7 @@ const FightTab: React.FC<FightTabProps> = ({
         </div>
 
         {/* Warrior Selection Side Sheet */}
-        {isWarriorSheetOpen && (
+        {isWarriorSheetOpen && isWalletConnected && hasCharacters && (
           <WarriorSheetOverlay onClick={() => setIsWarriorSheetOpen(false)}>
             <WarriorSheet onClick={(e) => e.stopPropagation()}>
               <div className="mb-6 flex items-center justify-between">
@@ -448,7 +542,7 @@ const WarriorSheetOverlay = styled.div`
   right: 0;
   bottom: 0;
   background-color: rgba(0, 0, 0, 0.7);
-  z-index: 1000;
+  z-index: 60;
   display: flex;
   justify-content: flex-end;
 `;

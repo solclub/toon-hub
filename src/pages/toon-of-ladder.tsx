@@ -449,30 +449,13 @@ const ToonOfLadderPage = () => {
   };
 
   // Show loading state - only show loading if game is loading, or NFTs are loading when user is connected
-  if (gameLoading || (nftsLoading && session?.user?.walletId)) {
+  if (gameLoading) {
     return (
       <div className="flex min-h-screen items-center justify-center">
         <div className="text-center text-white">
           <Loader />
           <p className="mt-4">Loading game data...</p>
-          {gameError && <p className="mt-2 text-sm text-red-500">Error: {gameError.message}</p>}
-        </div>
-      </div>
-    );
-  }
-
-  // Show wallet connection prompt
-  if (!connected || !session?.user?.walletId) {
-    return (
-      <div className="flex min-h-screen items-center justify-center">
-        <div className="text-center text-white">
-          <h2 className="mb-4 text-3xl">Connect Your Wallet</h2>
-          <p className="mb-8 text-lg text-gray-300">
-            Please connect your wallet to participate in Toon of Ladder battles.
-          </p>
-          <MainButton color="yellow" className="px-8 py-3">
-            Connect Wallet
-          </MainButton>
+          {gameError && <p className="mt-2 text-sm text-red-500">Error: {String(gameError)}</p>}
         </div>
       </div>
     );
@@ -492,19 +475,9 @@ const ToonOfLadderPage = () => {
     );
   }
 
-  // Show no NFTs message
-  if (allCharacters.length === 0) {
-    return (
-      <div className="flex min-h-screen items-center justify-center">
-        <div className="text-center text-white">
-          <h2 className="mb-4 text-3xl">No Characters Found</h2>
-          <p className="mb-8 text-lg text-gray-300">
-            You need to own Golem or Demon NFTs to participate in battles.
-          </p>
-        </div>
-      </div>
-    );
-  }
+  // Check wallet connection state
+  const isWalletConnected = !!(connected && session?.user?.walletId);
+  const hasCharacters = allCharacters.length > 0;
 
   const enemy = gameData?.enemy;
 
@@ -543,10 +516,18 @@ const ToonOfLadderPage = () => {
       getCharacterBorderColor={getCharacterBorderColor}
       attackMutation={attackMutation}
       bgImageUrl={bgImageUrl}
+      isWalletConnected={isWalletConnected}
+      hasCharacters={hasCharacters}
     />
   );
 
-  const renderStatsTab = () => <MyStatsTab userStats={userStats} combatLog={combatLog} />;
+  const renderStatsTab = () => (
+    <MyStatsTab 
+      userStats={userStats} 
+      combatLog={combatLog} 
+      isWalletConnected={isWalletConnected}
+    />
+  );
 
   const renderLeaderboardTab = () => (
     <LeaderboardTab
@@ -577,14 +558,19 @@ const ToonOfLadderPage = () => {
           animation: shake 0.5s ease-in-out;
         }
       `}</style>
-      <div className="flex w-full flex-col">
-        {/* Tab Navigation */}
-        <TabNavigation>
+      <div className="flex w-full flex-col min-h-[calc(100vh-120px)]">
+        {/* Regular Tab Navigation - Hidden on mobile, shown on lg+ screens */}
+        <TabNavigation className="hidden lg:flex">
           <TabButton $isActive={activeTab === "fight"} onClick={() => setActiveTab("fight")}>
             <Sword size={20} />
             Fight
           </TabButton>
-          <TabButton $isActive={activeTab === "stats"} onClick={() => setActiveTab("stats")}>
+          <TabButton 
+            $isActive={activeTab === "stats"} 
+            onClick={() => isWalletConnected && setActiveTab("stats")}
+            className={!isWalletConnected ? "opacity-50 cursor-not-allowed" : ""}
+            disabled={!isWalletConnected}
+          >
             <BarChart3 size={20} />
             My Stats
           </TabButton>
@@ -597,10 +583,89 @@ const ToonOfLadderPage = () => {
           </TabButton>
         </TabNavigation>
 
-        {/* Tab Content */}
-        <div className="mt-8">
+        {/* Floating Mobile Navigation - Shown on mobile, hidden on lg+ screens */}
+        <div className="fixed right-4 top-1/2 transform -translate-y-1/2 z-50 flex flex-col gap-3 lg:hidden">
+          {/* Fight Button */}
+          <div className="group relative">
+            <button
+              onClick={() => setActiveTab("fight")}
+              className={`w-12 h-12 rounded-full flex items-center justify-center transition-all duration-200 shadow-lg ${
+                activeTab === "fight"
+                  ? "bg-yellow-400 text-black shadow-yellow-400/50"
+                  : "bg-gray-800 text-white hover:bg-gray-700"
+              }`}
+            >
+              <Sword size={20} />
+            </button>
+            {/* Tooltip */}
+            <div className="absolute right-full mr-3 top-1/2 transform -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none">
+              <div className="bg-black text-white px-3 py-1 rounded-lg text-sm font-medium whitespace-nowrap">
+                Fight
+                <div className="absolute left-full top-1/2 transform -translate-y-1/2 w-0 h-0 border-l-4 border-l-black border-t-2 border-b-2 border-t-transparent border-b-transparent"></div>
+              </div>
+            </div>
+          </div>
+
+          {/* My Stats Button */}
+          <div className="group relative">
+            <button
+              onClick={() => isWalletConnected && setActiveTab("stats")}
+              className={`w-12 h-12 rounded-full flex items-center justify-center transition-all duration-200 shadow-lg ${
+                activeTab === "stats"
+                  ? "bg-yellow-400 text-black shadow-yellow-400/50"
+                  : "bg-gray-800 text-white hover:bg-gray-700"
+              } ${!isWalletConnected ? "opacity-50 cursor-not-allowed" : ""}`}
+              disabled={!isWalletConnected}
+            >
+              <BarChart3 size={20} />
+            </button>
+            {/* Tooltip */}
+            <div className="absolute right-full mr-3 top-1/2 transform -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none">
+              <div className="bg-black text-white px-3 py-1 rounded-lg text-sm font-medium whitespace-nowrap">
+                My Stats
+                <div className="absolute left-full top-1/2 transform -translate-y-1/2 w-0 h-0 border-l-4 border-l-black border-t-2 border-b-2 border-t-transparent border-b-transparent"></div>
+              </div>
+            </div>
+          </div>
+
+          {/* Leaderboard Button */}
+          <div className="group relative">
+            <button
+              onClick={() => setActiveTab("leaderboard")}
+              className={`w-12 h-12 rounded-full flex items-center justify-center transition-all duration-200 shadow-lg ${
+                activeTab === "leaderboard"
+                  ? "bg-yellow-400 text-black shadow-yellow-400/50"
+                  : "bg-gray-800 text-white hover:bg-gray-700"
+              }`}
+            >
+              <Trophy size={20} />
+            </button>
+            {/* Tooltip */}
+            <div className="absolute right-full mr-3 top-1/2 transform -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none">
+              <div className="bg-black text-white px-3 py-1 rounded-lg text-sm font-medium whitespace-nowrap">
+                Leaderboard
+                <div className="absolute left-full top-1/2 transform -translate-y-1/2 w-0 h-0 border-l-4 border-l-black border-t-2 border-b-2 border-t-transparent border-b-transparent"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Tab Content - Full height container */}
+        <div className="flex-1 mt-4">
           {activeTab === "fight" && renderFightTab()}
-          {activeTab === "stats" && renderStatsTab()}
+          {activeTab === "stats" && (isWalletConnected ? renderStatsTab() : (
+            <div className="flex min-h-[400px] items-center justify-center">
+              <div className="text-center text-white">
+                <h2 className="mb-4 text-2xl">Connect Your Wallet</h2>
+                <p className="mb-6 text-gray-300">
+                  Please connect your wallet to view your battle statistics.
+                </p>
+                <MainButton color="yellow" className="px-6 py-3">
+                  Connect Wallet
+                </MainButton>
+              </div>
+            </div>
+          ))}
           {activeTab === "leaderboard" && renderLeaderboardTab()}
         </div>
       </div>
@@ -757,7 +822,7 @@ const ButtonContainerStyled = styled(ButtonContainer)`
   }
 `;
 
-const TabNavigation = styled.div`
+const TabNavigation = styled.div<{ className?: string }>`
   display: flex;
   justify-content: center;
   gap: 0.5rem;
@@ -780,13 +845,18 @@ const TabButton = styled.button<{ $isActive: boolean }>`
   transition: all 0.2s ease-in-out;
   border-bottom: ${({ $isActive }) => ($isActive ? "4px solid #d4a853" : "4px solid transparent")};
 
-  &:hover {
+  &:hover:not(:disabled) {
     background-color: ${({ $isActive }) => ($isActive ? "#ffe75c" : "#3f3827")};
     transform: translateY(-1px);
   }
 
-  &:active {
+  &:active:not(:disabled) {
     transform: translateY(0);
+  }
+
+  &:disabled {
+    cursor: not-allowed;
+    opacity: 0.5;
   }
 
   svg {

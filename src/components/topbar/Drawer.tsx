@@ -185,7 +185,7 @@ const Header = styled.div`
   align-items: center;
   flex-wrap: wrap;
   border-bottom: 1px solid rgba(253, 209, 18, 0.3);
-  z-index: 10;
+  z-index: 50;
 
   @media screen and (min-width: 1024px) {
     padding: 1.5rem 2rem;

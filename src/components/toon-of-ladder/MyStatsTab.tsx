@@ -26,9 +26,10 @@ interface UserStats {
 interface MyStatsTabProps {
   userStats: UserStats | null;
   combatLog: string[];
+  isWalletConnected: boolean;
 }
 
-const MyStatsTab: React.FC<MyStatsTabProps> = ({ userStats, combatLog }) => {
+const MyStatsTab: React.FC<MyStatsTabProps> = ({ userStats, combatLog, isWalletConnected }) => {
   const { data: bestWarriorNFT, isLoading: isLoadingNFT } = trpc.nfts.getUserNFTbyMint.useQuery({
     mint: userStats?.bestWarrior?._id || "",
   }, {
@@ -40,7 +41,7 @@ const MyStatsTab: React.FC<MyStatsTabProps> = ({ userStats, combatLog }) => {
   return (
     <div className="flex w-full flex-col gap-32">
       {/* User Stats */}
-      {userStats && (
+      {isWalletConnected && userStats && (
         <div className="w-full">
           <h2 className="mb-8 text-center text-3xl lg:text-left">Your Battle Stats</h2>
           <div className="flex justify-center gap-4 lg:justify-start">
@@ -114,22 +115,24 @@ const MyStatsTab: React.FC<MyStatsTabProps> = ({ userStats, combatLog }) => {
       )}
 
       {/* Combat Log Section */}
-      <div className="w-full">
-        <div className="rounded-xl bg-slate-800 p-6">
-          <h3 className="mb-4 text-2xl font-bold text-slate-200">Combat Log</h3>
-          <div className="max-h-40 overflow-y-auto">
-            {combatLog.length > 0 ? (
-              combatLog.map((log, index) => (
-                <p key={index} className="mb-2 text-sm text-slate-300">
-                  {log}
-                </p>
-              ))
-            ) : (
-              <p className="text-sm italic text-slate-400">No combat activity yet...</p>
-            )}
+      {isWalletConnected && (
+        <div className="w-full">
+          <div className="rounded-xl bg-slate-800 p-6">
+            <h3 className="mb-4 text-2xl font-bold text-slate-200">Combat Log</h3>
+            <div className="max-h-40 overflow-y-auto">
+              {combatLog.length > 0 ? (
+                combatLog.map((log, index) => (
+                  <p key={index} className="mb-2 text-sm text-slate-300">
+                    {log}
+                  </p>
+                ))
+              ) : (
+                <p className="text-sm italic text-slate-400">No combat activity yet...</p>
+              )}
+            </div>
           </div>
         </div>
-      </div>
+      )}
     </div>
   );
 };
