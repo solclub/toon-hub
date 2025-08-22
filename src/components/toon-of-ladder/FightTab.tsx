@@ -367,7 +367,7 @@ const FightTab: React.FC<FightTabProps> = ({
               <div className="text-center">
                 <MainButton
                   color="yellow"
-                  className="px-8 py-4 font-sans font-bold"
+                  className="px-8 py-4 font-medieval-sharp font-black"
                   buttonClassName="h-16"
                 >
                   Connect Wallet to Battle
@@ -385,12 +385,12 @@ const FightTab: React.FC<FightTabProps> = ({
               <div className="flex gap-4">
                 <MainButton
                   color="yellow"
-                  className={`flex-1 font-sans font-bold transition-all duration-300 ${
+                  className={`flex-1 font-medieval-sharp font-black transition-all duration-300 ${
                     attackButtonState === 'ready' && isSimpleFightMode 
-                      ? 'animate-ready-glow' 
+                      ? 'animate-ready-glow animate-cartoon-bounce' 
                       : attackButtonState === 'waiting' && !isSimpleFightMode
-                      ? 'animate-waiting-pulse'
-                      : ''
+                      ? 'animate-waiting-pulse animate-cartoon-bounce'
+                      : 'hover:animate-button-glow'
                   }`}
                   buttonClassName="h-16"
                   onClick={isSimpleFightMode ? handleAttackCurrentWithFeedback : handleSimpleFightWithFeedback}
@@ -406,10 +406,10 @@ const FightTab: React.FC<FightTabProps> = ({
                 </MainButton>
                 <MainButton
                   color="yellow"
-                  className={`flex-1 font-sans font-bold transition-all duration-300 ${
+                  className={`flex-1 font-medieval-sharp font-black transition-all duration-300 ${
                     attackButtonState === 'waiting' && !isSimpleFightMode
-                      ? 'animate-waiting-pulse'
-                      : ''
+                      ? 'animate-waiting-pulse animate-cartoon-bounce'
+                      : 'hover:animate-button-glow'
                   }`}
                   buttonClassName="h-16"
                   onClick={handleBulkAttackWithFeedback}
@@ -424,7 +424,7 @@ const FightTab: React.FC<FightTabProps> = ({
               <div className="mt-4 text-center">
                 <MainButton
                   color="red"
-                  className="px-4 py-2 font-sans text-sm font-bold"
+                  className="px-4 py-2 font-medieval-sharp text-sm font-bold hover:animate-button-glow"
                   onClick={() => {
                     setIsSimpleFightMode(false);
                     setCurrentAttackingIndex(-1);
@@ -457,14 +457,14 @@ const FightTab: React.FC<FightTabProps> = ({
               <div className="mb-6 flex gap-4">
                 <MainButton
                   color="yellow"
-                  className="px-4 py-2 font-sans font-bold"
+                  className="px-4 py-2 font-medieval-sharp font-bold hover:animate-button-glow"
                   onClick={selectAll}
                 >
                   SELECT ALL UNITS
                 </MainButton>
                 <MainButton
                   color="red"
-                  className="px-4 py-2 font-sans font-bold"
+                  className="px-4 py-2 font-medieval-sharp font-bold hover:animate-button-glow"
                   onClick={unselectAll}
                 >
                   DESELECT ALL

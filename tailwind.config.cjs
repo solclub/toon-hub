@@ -68,6 +68,18 @@ module.exports = {
             boxShadow: "0 0 20px rgba(234, 179, 8, 0.8)"
           },
         },
+        "button-glow": {
+          "0%, 100%": {
+            boxShadow: "0 0 10px rgba(59, 130, 246, 0.4), 0 4px 8px rgba(0, 0, 0, 0.3)"
+          },
+          "50%": {
+            boxShadow: "0 0 20px rgba(59, 130, 246, 0.6), 0 6px 12px rgba(0, 0, 0, 0.4)"
+          },
+        },
+        "cartoon-bounce": {
+          "0%, 100%": { transform: "translateY(0) scale(1)" },
+          "50%": { transform: "translateY(-2px) scale(1.02)" },
+        },
       },
       animation: {
         scrollText: "scroll 5s linear infinite",
@@ -75,6 +87,8 @@ module.exports = {
         "attention-pulse": "attention-pulse 2s ease-in-out infinite",
         "ready-glow": "ready-glow 1.5s ease-in-out infinite",
         "waiting-pulse": "waiting-pulse 1s ease-in-out infinite",
+        "button-glow": "button-glow 2s ease-in-out infinite",
+        "cartoon-bounce": "cartoon-bounce 1s ease-in-out infinite",
       },
       fontFamily: {
         "inknut-antiqua": ['"Inknut Antiqua"', "Helvetica"],
